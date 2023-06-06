@@ -36,7 +36,7 @@
             panelaccount = new Panel();
             groupBoxaccount = new GroupBox();
             label1 = new Label();
-            comboBoxusername = new ComboBox();
+            comboBoxaccount = new ComboBox();
             textBoxaccountpassword = new TextBox();
             buttonaccountlogin = new Button();
             labelaccountpassword = new Label();
@@ -91,7 +91,7 @@
             // groupBoxaccount
             // 
             groupBoxaccount.Controls.Add(label1);
-            groupBoxaccount.Controls.Add(comboBoxusername);
+            groupBoxaccount.Controls.Add(comboBoxaccount);
             groupBoxaccount.Controls.Add(textBoxaccountpassword);
             groupBoxaccount.Controls.Add(buttonaccountlogin);
             groupBoxaccount.Controls.Add(labelaccountpassword);
@@ -117,12 +117,12 @@
             // 
             // comboBoxusername
             // 
-            comboBoxusername.FlatStyle = FlatStyle.Popup;
-            comboBoxusername.FormattingEnabled = true;
-            comboBoxusername.Location = new Point(97, 67);
-            comboBoxusername.Name = "comboBoxusername";
-            comboBoxusername.Size = new Size(190, 23);
-            comboBoxusername.TabIndex = 6;
+            comboBoxaccount.FlatStyle = FlatStyle.Popup;
+            comboBoxaccount.FormattingEnabled = true;
+            comboBoxaccount.Location = new Point(97, 67);
+            comboBoxaccount.Name = "comboBoxusername";
+            comboBoxaccount.Size = new Size(190, 23);
+            comboBoxaccount.TabIndex = 6;
             // 
             // textBoxaccountpassword
             // 
@@ -141,6 +141,7 @@
             buttonaccountlogin.TabIndex = 3;
             buttonaccountlogin.Text = "Login";
             buttonaccountlogin.UseVisualStyleBackColor = true;
+            buttonaccountlogin.Click += LoginClick;
             // 
             // labelaccountpassword
             // 
@@ -206,7 +207,7 @@
         private Label labelaccountpassword;
         private GroupBox groupBoxaccount;
         private Label label1;
-        private ComboBox comboBoxusername;
+        private ComboBox comboBoxaccount;
         private TextBox textBoxaccountpassword;
     }
 }

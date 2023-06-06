@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 
@@ -10,6 +11,8 @@ namespace FireWallet
         Dictionary<string, string> nodeSettings;
         Dictionary<string, string> theme;
         int Network;
+        string account;
+        string password;
 
         #endregion
         #region Application
@@ -301,30 +304,56 @@ namespace FireWallet
 
         private async void GetAccounts()
         {
-            await APIGet("wallet", true);
-            comboBoxusername.Items.Clear();
+            string APIresponse = await APIGet("wallet", true);
+            comboBoxaccount.Items.Clear();
             if (APIresponse != "Error")
             {
                 JArray jArray = JArray.Parse(APIresponse);
                 foreach (string account in jArray)
                 {
-                    comboBoxusername.Items.Add(account);
+                    comboBoxaccount.Items.Add(account);
                 }
-                if (comboBoxusername.Items.Count > 0)
+                if (comboBoxaccount.Items.Count > 0)
                 {
-                    comboBoxusername.SelectedIndex = 0;
+                    comboBoxaccount.SelectedIndex = 0;
                 }
                 else
                 {
-                    comboBoxusername.Items.Add("No accounts found");
-                    comboBoxusername.Enabled = false;
+                    comboBoxaccount.Items.Add("No accounts found");
+                    comboBoxaccount.Enabled = false;
                 }
             }
             else
             {
-                comboBoxusername.Items.Add("No accounts found");
-                comboBoxusername.Enabled = false;
+                comboBoxaccount.Items.Add("No accounts found");
+                comboBoxaccount.Enabled = false;
             }
+        }
+        private async Task<bool> Login()
+        {
+            string path = "wallet/" + account + "/unlock";
+            string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
+
+            string APIresponse = await APIPost(path, true, content);
+            
+            if (APIresponse.Contains("true"))
+            {
+                MessageBox.Show(APIresponse);
+                AddLog("Login success");
+                return true;
+            }
+            else
+            {
+                AddLog("Login failed");
+                NotifyForm notifyForm = new NotifyForm("Login Failed\nMake sure your password is correct");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return false;
+            }
+
+
+
+            return false;
         }
 
         #endregion
@@ -335,7 +364,7 @@ namespace FireWallet
             NodeStatus();
         }
         #region API
-        string APIresponse;
+        HttpClient httpClient = new HttpClient();
         private async void NodeStatus()
         {
             // This will curl the below URL and return the result
@@ -373,11 +402,38 @@ namespace FireWallet
                 toolStripStatusLabelstatus.Text = "Status: Node Not Connected";
             }
         }
-        private async Task APIGet(string path, bool wallet)
-        {
-            // This will curl the below URL and return the result
-            //curl http://x:api-key@127.0.0.1:12039/wallet/$id/account
 
+        private async Task<string> APIPost(string path, bool wallet, string content)
+        {
+            string key = nodeSettings["Key"];
+            string ip = nodeSettings["IP"];
+            string port = "1203";
+            if (Network == 1)
+            {
+                port = "1303";
+            }
+            if (wallet) port = port + "9";
+            else port = port + "7";
+
+            HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, "http://" + ip + ":" + port + "/" + path);
+            req.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
+            req.Content = new StringContent(content);
+
+            // Send request
+            HttpResponseMessage resp = await httpClient.SendAsync(req);
+
+            try { 
+                resp.EnsureSuccessStatusCode(); 
+            }
+            catch
+            {
+                return "Error";
+            }
+
+            return await resp.Content.ReadAsStringAsync();
+        }
+        private async Task<string> APIGet(string path, bool wallet)
+        {
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
 
@@ -389,10 +445,6 @@ namespace FireWallet
             if (wallet) port = port + "9";
             else port = port + "7";
 
-
-            // Create HTTP client
-            HttpClient httpClient = new HttpClient();
-
             try
             {
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "http://" + ip + ":" + port + "/" + path);
@@ -401,16 +453,23 @@ namespace FireWallet
                 // Send request and log response
                 HttpResponseMessage response = await httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
-                APIresponse = await response.Content.ReadAsStringAsync();
-                
+                return await response.Content.ReadAsStringAsync();
+
             }
             // Log errors to log textbox
             catch (Exception ex)
             {
                 AddLog("Error: " + ex.Message);
-                APIresponse = "Error";
+                return "Error";
             }
         }
         #endregion
+
+        private async void LoginClick(object sender, EventArgs e)
+        {
+            account = comboBoxaccount.Text;
+            password = textBoxaccountpassword.Text;
+            await Login();
+        }
     }
 }
