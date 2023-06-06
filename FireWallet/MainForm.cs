@@ -335,14 +335,8 @@ namespace FireWallet
             string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
 
             string APIresponse = await APIPost(path, true, content);
-            
-            if (APIresponse.Contains("true"))
-            {
-                MessageBox.Show(APIresponse);
-                AddLog("Login success");
-                return true;
-            }
-            else
+
+            if (!APIresponse.Contains("true"))
             {
                 AddLog("Login failed");
                 NotifyForm notifyForm = new NotifyForm("Login Failed\nMake sure your password is correct");
@@ -351,9 +345,21 @@ namespace FireWallet
                 return false;
             }
 
+            path = "";
+            content = "{\"method\": \"selectwallet\",\"params\":[ \"" + account + "\"]}";
 
+            APIresponse = await APIPost(path, true, content);
+            if (!APIresponse.Contains("\"error\":null"))
+            {
+                AddLog("Wallet selection failed");
+                NotifyForm notifyForm = new NotifyForm("Wallet selection failed\n" + APIresponse);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return false;
+            }
+            AddLog("Login successful");
 
-            return false;
+            return true;
         }
 
         #endregion
@@ -422,8 +428,9 @@ namespace FireWallet
             // Send request
             HttpResponseMessage resp = await httpClient.SendAsync(req);
 
-            try { 
-                resp.EnsureSuccessStatusCode(); 
+            try
+            {
+                resp.EnsureSuccessStatusCode();
             }
             catch
             {
@@ -469,7 +476,48 @@ namespace FireWallet
         {
             account = comboBoxaccount.Text;
             password = textBoxaccountpassword.Text;
-            await Login();
+            bool loggedin = await Login();
+            if (loggedin)
+            {
+                toolStripStatusLabelaccount.Text = "Account: " + account;
+                textBoxaccountpassword.Text = "";
+                panelaccount.Visible = false;
+                toolStripSplitButtonlogout.Visible = true;
+            }
+        }
+
+        private void textBoxaccountpassword_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue == 13)
+            {
+                LoginClick(sender, e);
+            }
+        }
+
+        private void comboBoxaccount_DropDownClosed(object sender, EventArgs e)
+        {
+            textBoxaccountpassword.Focus();
+        }
+
+        private async void toolStripSplitButtonlogout_ButtonClickAsync(object sender, EventArgs e)
+        {
+            toolStripSplitButtonlogout.Visible = false;
+            string path = "wallet/" + account + "/lock";
+            string content = "";
+            string APIresponse = await APIPost(path, true, content);
+            if (!APIresponse.Contains("true"))
+            {
+                AddLog("Logout failed");
+                NotifyForm notifyForm = new NotifyForm("Logout Failed\n" + APIresponse);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                panelaccount.Visible = true;
+                return;
+            }
+            AddLog("Logout successful");
+            panelaccount.Visible = true;
+            toolStripStatusLabelaccount.Text = "Account: Not Logged In";
+
         }
     }
 }

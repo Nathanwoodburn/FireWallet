@@ -32,6 +32,8 @@
             statusStripmain = new StatusStrip();
             toolStripStatusLabelNetwork = new ToolStripStatusLabel();
             toolStripStatusLabelstatus = new ToolStripStatusLabel();
+            toolStripStatusLabelaccount = new ToolStripStatusLabel();
+            toolStripSplitButtonlogout = new ToolStripSplitButton();
             timerNodeStatus = new System.Windows.Forms.Timer(components);
             panelaccount = new Panel();
             groupBoxaccount = new GroupBox();
@@ -50,7 +52,7 @@
             // statusStripmain
             // 
             statusStripmain.Dock = DockStyle.Top;
-            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus });
+            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripSplitButtonlogout });
             statusStripmain.Location = new Point(0, 0);
             statusStripmain.Name = "statusStripmain";
             statusStripmain.Size = new Size(1074, 22);
@@ -71,6 +73,24 @@
             toolStripStatusLabelstatus.Name = "toolStripStatusLabelstatus";
             toolStripStatusLabelstatus.Size = new Size(126, 17);
             toolStripStatusLabelstatus.Text = "Status: Not Connected";
+            // 
+            // toolStripStatusLabelaccount
+            // 
+            toolStripStatusLabelaccount.Margin = new Padding(0, 3, 50, 2);
+            toolStripStatusLabelaccount.Name = "toolStripStatusLabelaccount";
+            toolStripStatusLabelaccount.Size = new Size(55, 17);
+            toolStripStatusLabelaccount.Text = "Account:";
+            // 
+            // toolStripSplitButtonlogout
+            // 
+            toolStripSplitButtonlogout.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripSplitButtonlogout.DropDownButtonWidth = 0;
+            toolStripSplitButtonlogout.ImageTransparentColor = Color.Magenta;
+            toolStripSplitButtonlogout.Name = "toolStripSplitButtonlogout";
+            toolStripSplitButtonlogout.Size = new Size(53, 20);
+            toolStripSplitButtonlogout.Text = "Log out";
+            toolStripSplitButtonlogout.Visible = false;
+            toolStripSplitButtonlogout.ButtonClick += toolStripSplitButtonlogout_ButtonClickAsync;
             // 
             // timerNodeStatus
             // 
@@ -115,14 +135,16 @@
             label1.TabIndex = 7;
             label1.Text = "Please Login to your account";
             // 
-            // comboBoxusername
+            // comboBoxaccount
             // 
+            comboBoxaccount.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxaccount.FlatStyle = FlatStyle.Popup;
             comboBoxaccount.FormattingEnabled = true;
             comboBoxaccount.Location = new Point(97, 67);
-            comboBoxaccount.Name = "comboBoxusername";
+            comboBoxaccount.Name = "comboBoxaccount";
             comboBoxaccount.Size = new Size(190, 23);
             comboBoxaccount.TabIndex = 6;
+            comboBoxaccount.DropDownClosed += comboBoxaccount_DropDownClosed;
             // 
             // textBoxaccountpassword
             // 
@@ -131,6 +153,7 @@
             textBoxaccountpassword.Size = new Size(190, 23);
             textBoxaccountpassword.TabIndex = 5;
             textBoxaccountpassword.UseSystemPasswordChar = true;
+            textBoxaccountpassword.KeyDown += textBoxaccountpassword_KeyDown;
             // 
             // buttonaccountlogin
             // 
@@ -198,7 +221,7 @@
 
         private StatusStrip statusStripmain;
         private ToolStripStatusLabel toolStripStatusLabelNetwork;
-        private ToolStripStatusLabel toolStripStatusLabelstatus;
+        private ToolStripStatusLabel toolStripStatusLabelaccount;
         private System.Windows.Forms.Timer timerNodeStatus;
         private Panel panelaccount;
         private Button buttonaccountlogin;
@@ -209,5 +232,7 @@
         private Label label1;
         private ComboBox comboBoxaccount;
         private TextBox textBoxaccountpassword;
+        private ToolStripStatusLabel toolStripStatusLabelstatus;
+        private ToolStripSplitButton toolStripSplitButtonlogout;
     }
 }
