@@ -58,6 +58,7 @@
             labelBalanceTotal = new Label();
             labelLocked = new Label();
             labelBalance = new Label();
+            panelSend = new Panel();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -245,6 +246,7 @@
             buttonSend.TabIndex = 1;
             buttonSend.Text = "Send";
             buttonSend.UseVisualStyleBackColor = true;
+            buttonSend.Click += buttonSend_Click;
             // 
             // buttonPortfolio
             // 
@@ -263,7 +265,7 @@
             panelPortfolio.Controls.Add(groupBoxTransactions);
             panelPortfolio.Controls.Add(groupBoxinfo);
             panelPortfolio.Controls.Add(groupBoxbalance);
-            panelPortfolio.Location = new Point(120, 25);
+            panelPortfolio.Location = new Point(448, 170);
             panelPortfolio.Name = "panelPortfolio";
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
@@ -363,11 +365,20 @@
             labelBalance.TabIndex = 0;
             labelBalance.Text = "labelBalance";
             // 
+            // panelSend
+            // 
+            panelSend.Location = new Point(120, 25);
+            panelSend.Name = "panelSend";
+            panelSend.Size = new Size(200, 100);
+            panelSend.TabIndex = 2;
+            panelSend.Visible = false;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelSend);
             Controls.Add(panelPortfolio);
             Controls.Add(panelNav);
             Controls.Add(panelaccount);
@@ -423,5 +434,6 @@
         private Label labelPendingCount;
         private Label labelSyncPercent;
         private GroupBox groupBoxTransactions;
+        private Panel panelSend;
     }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
@@ -10,6 +11,7 @@ namespace FireWallet
         #region Variables
         string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
         Dictionary<string, string> nodeSettings;
+        Dictionary<string, string> userSettings;
         Dictionary<string, string> theme;
         int Network;
         string account;
@@ -31,6 +33,7 @@ namespace FireWallet
         {
             UpdateTheme();
             LoadNode();
+            LoadSettings();
 
             // Edit the theme of the navigation panel
             panelNav.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
@@ -48,6 +51,8 @@ namespace FireWallet
 
             // Prompt for login
             GetAccounts();
+
+            AddLog("Loaded");
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
@@ -81,6 +86,7 @@ namespace FireWallet
                 string line = sr.ReadLine();
                 string[] split = line.Split(':');
                 nodeSettings.Add(split[0].Trim(), split[1].Trim());
+
             }
             sr.Dispose();
 
@@ -106,6 +112,28 @@ namespace FireWallet
             NodeStatus();
 
 
+        }
+        private void LoadSettings()
+        {
+            if (!File.Exists(dir + "settings.txt"))
+            {
+                AddLog("Creating settings file");
+                StreamWriter sw = new StreamWriter(dir + "settings.txt");
+                sw.WriteLine("explorer-tx: https://niami.io/tx/");
+                sw.WriteLine("explorer-addr: https://niami.io/address/");
+                sw.WriteLine("explorer-block: https://niami.io/block/");
+                sw.Dispose();
+            }
+
+
+            StreamReader sr = new StreamReader(dir + "settings.txt");
+            userSettings = new Dictionary<string, string>();
+            while (!sr.EndOfStream)
+            {
+                string line = sr.ReadLine();
+                userSettings.Add(line.Substring(0, line.IndexOf(":")).Trim(), line.Substring(line.IndexOf(":") + 1).Trim());
+            }
+            sr.Dispose();
         }
 
 
@@ -258,6 +286,8 @@ namespace FireWallet
             sw.WriteLine("transparent-mode: off");
             sw.WriteLine("transparency-key: main");
             sw.WriteLine("transparency-percent: 90");
+            sw.WriteLine("selected-bg: #000000");
+            sw.WriteLine("selected-fg: #ffffff");
 
             sw.Dispose();
             AddLog("Created theme file");
@@ -539,8 +569,84 @@ namespace FireWallet
                 AddLog("GetInfo Error");
                 return;
             }
+            JArray pendingTxs = JArray.Parse(APIresponse);
+            labelPendingCount.Text = "Unconfirmed TX: " + pendingTxs.Count.ToString();
+
+
+            // Get TX's
+            APIresponse = await APIGet("wallet/" + account + "/tx/history", true);
+            if (APIresponse == "Error")
+            {
+                AddLog("GetInfo Error");
+                return;
+            }
             JArray txs = JArray.Parse(APIresponse);
-            labelPendingCount.Text = "Unconfirmed TX: " + resp.Count.ToString();
+            int txCount = txs.Count;
+            if (txCount > groupBoxTransactions.Height / 55) txCount = (int)Math.Floor(groupBoxTransactions.Height / 55.0);
+            Control[] tmpControls = new Control[txCount];
+            for (int i = 0; i < txCount; i++)
+            {
+                // Get last tx
+                JObject tx = JObject.Parse(txs[txs.Count - 1 - i].ToString());
+                string hash = tx["hash"].ToString();
+                string date = tx["mdate"].ToString();
+
+                Panel tmpPanel = new Panel();
+                tmpPanel.Width = groupBoxTransactions.Width - 20;
+                tmpPanel.Height = 50;
+                tmpPanel.Location = new Point(10, 20 + (i * 55));
+                tmpPanel.BorderStyle = BorderStyle.FixedSingle;
+                tmpPanel.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
+                tmpPanel.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
+                tmpPanel.Controls.Add(
+                    new Label()
+                    {
+                        Text = "Date: " + date,
+                        Location = new Point(10, 5)
+                    }
+                    );
+
+                Label labelHash = new Label()
+                {
+                    Text = "Hash: " + hash.Substring(0, 10) + "..." + hash.Substring(hash.Length - 10),
+                    AutoSize = true,
+                    Location = new Point(10, 25),
+                    Font = new Font(this.Font, FontStyle.Underline)
+                };
+                labelHash.Click += (sender, e) =>
+                {
+                    string url = userSettings["explorer-tx"] + hash;
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = url,
+                        UseShellExecute = true
+                    };
+                    Process.Start(psi);
+
+                };
+                tmpPanel.Controls.Add(labelHash);
+
+                // Count inputs and outputs
+                JArray inputs = JArray.Parse(tx["inputs"].ToString());
+                JArray outputs = JArray.Parse(tx["outputs"].ToString());
+                int inputCount = inputs.Count;
+                int outputCount = outputs.Count;
+
+                Label labelInputOutput = new Label()
+                {
+                    Text = "Inputs: " + inputCount + " Outputs: " + outputCount,
+                    AutoSize = true,
+                    Location = new Point(300, 20)
+                };
+                tmpPanel.Controls.Add(labelInputOutput);
+
+
+                tmpControls[i] = tmpPanel;
+
+
+            }
+            groupBoxTransactions.Controls.Clear();
+            groupBoxTransactions.Controls.AddRange(tmpControls);
 
 
         }
@@ -561,13 +667,34 @@ namespace FireWallet
         #region Nav
         private async void buttonPortfolio_Click(object sender, EventArgs e)
         {
+            buttonSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            panelSend.Hide();
             panelPortfolio.Show();
             await UpdateBalance();
             GetInfo();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
             labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS";
             labelBalanceTotal.Text = "Total: " + (balance + balanceLocked).ToString() + " HNS";
+            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            {
+                buttonPortfolio.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonPortfolio.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
         }
         #endregion
+
+        private void buttonSend_Click(object sender, EventArgs e)
+        {
+            panelPortfolio.Hide();
+            panelSend.Show();
+            buttonPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            {
+                buttonSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonSend.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
+        }
     }
 }
