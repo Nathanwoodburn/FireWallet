@@ -1,5 +1,6 @@
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 using Newtonsoft.Json.Linq;
 
 namespace FireWallet
@@ -16,6 +17,9 @@ namespace FireWallet
         double balance;
         double balanceLocked;
         int screen; // 0 = login, 1 = portfolio
+        int height;
+        double syncProgress;
+        int pendingTransactions;
 
         #endregion
         #region Application
@@ -25,7 +29,6 @@ namespace FireWallet
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
-            AddLog("Loading");
             UpdateTheme();
             LoadNode();
 
@@ -39,7 +42,6 @@ namespace FireWallet
             }
             panelNav.Dock = DockStyle.Left;
 
-            AddLog("Finished loading");
             ResizeForm();
             panelNav.Visible = false;
             screen = 0;
@@ -59,11 +61,8 @@ namespace FireWallet
         #region Settings
         private void LoadNode()
         {
-            AddLog("Loading Node");
             if (!File.Exists(dir + "node.txt"))
             {
-                AddLog("Node file not found");
-                AddLog("Starting Node Setup");
                 CreateForm cf = new CreateForm();
                 cf.ShowDialog();
                 // Initial run
@@ -132,7 +131,6 @@ namespace FireWallet
                 CreateConfig(dir);
             }
 
-            AddLog("Reading theme file");
             // Read file
             StreamReader sr = new StreamReader(dir + "theme.txt");
             theme = new Dictionary<string, string>();
@@ -168,8 +166,6 @@ namespace FireWallet
 
             this.Width = Screen.PrimaryScreen.Bounds.Width / 5 * 3;
             this.Height = Screen.PrimaryScreen.Bounds.Height / 5 * 3;
-            AddLog("Finished applying theme");
-            AddLog("Applying transparency");
             applyTransparency(theme);
 
 
@@ -342,6 +338,7 @@ namespace FireWallet
                 comboBoxaccount.Items.Add("No accounts found");
                 comboBoxaccount.Enabled = false;
             }
+            textBoxaccountpassword.Focus();
         }
         private async Task<bool> Login()
         {
@@ -371,12 +368,61 @@ namespace FireWallet
                 notifyForm.Dispose();
                 return false;
             }
-            AddLog("Login successful");
             UpdateBalance();
-
             return true;
         }
 
+        private async void LoginClick(object sender, EventArgs e)
+        {
+            account = comboBoxaccount.Text;
+            password = textBoxaccountpassword.Text;
+            bool loggedin = await Login();
+            if (loggedin)
+            {
+                toolStripStatusLabelaccount.Text = "Account: " + account;
+                textBoxaccountpassword.Text = "";
+                panelaccount.Visible = false;
+                toolStripSplitButtonlogout.Visible = true;
+                panelNav.Visible = true;
+                screen = 1;
+                buttonPortfolio.PerformClick();
+            }
+        }
+
+        private void PasswordEntered(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue == 13)
+            {
+                LoginClick(sender, e);
+            }
+        }
+
+        private void AccountChoose(object sender, EventArgs e)
+        {
+            textBoxaccountpassword.Focus();
+        }
+
+        private async void Logout(object sender, EventArgs e)
+        {
+            toolStripSplitButtonlogout.Visible = false;
+            string path = "wallet/" + account + "/lock";
+            string content = "";
+            string APIresponse = await APIPost(path, true, content);
+            if (!APIresponse.Contains("true"))
+            {
+                AddLog("Logout failed");
+                NotifyForm notifyForm = new NotifyForm("Logout Failed\n" + APIresponse);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                panelaccount.Visible = true;
+                return;
+            }
+            panelaccount.Visible = true;
+            panelNav.Visible = false;
+            toolStripStatusLabelaccount.Text = "Account: Not Logged In";
+            screen = 0;
+
+        }
         #endregion
         #region API
         HttpClient httpClient = new HttpClient();
@@ -393,7 +439,7 @@ namespace FireWallet
             }
 
         }
-        private async void UpdateBalance()
+        private async Task UpdateBalance()
         {
             string response = await APIGet("wallet/" + account + "/balance?account=default", true);
             if (response == "Error") return;
@@ -471,72 +517,57 @@ namespace FireWallet
                 return "Error";
             }
         }
+
+        private async void GetInfo()
+        {
+            // Get height and progress
+            String APIresponse = await APIGet("", false);
+            JObject resp = JObject.Parse(APIresponse);
+            JObject chain = JObject.Parse(resp["chain"].ToString());
+            labelHeight.Text = "Height: " + chain["height"].ToString();
+            decimal progress = Convert.ToDecimal(chain["progress"].ToString());
+            labelSyncPercent.Text = "Sync: " + decimal.Round(progress * 100, 2) + "%";
+
+
+
+
+            // Get Unconfirmed TX
+            string path = "wallet/" + account + "/tx/unconfirmed";
+            APIresponse = await APIGet(path, true);
+            if (APIresponse == "Error")
+            {
+                AddLog("GetInfo Error");
+                return;
+            }
+            JArray txs = JArray.Parse(APIresponse);
+            labelPendingCount.Text = "Unconfirmed TX: " + resp.Count.ToString();
+
+
+        }
+
         #endregion
         #region Timers
         private void timerNodeStatus_Tick(object sender, EventArgs e)
         {
             NodeStatus();
+            // If logged in, update info
+            if (panelaccount.Visible == false)
+            {
+                GetInfo();
+            }
         }
         #endregion
 
-        private async void LoginClick(object sender, EventArgs e)
-        {
-            account = comboBoxaccount.Text;
-            password = textBoxaccountpassword.Text;
-            bool loggedin = await Login();
-            if (loggedin)
-            {
-                toolStripStatusLabelaccount.Text = "Account: " + account;
-                textBoxaccountpassword.Text = "";
-                panelaccount.Visible = false;
-                toolStripSplitButtonlogout.Visible = true;
-                panelNav.Visible = true;
-                screen = 1;
-            }
-        }
-
-        private void PasswordEntered(object sender, KeyEventArgs e)
-        {
-            if (e.KeyValue == 13)
-            {
-                LoginClick(sender, e);
-            }
-        }
-
-        private void AccountChoose(object sender, EventArgs e)
-        {
-            textBoxaccountpassword.Focus();
-        }
-
-        private async void Logout(object sender, EventArgs e)
-        {
-            toolStripSplitButtonlogout.Visible = false;
-            string path = "wallet/" + account + "/lock";
-            string content = "";
-            string APIresponse = await APIPost(path, true, content);
-            if (!APIresponse.Contains("true"))
-            {
-                AddLog("Logout failed");
-                NotifyForm notifyForm = new NotifyForm("Logout Failed\n" + APIresponse);
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                panelaccount.Visible = true;
-                return;
-            }
-            AddLog("Logout successful");
-            panelaccount.Visible = true;
-            panelNav.Visible = false;
-            toolStripStatusLabelaccount.Text = "Account: Not Logged In";
-            screen = 0;
-
-        }
-
-        private void buttonPortfolio_Click(object sender, EventArgs e)
+        #region Nav
+        private async void buttonPortfolio_Click(object sender, EventArgs e)
         {
             panelPortfolio.Show();
-            UpdateBalance();
-            labelBalance.Text = "Balance: " + balance.ToString() + " HNS";
+            await UpdateBalance();
+            GetInfo();
+            labelBalance.Text = "Available: " + balance.ToString() + " HNS";
             labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS";
+            labelBalanceTotal.Text = "Total: " + (balance + balanceLocked).ToString() + " HNS";
         }
+        #endregion
     }
 }

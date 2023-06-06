@@ -49,6 +49,13 @@
             buttonSend = new Button();
             buttonPortfolio = new Button();
             panelPortfolio = new Panel();
+            groupBoxTransactions = new GroupBox();
+            groupBoxinfo = new GroupBox();
+            labelPendingCount = new Label();
+            labelSyncPercent = new Label();
+            labelHeight = new Label();
+            groupBoxbalance = new GroupBox();
+            labelBalanceTotal = new Label();
             labelLocked = new Label();
             labelBalance = new Label();
             statusStripmain.SuspendLayout();
@@ -56,6 +63,8 @@
             groupBoxaccount.SuspendLayout();
             panelNav.SuspendLayout();
             panelPortfolio.SuspendLayout();
+            groupBoxinfo.SuspendLayout();
+            groupBoxbalance.SuspendLayout();
             SuspendLayout();
             // 
             // statusStripmain
@@ -251,29 +260,106 @@
             // 
             // panelPortfolio
             // 
-            panelPortfolio.Controls.Add(labelLocked);
-            panelPortfolio.Controls.Add(labelBalance);
+            panelPortfolio.Controls.Add(groupBoxTransactions);
+            panelPortfolio.Controls.Add(groupBoxinfo);
+            panelPortfolio.Controls.Add(groupBoxbalance);
             panelPortfolio.Location = new Point(120, 25);
             panelPortfolio.Name = "panelPortfolio";
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
             panelPortfolio.Visible = false;
             // 
+            // groupBoxTransactions
+            // 
+            groupBoxTransactions.Dock = DockStyle.Bottom;
+            groupBoxTransactions.Location = new Point(0, 113);
+            groupBoxTransactions.Name = "groupBoxTransactions";
+            groupBoxTransactions.Size = new Size(956, 425);
+            groupBoxTransactions.TabIndex = 8;
+            groupBoxTransactions.TabStop = false;
+            groupBoxTransactions.Text = "Transactions";
+            // 
+            // groupBoxinfo
+            // 
+            groupBoxinfo.Controls.Add(labelPendingCount);
+            groupBoxinfo.Controls.Add(labelSyncPercent);
+            groupBoxinfo.Controls.Add(labelHeight);
+            groupBoxinfo.Location = new Point(281, 3);
+            groupBoxinfo.Name = "groupBoxinfo";
+            groupBoxinfo.Size = new Size(232, 104);
+            groupBoxinfo.TabIndex = 8;
+            groupBoxinfo.TabStop = false;
+            groupBoxinfo.Text = "Info";
+            // 
+            // labelPendingCount
+            // 
+            labelPendingCount.AutoSize = true;
+            labelPendingCount.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelPendingCount.Location = new Point(3, 56);
+            labelPendingCount.Name = "labelPendingCount";
+            labelPendingCount.Size = new Size(116, 21);
+            labelPendingCount.TabIndex = 2;
+            labelPendingCount.Text = "labelPendingTX";
+            // 
+            // labelSyncPercent
+            // 
+            labelSyncPercent.AutoSize = true;
+            labelSyncPercent.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSyncPercent.Location = new Point(133, 14);
+            labelSyncPercent.Name = "labelSyncPercent";
+            labelSyncPercent.Size = new Size(89, 21);
+            labelSyncPercent.TabIndex = 1;
+            labelSyncPercent.Text = "labelSync%";
+            // 
+            // labelHeight
+            // 
+            labelHeight.AutoSize = true;
+            labelHeight.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelHeight.Location = new Point(3, 14);
+            labelHeight.Name = "labelHeight";
+            labelHeight.Size = new Size(89, 21);
+            labelHeight.TabIndex = 0;
+            labelHeight.Text = "labelHeight";
+            // 
+            // groupBoxbalance
+            // 
+            groupBoxbalance.Controls.Add(labelBalanceTotal);
+            groupBoxbalance.Controls.Add(labelLocked);
+            groupBoxbalance.Controls.Add(labelBalance);
+            groupBoxbalance.Location = new Point(12, 3);
+            groupBoxbalance.Name = "groupBoxbalance";
+            groupBoxbalance.Size = new Size(263, 104);
+            groupBoxbalance.TabIndex = 2;
+            groupBoxbalance.TabStop = false;
+            groupBoxbalance.Text = "Balance";
+            // 
+            // labelBalanceTotal
+            // 
+            labelBalanceTotal.AutoSize = true;
+            labelBalanceTotal.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelBalanceTotal.Location = new Point(21, 60);
+            labelBalanceTotal.Name = "labelBalanceTotal";
+            labelBalanceTotal.Size = new Size(75, 21);
+            labelBalanceTotal.TabIndex = 2;
+            labelBalanceTotal.Text = "labelTotal";
+            // 
             // labelLocked
             // 
             labelLocked.AutoSize = true;
-            labelLocked.Location = new Point(36, 87);
+            labelLocked.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelLocked.Location = new Point(21, 39);
             labelLocked.Name = "labelLocked";
-            labelLocked.Size = new Size(70, 15);
+            labelLocked.Size = new Size(92, 21);
             labelLocked.TabIndex = 1;
             labelLocked.Text = "labelLocked";
             // 
             // labelBalance
             // 
             labelBalance.AutoSize = true;
-            labelBalance.Location = new Point(36, 37);
+            labelBalance.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelBalance.Location = new Point(21, 18);
             labelBalance.Name = "labelBalance";
-            labelBalance.Size = new Size(73, 15);
+            labelBalance.Size = new Size(96, 21);
             labelBalance.TabIndex = 0;
             labelBalance.Text = "labelBalance";
             // 
@@ -298,7 +384,10 @@
             groupBoxaccount.PerformLayout();
             panelNav.ResumeLayout(false);
             panelPortfolio.ResumeLayout(false);
-            panelPortfolio.PerformLayout();
+            groupBoxinfo.ResumeLayout(false);
+            groupBoxinfo.PerformLayout();
+            groupBoxbalance.ResumeLayout(false);
+            groupBoxbalance.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -327,5 +416,12 @@
         private Panel panelPortfolio;
         private Label labelLocked;
         private Label labelBalance;
+        private GroupBox groupBoxbalance;
+        private Label labelBalanceTotal;
+        private GroupBox groupBoxinfo;
+        private Label labelHeight;
+        private Label labelPendingCount;
+        private Label labelSyncPercent;
+        private GroupBox groupBoxTransactions;
     }
 }
