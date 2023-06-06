@@ -13,6 +13,9 @@ namespace FireWallet
         int Network;
         string account;
         string password;
+        double balance;
+        double balanceLocked;
+        int screen; // 0 = login, 1 = portfolio
 
         #endregion
         #region Application
@@ -26,10 +29,20 @@ namespace FireWallet
             UpdateTheme();
             LoadNode();
 
-
+            // Edit the theme of the navigation panel
+            panelNav.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
+            panelNav.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
+            foreach (Control c in panelNav.Controls)
+            {
+                c.BackColor = ColorTranslator.FromHtml(theme["background"]);
+                c.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            }
+            panelNav.Dock = DockStyle.Left;
 
             AddLog("Finished loading");
             ResizeForm();
+            panelNav.Visible = false;
+            screen = 0;
 
             // Prompt for login
             GetAccounts();
@@ -153,8 +166,8 @@ namespace FireWallet
 
 
 
-            // Transparancy
-
+            this.Width = Screen.PrimaryScreen.Bounds.Width / 5 * 3;
+            this.Height = Screen.PrimaryScreen.Bounds.Height / 5 * 3;
             AddLog("Finished applying theme");
             AddLog("Applying transparency");
             applyTransparency(theme);
@@ -172,11 +185,12 @@ namespace FireWallet
                 }
             }
             if (c.GetType() == typeof(TextBox) || c.GetType() == typeof(Button)
-                || c.GetType() == typeof(ComboBox) || c.GetType() == typeof(StatusStrip))
+                || c.GetType() == typeof(ComboBox) || c.GetType() == typeof(StatusStrip) || c.GetType() == typeof(ToolStrip))
             {
                 c.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
                 c.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
             }
+            if (c.GetType() == typeof(Panel)) c.Dock = DockStyle.Fill;
         }
 
         private void applyTransparency(Dictionary<string, string> theme)
@@ -358,55 +372,41 @@ namespace FireWallet
                 return false;
             }
             AddLog("Login successful");
+            UpdateBalance();
 
             return true;
         }
 
         #endregion
-
-
-        private void timerNodeStatus_Tick(object sender, EventArgs e)
-        {
-            NodeStatus();
-        }
         #region API
         HttpClient httpClient = new HttpClient();
         private async void NodeStatus()
         {
-            // This will curl the below URL and return the result
-            //curl http://x:api-key@127.0.0.1:12039/wallet/$id/account
 
-            string key = nodeSettings["Key"];
-            string ip = nodeSettings["IP"];
-
-            string port = "1203";
-            if (Network == 1)
+            if (await APIGet("", false) == "Error")
             {
-                port = "1303";
-            }
-
-
-
-            // Create HTTP client
-            HttpClient httpClient = new HttpClient();
-
-            try
-            {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "http://" + ip + ":" + port + "7");
-                // Add API key to header
-                request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
-                // Send request and log response
-                HttpResponseMessage response = await httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-
-                toolStripStatusLabelstatus.Text = "Status: Node Connected";
-            }
-            // Log errors to log textbox
-            catch (Exception ex)
-            {
-                AddLog("Connection Failed: " + ex.Message);
                 toolStripStatusLabelstatus.Text = "Status: Node Not Connected";
             }
+            else
+            {
+                toolStripStatusLabelstatus.Text = "Status: Node Connected";
+            }
+
+        }
+        private async void UpdateBalance()
+        {
+            string response = await APIGet("wallet/" + account + "/balance?account=default", true);
+            if (response == "Error") return;
+
+            JObject resp = JObject.Parse(response);
+
+            double available = Convert.ToDouble(resp["unconfirmed"].ToString()) / 1000000;
+            double locked = Convert.ToDouble(resp["lockedUnconfirmed"].ToString()) / 1000000;
+            available = available - locked;
+            available = Math.Round(available, 2);
+            locked = Math.Round(locked, 2);
+            balance = available;
+            balanceLocked = locked;
         }
 
         private async Task<string> APIPost(string path, bool wallet, string content)
@@ -432,8 +432,9 @@ namespace FireWallet
             {
                 resp.EnsureSuccessStatusCode();
             }
-            catch
+            catch (Exception ex)
             {
+                AddLog("Post Error: " + ex.Message);
                 return "Error";
             }
 
@@ -466,9 +467,15 @@ namespace FireWallet
             // Log errors to log textbox
             catch (Exception ex)
             {
-                AddLog("Error: " + ex.Message);
+                AddLog("Get Error: " + ex.Message);
                 return "Error";
             }
+        }
+        #endregion
+        #region Timers
+        private void timerNodeStatus_Tick(object sender, EventArgs e)
+        {
+            NodeStatus();
         }
         #endregion
 
@@ -483,10 +490,12 @@ namespace FireWallet
                 textBoxaccountpassword.Text = "";
                 panelaccount.Visible = false;
                 toolStripSplitButtonlogout.Visible = true;
+                panelNav.Visible = true;
+                screen = 1;
             }
         }
 
-        private void textBoxaccountpassword_KeyDown(object sender, KeyEventArgs e)
+        private void PasswordEntered(object sender, KeyEventArgs e)
         {
             if (e.KeyValue == 13)
             {
@@ -494,12 +503,12 @@ namespace FireWallet
             }
         }
 
-        private void comboBoxaccount_DropDownClosed(object sender, EventArgs e)
+        private void AccountChoose(object sender, EventArgs e)
         {
             textBoxaccountpassword.Focus();
         }
 
-        private async void toolStripSplitButtonlogout_ButtonClickAsync(object sender, EventArgs e)
+        private async void Logout(object sender, EventArgs e)
         {
             toolStripSplitButtonlogout.Visible = false;
             string path = "wallet/" + account + "/lock";
@@ -516,8 +525,18 @@ namespace FireWallet
             }
             AddLog("Logout successful");
             panelaccount.Visible = true;
+            panelNav.Visible = false;
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
+            screen = 0;
 
+        }
+
+        private void buttonPortfolio_Click(object sender, EventArgs e)
+        {
+            panelPortfolio.Show();
+            UpdateBalance();
+            labelBalance.Text = "Balance: " + balance.ToString() + " HNS";
+            labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS";
         }
     }
 }

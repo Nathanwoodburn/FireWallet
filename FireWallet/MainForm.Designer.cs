@@ -44,9 +44,18 @@
             labelaccountpassword = new Label();
             labelaccountusername = new Label();
             buttonaccountnew = new Button();
+            panelNav = new Panel();
+            buttonReceive = new Button();
+            buttonSend = new Button();
+            buttonPortfolio = new Button();
+            panelPortfolio = new Panel();
+            labelLocked = new Label();
+            labelBalance = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
+            panelNav.SuspendLayout();
+            panelPortfolio.SuspendLayout();
             SuspendLayout();
             // 
             // statusStripmain
@@ -55,7 +64,7 @@
             statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripSplitButtonlogout });
             statusStripmain.Location = new Point(0, 0);
             statusStripmain.Name = "statusStripmain";
-            statusStripmain.Size = new Size(1074, 22);
+            statusStripmain.Size = new Size(1152, 22);
             statusStripmain.SizingGrip = false;
             statusStripmain.TabIndex = 0;
             statusStripmain.Text = "statusStrip1";
@@ -90,7 +99,7 @@
             toolStripSplitButtonlogout.Size = new Size(53, 20);
             toolStripSplitButtonlogout.Text = "Log out";
             toolStripSplitButtonlogout.Visible = false;
-            toolStripSplitButtonlogout.ButtonClick += toolStripSplitButtonlogout_ButtonClickAsync;
+            toolStripSplitButtonlogout.ButtonClick += Logout;
             // 
             // timerNodeStatus
             // 
@@ -102,8 +111,7 @@
             // 
             panelaccount.BackColor = Color.Transparent;
             panelaccount.Controls.Add(groupBoxaccount);
-            panelaccount.Dock = DockStyle.Fill;
-            panelaccount.Location = new Point(0, 22);
+            panelaccount.Location = new Point(1082, 211);
             panelaccount.Name = "panelaccount";
             panelaccount.Size = new Size(1074, 642);
             panelaccount.TabIndex = 1;
@@ -144,7 +152,7 @@
             comboBoxaccount.Name = "comboBoxaccount";
             comboBoxaccount.Size = new Size(190, 23);
             comboBoxaccount.TabIndex = 6;
-            comboBoxaccount.DropDownClosed += comboBoxaccount_DropDownClosed;
+            comboBoxaccount.DropDownClosed += AccountChoose;
             // 
             // textBoxaccountpassword
             // 
@@ -153,7 +161,7 @@
             textBoxaccountpassword.Size = new Size(190, 23);
             textBoxaccountpassword.TabIndex = 5;
             textBoxaccountpassword.UseSystemPasswordChar = true;
-            textBoxaccountpassword.KeyDown += textBoxaccountpassword_KeyDown;
+            textBoxaccountpassword.KeyDown += PasswordEntered;
             // 
             // buttonaccountlogin
             // 
@@ -196,11 +204,86 @@
             buttonaccountnew.Text = "New";
             buttonaccountnew.UseVisualStyleBackColor = true;
             // 
+            // panelNav
+            // 
+            panelNav.Controls.Add(buttonReceive);
+            panelNav.Controls.Add(buttonSend);
+            panelNav.Controls.Add(buttonPortfolio);
+            panelNav.Dock = DockStyle.Left;
+            panelNav.Location = new Point(0, 22);
+            panelNav.Name = "panelNav";
+            panelNav.Size = new Size(114, 553);
+            panelNav.TabIndex = 6;
+            // 
+            // buttonReceive
+            // 
+            buttonReceive.FlatStyle = FlatStyle.Flat;
+            buttonReceive.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonReceive.Location = new Point(12, 134);
+            buttonReceive.Name = "buttonReceive";
+            buttonReceive.Size = new Size(89, 30);
+            buttonReceive.TabIndex = 1;
+            buttonReceive.Text = "Receive";
+            buttonReceive.UseVisualStyleBackColor = true;
+            // 
+            // buttonSend
+            // 
+            buttonSend.FlatStyle = FlatStyle.Flat;
+            buttonSend.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSend.Location = new Point(12, 80);
+            buttonSend.Name = "buttonSend";
+            buttonSend.Size = new Size(89, 30);
+            buttonSend.TabIndex = 1;
+            buttonSend.Text = "Send";
+            buttonSend.UseVisualStyleBackColor = true;
+            // 
+            // buttonPortfolio
+            // 
+            buttonPortfolio.FlatStyle = FlatStyle.Flat;
+            buttonPortfolio.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonPortfolio.Location = new Point(12, 25);
+            buttonPortfolio.Name = "buttonPortfolio";
+            buttonPortfolio.Size = new Size(89, 30);
+            buttonPortfolio.TabIndex = 0;
+            buttonPortfolio.Text = "Portfolio";
+            buttonPortfolio.UseVisualStyleBackColor = true;
+            buttonPortfolio.Click += buttonPortfolio_Click;
+            // 
+            // panelPortfolio
+            // 
+            panelPortfolio.Controls.Add(labelLocked);
+            panelPortfolio.Controls.Add(labelBalance);
+            panelPortfolio.Location = new Point(120, 25);
+            panelPortfolio.Name = "panelPortfolio";
+            panelPortfolio.Size = new Size(956, 538);
+            panelPortfolio.TabIndex = 7;
+            panelPortfolio.Visible = false;
+            // 
+            // labelLocked
+            // 
+            labelLocked.AutoSize = true;
+            labelLocked.Location = new Point(36, 87);
+            labelLocked.Name = "labelLocked";
+            labelLocked.Size = new Size(70, 15);
+            labelLocked.TabIndex = 1;
+            labelLocked.Text = "labelLocked";
+            // 
+            // labelBalance
+            // 
+            labelBalance.AutoSize = true;
+            labelBalance.Location = new Point(36, 37);
+            labelBalance.Name = "labelBalance";
+            labelBalance.Size = new Size(73, 15);
+            labelBalance.TabIndex = 0;
+            labelBalance.Text = "labelBalance";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1074, 664);
+            ClientSize = new Size(1152, 575);
+            Controls.Add(panelPortfolio);
+            Controls.Add(panelNav);
             Controls.Add(panelaccount);
             Controls.Add(statusStripmain);
             Name = "MainForm";
@@ -213,6 +296,9 @@
             panelaccount.ResumeLayout(false);
             groupBoxaccount.ResumeLayout(false);
             groupBoxaccount.PerformLayout();
+            panelNav.ResumeLayout(false);
+            panelPortfolio.ResumeLayout(false);
+            panelPortfolio.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -234,5 +320,12 @@
         private TextBox textBoxaccountpassword;
         private ToolStripStatusLabel toolStripStatusLabelstatus;
         private ToolStripSplitButton toolStripSplitButtonlogout;
+        private Panel panelNav;
+        private Button buttonPortfolio;
+        private Button buttonSend;
+        private Button buttonReceive;
+        private Panel panelPortfolio;
+        private Label labelLocked;
+        private Label labelBalance;
     }
 }
