@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Newtonsoft.Json.Linq;
 
 namespace FireWallet
 {
@@ -26,6 +27,9 @@ namespace FireWallet
 
             AddLog("Finished loading");
             ResizeForm();
+
+            // Prompt for login
+            GetAccounts();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
@@ -283,12 +287,55 @@ namespace FireWallet
             [DllImport("user32.dll")]
             internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
         }
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            ResizeForm();
+        }
+        private void ResizeForm()
+        {
+            groupBoxaccount.Left = (this.ClientSize.Width - groupBoxaccount.Width) / 2;
+            groupBoxaccount.Top = (this.ClientSize.Height - groupBoxaccount.Height) / 2;
+        }
         #endregion
+        #region Accounts
+
+        private async void GetAccounts()
+        {
+            await APIGet("wallet", true);
+            comboBoxusername.Items.Clear();
+            if (APIresponse != "Error")
+            {
+                JArray jArray = JArray.Parse(APIresponse);
+                foreach (string account in jArray)
+                {
+                    comboBoxusername.Items.Add(account);
+                }
+                if (comboBoxusername.Items.Count > 0)
+                {
+                    comboBoxusername.SelectedIndex = 0;
+                }
+                else
+                {
+                    comboBoxusername.Items.Add("No accounts found");
+                    comboBoxusername.Enabled = false;
+                }
+            }
+            else
+            {
+                comboBoxusername.Items.Add("No accounts found");
+                comboBoxusername.Enabled = false;
+            }
+        }
+
+        #endregion
+
 
         private void timerNodeStatus_Tick(object sender, EventArgs e)
         {
             NodeStatus();
         }
+        #region API
+        string APIresponse;
         private async void NodeStatus()
         {
             // This will curl the below URL and return the result
@@ -326,15 +373,44 @@ namespace FireWallet
                 toolStripStatusLabelstatus.Text = "Status: Node Not Connected";
             }
         }
+        private async Task APIGet(string path, bool wallet)
+        {
+            // This will curl the below URL and return the result
+            //curl http://x:api-key@127.0.0.1:12039/wallet/$id/account
 
-        private void Form1_Resize(object sender, EventArgs e)
-        {
-            ResizeForm();
+            string key = nodeSettings["Key"];
+            string ip = nodeSettings["IP"];
+
+            string port = "1203";
+            if (Network == 1)
+            {
+                port = "1303";
+            }
+            if (wallet) port = port + "9";
+            else port = port + "7";
+
+
+            // Create HTTP client
+            HttpClient httpClient = new HttpClient();
+
+            try
+            {
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "http://" + ip + ":" + port + "/" + path);
+                // Add API key to header
+                request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
+                // Send request and log response
+                HttpResponseMessage response = await httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                APIresponse = await response.Content.ReadAsStringAsync();
+                
+            }
+            // Log errors to log textbox
+            catch (Exception ex)
+            {
+                AddLog("Error: " + ex.Message);
+                APIresponse = "Error";
+            }
         }
-        private void ResizeForm()
-        {
-            groupBoxaccount.Left = (this.ClientSize.Width - groupBoxaccount.Width) / 2;
-            groupBoxaccount.Top = (this.ClientSize.Height - groupBoxaccount.Height) / 2;
-        }
+        #endregion
     }
 }

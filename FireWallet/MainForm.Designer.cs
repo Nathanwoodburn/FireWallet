@@ -37,11 +37,11 @@
             groupBoxaccount = new GroupBox();
             label1 = new Label();
             comboBoxusername = new ComboBox();
-            textBox1 = new TextBox();
-            button2 = new Button();
+            textBoxaccountpassword = new TextBox();
+            buttonaccountlogin = new Button();
             labelaccountpassword = new Label();
             labelaccountusername = new Label();
-            button1 = new Button();
+            buttonaccountnew = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -92,11 +92,11 @@
             // 
             groupBoxaccount.Controls.Add(label1);
             groupBoxaccount.Controls.Add(comboBoxusername);
-            groupBoxaccount.Controls.Add(textBox1);
-            groupBoxaccount.Controls.Add(button2);
+            groupBoxaccount.Controls.Add(textBoxaccountpassword);
+            groupBoxaccount.Controls.Add(buttonaccountlogin);
             groupBoxaccount.Controls.Add(labelaccountpassword);
             groupBoxaccount.Controls.Add(labelaccountusername);
-            groupBoxaccount.Controls.Add(button1);
+            groupBoxaccount.Controls.Add(buttonaccountnew);
             groupBoxaccount.FlatStyle = FlatStyle.Popup;
             groupBoxaccount.Location = new Point(458, 155);
             groupBoxaccount.Name = "groupBoxaccount";
@@ -124,23 +124,23 @@
             comboBoxusername.Size = new Size(190, 23);
             comboBoxusername.TabIndex = 6;
             // 
-            // textBox1
+            // textBoxaccountpassword
             // 
-            textBox1.Location = new Point(97, 101);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(190, 23);
-            textBox1.TabIndex = 5;
-            textBox1.UseSystemPasswordChar = true;
+            textBoxaccountpassword.Location = new Point(97, 101);
+            textBoxaccountpassword.Name = "textBoxaccountpassword";
+            textBoxaccountpassword.Size = new Size(190, 23);
+            textBoxaccountpassword.TabIndex = 5;
+            textBoxaccountpassword.UseSystemPasswordChar = true;
             // 
-            // button2
+            // buttonaccountlogin
             // 
-            button2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            button2.Location = new Point(188, 164);
-            button2.Name = "button2";
-            button2.Size = new Size(99, 41);
-            button2.TabIndex = 3;
-            button2.Text = "button2";
-            button2.UseVisualStyleBackColor = true;
+            buttonaccountlogin.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonaccountlogin.Location = new Point(188, 164);
+            buttonaccountlogin.Name = "buttonaccountlogin";
+            buttonaccountlogin.Size = new Size(99, 41);
+            buttonaccountlogin.TabIndex = 3;
+            buttonaccountlogin.Text = "Login";
+            buttonaccountlogin.UseVisualStyleBackColor = true;
             // 
             // labelaccountpassword
             // 
@@ -162,15 +162,15 @@
             labelaccountusername.TabIndex = 1;
             labelaccountusername.Text = "Account:";
             // 
-            // button1
+            // buttonaccountnew
             // 
-            button1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            button1.Location = new Point(6, 164);
-            button1.Name = "button1";
-            button1.Size = new Size(99, 41);
-            button1.TabIndex = 2;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
+            buttonaccountnew.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonaccountnew.Location = new Point(12, 164);
+            buttonaccountnew.Name = "buttonaccountnew";
+            buttonaccountnew.Size = new Size(99, 41);
+            buttonaccountnew.TabIndex = 2;
+            buttonaccountnew.Text = "New";
+            buttonaccountnew.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -200,13 +200,13 @@
         private ToolStripStatusLabel toolStripStatusLabelstatus;
         private System.Windows.Forms.Timer timerNodeStatus;
         private Panel panelaccount;
-        private Button button2;
-        private Button button1;
+        private Button buttonaccountlogin;
+        private Button buttonaccountnew;
         private Label labelaccountusername;
         private Label labelaccountpassword;
         private GroupBox groupBoxaccount;
         private Label label1;
         private ComboBox comboBoxusername;
-        private TextBox textBox1;
+        private TextBox textBoxaccountpassword;
     }
 }
