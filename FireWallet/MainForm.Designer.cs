@@ -84,6 +84,7 @@ namespace FireWallet
             panelDomains = new Panel();
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
+            buttonBatch = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -247,6 +248,7 @@ namespace FireWallet
             // 
             // panelNav
             // 
+            panelNav.Controls.Add(buttonBatch);
             panelNav.Controls.Add(buttonNavDomains);
             panelNav.Controls.Add(buttonNavReceive);
             panelNav.Controls.Add(buttonNavSend);
@@ -630,6 +632,19 @@ namespace FireWallet
             textBoxDomainSearch.TabIndex = 0;
             textBoxDomainSearch.KeyDown += textBoxDomainSearch_KeyDown;
             // 
+            // buttonBatch
+            // 
+            buttonBatch.FlatStyle = FlatStyle.Flat;
+            buttonBatch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonBatch.Location = new Point(12, 245);
+            buttonBatch.Name = "buttonBatch";
+            buttonBatch.Size = new Size(89, 30);
+            buttonBatch.TabIndex = 3;
+            buttonBatch.TabStop = false;
+            buttonBatch.Text = "Batch";
+            buttonBatch.UseVisualStyleBackColor = true;
+            buttonBatch.Click += buttonBatch_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -721,5 +736,6 @@ namespace FireWallet
         private Panel panelDomains;
         private Label labelDomainSearch;
         private TextBox textBoxDomainSearch;
+        private Button buttonBatch;
     }
 }

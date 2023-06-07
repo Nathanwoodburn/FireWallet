@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+﻿using System.Data;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Microsoft.VisualBasic.Devices;
+using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
 
 namespace FireWallet
@@ -55,7 +47,19 @@ namespace FireWallet
             deleteTX.Width = 25;
             deleteTX.Height = 25;
             deleteTX.TextAlign = ContentAlignment.MiddleCenter;
-            deleteTX.Click += (sender, e) => { panelTXs.Controls.Remove(tx); FixSpacing(); };
+            deleteTX.Click += (sender, e) => { 
+                panelTXs.Controls.Remove(tx);
+                FixSpacing();
+                List<Batch> temp = new List<Batch>();
+                foreach (Batch batch in batches)
+                {
+                    if (batch.domain != domain && batch.method != operation)
+                    {
+                        temp.Add(batch);
+                    }
+                }
+                batches = temp.ToArray();
+            };
             deleteTX.FlatStyle = FlatStyle.Flat;
             deleteTX.Font = new Font(deleteTX.Font.FontFamily, 9F, FontStyle.Bold);
             tx.Controls.Add(deleteTX);
@@ -65,7 +69,11 @@ namespace FireWallet
         }
         public void AddBatch(string domain, string operation, decimal bid, decimal lockup)
         {
-            if (operation != "BID") return;
+            if (operation != "BID")
+            {
+                AddBatch(domain, operation);
+                return;
+            }
             batches = batches.Concat(new Batch[] { new Batch(domain, operation, bid, lockup) }).ToArray();
             Panel tx = new Panel();
             tx.Left = 0;
@@ -102,7 +110,19 @@ namespace FireWallet
             deleteTX.Width = 25;
             deleteTX.Height = 25;
             deleteTX.TextAlign = ContentAlignment.MiddleCenter;
-            deleteTX.Click += (sender, e) => { panelTXs.Controls.Remove(tx); FixSpacing(); };
+            deleteTX.Click += (sender, e) => { 
+                panelTXs.Controls.Remove(tx);
+                FixSpacing();
+                List<Batch> temp = new List<Batch>();
+                foreach (Batch batch in batches)
+                {
+                    if (batch.domain != domain && batch.method != operation)
+                    {
+                        temp.Add(batch);
+                    }
+                }
+                batches = temp.ToArray();
+            };
             deleteTX.FlatStyle = FlatStyle.Flat;
             deleteTX.Font = new Font(deleteTX.Font.FontFamily, 9F, FontStyle.Bold);
             tx.Controls.Add(deleteTX);
@@ -318,10 +338,40 @@ namespace FireWallet
             AddLog("Batch Cancelled");
             this.Close();
         }
-
-        private void buttonSend_Click(object sender, EventArgs e)
+        HttpClient httpClient = new HttpClient();
+        private async void buttonSend_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Send to do");
+            string batchTX = "[" +string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
+            string content = "{\"method\": \"sendbatch\",\"params\":[ " + batchTX + "]}";
+            string responce = await APIPost("",true,content);
+            
+            if (responce == "Error")
+            {
+                AddLog("Error sending batch");
+                NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            
+            JObject jObject = JObject.Parse(responce);
+            if (jObject["error"].ToString() != "")
+            {
+                AddLog("Error: ");
+                AddLog(jObject["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            
+            JObject result = JObject.Parse(jObject["result"].ToString());
+            string hash = result["hash"].ToString();
+            AddLog("Batch sent with hash: " + hash);
+            NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.userSettings["explorer-tx"]+hash);
+            notifyForm2.ShowDialog();
+            notifyForm2.Dispose();
+            this.Close();
         }
 
         private void BatchForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -339,7 +389,7 @@ namespace FireWallet
                 StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
                 foreach (Batch b in batches)
                 {
-                    sw.WriteLine(b.domain + "," + b.operation + "," + b.bid + "," + b.lockup);
+                    sw.WriteLine(b.domain + "," + b.method + "," + b.bid + "," + b.lockup);
                 }
                 sw.Dispose();
             }
@@ -348,7 +398,7 @@ namespace FireWallet
         private void buttonImport_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "CSV File|*.csv";
+            openFileDialog.Filter = "CSV File|*.csv|TXT File|*.txt";
             openFileDialog.Title = "Open Batch";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -358,49 +408,118 @@ namespace FireWallet
                 while ((line = sr.ReadLine()) != null)
                 {
                     string[] split = line.Split(',');
-                    if (split.Length == 2)
+                    try
                     {
-                        AddBatch(split[0], split[1]);
-                    }
-                    else if (split.Length == 4)
-                    {
-                        AddBatch(split[0], split[1], Convert.ToDecimal(split[2]), Convert.ToDecimal(split[3]));
-                    }
-                    else if (split.Length == 1)
-                    {
-                        // Select operation and import domains
-                        string operation = "OPEN";
-                        string[] newDomains = new string[domains.Length + 1];
-                        for (int i = 0; i < domains.Length; i++)
+                        if (split.Length == 2)
                         {
-                            newDomains[i] = domains[i];
+                            AddBatch(split[0], split[1]);
                         }
-                        newDomains[domains.Length] = split[0].Trim();
+                        else if (split.Length == 4)
+                        {
+                            AddBatch(split[0], split[1], Convert.ToDecimal(split[2]), Convert.ToDecimal(split[3]));
+                        }
+                        else
+                        {
+                            // Select operation and import domains
+                            string[] newDomains = new string[domains.Length + 1];
+                            for (int i = 0; i < domains.Length; i++)
+                            {
+                                newDomains[i] = domains[i];
+                            }
+                            newDomains[domains.Length] = line.Trim();
+                            domains = newDomains;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AddLog("Error importing batch: " + ex.Message);
+                        NotifyForm notifyForm = new NotifyForm("Error importing batch");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+                }
+                if (domains.Length > 0)
+                {
+                    BatchImportForm batchImportForm = new BatchImportForm(domains);
+                    batchImportForm.ShowDialog();
+                    if (batchImportForm.batches != null)
+                    {
+                        foreach (Batch b in batchImportForm.batches)
+                        {
+                            AddBatch(b.domain, b.method, b.bid, b.lockup);
+                        }
                     }
                 }
                 sr.Dispose();
             }
         }
+
+        /// <summary>
+        /// Post to HSD API
+        /// </summary>
+        /// <param name="path">Path to post to</param>
+        /// <param name="wallet">Whether to use port 12039</param>
+        /// <param name="content">Content to post</param>
+        /// <returns></returns>
+        private async Task<string> APIPost(string path, bool wallet, string content)
+        {
+            string key = mainForm.nodeSettings["Key"];
+            string ip = mainForm.nodeSettings["IP"];
+            string port = "1203";
+            if (mainForm.network == 1)
+            {
+                port = "1303";
+            }
+            if (wallet) port = port + "9";
+            else port = port + "7";
+
+            HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, "http://" + ip + ":" + port + "/" + path);
+            req.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
+            req.Content = new StringContent(content);
+
+            // Send request
+            HttpResponseMessage resp = await httpClient.SendAsync(req);
+
+            try
+            {
+                resp.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                AddLog("Post Error: " + ex.Message);
+                return "Error";
+            }
+
+            return await resp.Content.ReadAsStringAsync();
+        }
     }
     public class Batch
     {
         public string domain { get; }
-        public string operation { get; }
+        public string method { get; }
         public decimal bid { get; }
         public decimal lockup { get; }
         public Batch(string domain, string operation)
         {
             this.domain = domain;
-            this.operation = operation;
+            this.method = operation;
             bid = 0;
             lockup = 0;
         }
         public Batch(string domain, string operation, decimal bid, decimal lockup)
         {
             this.domain = domain;
-            this.operation = operation;
+            this.method = operation;
             this.bid = bid;
             this.lockup = lockup;
+        }
+        public override string ToString()
+        {
+            if (method == "BID")
+            {
+                return "[\"BID\", \"" + domain + "\", " + bid + ", " + lockup + "]";
+            }
+            return "[\"" + method + "\", \"" + domain + "\"]";
         }
     }
 }

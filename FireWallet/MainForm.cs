@@ -1,16 +1,9 @@
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Net.Http;
 using System.Runtime.InteropServices;
-using System.Security.Policy;
-using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 using IronBarCode;
-using static System.Windows.Forms.DataFormats;
 
 namespace FireWallet
 {
@@ -21,7 +14,7 @@ namespace FireWallet
         public Dictionary<string, string> nodeSettings { get; set; }
         public Dictionary<string, string> userSettings { get; set; }
         public Dictionary<string, string> theme { get; set; }
-        public int Network { get; set; }
+        public int network { get; set; }
         public string account { get; set; }
         public string password { get; set; }
         public decimal balance { get; set; }
@@ -105,8 +98,8 @@ namespace FireWallet
                 this.Close();
                 return;
             }
-            Network = Convert.ToInt32(nodeSettings["Network"]);
-            switch (Network)
+            network = Convert.ToInt32(nodeSettings["Network"]);
+            switch (network)
             {
                 case 0:
                     toolStripStatusLabelNetwork.Text = "Network: Mainnet";
@@ -509,7 +502,7 @@ namespace FireWallet
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
             string port = "1203";
-            if (Network == 1)
+            if (network == 1)
             {
                 port = "1303";
             }
@@ -547,7 +540,7 @@ namespace FireWallet
             string ip = nodeSettings["IP"];
 
             string port = "1203";
-            if (Network == 1)
+            if (network == 1)
             {
                 port = "1303";
             }
@@ -624,10 +617,10 @@ namespace FireWallet
             Control[] tmpControls = new Control[txCount];
             for (int i = 0; i < txCount; i++)
             {
-                
+
                 // Get last tx
                 JObject tx = JObject.Parse(txs[txs.Count - 1 - i].ToString());
-                
+
                 string hash = tx["hash"].ToString();
                 string date = tx["mdate"].ToString();
 
@@ -1035,7 +1028,7 @@ namespace FireWallet
         }
 
 
-        
+
         #region Batching
         public void AddBatch(string domain, string operation)
         {
@@ -1067,5 +1060,16 @@ namespace FireWallet
             batchForm.Dispose();
         }
         #endregion
+
+        private void buttonBatch_Click(object sender, EventArgs e)
+        {
+            if (!batchMode)
+            {
+                batchForm = new BatchForm(this);
+                batchForm.Show();
+                batchMode = true;
+            }
+            else batchForm.Focus();
+        }
     }
 }
