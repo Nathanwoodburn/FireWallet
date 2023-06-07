@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 using IronBarCode;
+using static System.Windows.Forms.DataFormats;
 
 namespace FireWallet
 {
@@ -129,6 +130,8 @@ namespace FireWallet
                 sw.WriteLine("explorer-tx: https://niami.io/tx/");
                 sw.WriteLine("explorer-addr: https://niami.io/address/");
                 sw.WriteLine("explorer-block: https://niami.io/block/");
+                sw.WriteLine("explorer-domain: https://niami.io/domain/");
+                sw.WriteLine("confirmations: 1");
                 sw.Dispose();
             }
 
@@ -146,7 +149,7 @@ namespace FireWallet
 
         #endregion
         #region Logging
-        private void AddLog(string message)
+        public void AddLog(string message)
         {
             StreamWriter sw = new StreamWriter(dir + "log.txt", true);
             sw.WriteLine(DateTime.Now.ToString() + ": " + message);
@@ -463,7 +466,7 @@ namespace FireWallet
             panelPortfolio.Visible = false;
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             screen = 0;
-
+            textBoxaccountpassword.Focus();
         }
         #endregion
         #region API
@@ -622,8 +625,10 @@ namespace FireWallet
             Control[] tmpControls = new Control[txCount];
             for (int i = 0; i < txCount; i++)
             {
+                
                 // Get last tx
                 JObject tx = JObject.Parse(txs[txs.Count - 1 - i].ToString());
+                
                 string hash = tx["hash"].ToString();
                 string date = tx["mdate"].ToString();
 
@@ -641,7 +646,20 @@ namespace FireWallet
                         Location = new Point(10, 5)
                     }
                     );
-
+                int confirmations = Convert.ToInt32(tx["confirmations"].ToString());
+                if (userSettings.ContainsKey("confirmations"))
+                {
+                    if (confirmations < Convert.ToInt32(userSettings["confirmations"]))
+                    {
+                        Label txPending = new Label()
+                        {
+                            Text = "Pending",
+                            Location = new Point(100, 5)
+                        };
+                        tmpPanel.Controls.Add(txPending);
+                        txPending.BringToFront();
+                    }
+                }
                 Label labelHash = new Label()
                 {
                     Text = "Hash: " + hash.Substring(0, 10) + "..." + hash.Substring(hash.Length - 10),
@@ -1007,7 +1025,9 @@ namespace FireWallet
             if (e.KeyValue == 13)
             {
                 e.SuppressKeyPress = true;
-                DomainForm domainForm = new DomainForm(textBoxDomainSearch.Text);
+                DomainForm domainForm = new DomainForm(textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                domainForm.OriginalForm = this;
+
                 domainForm.Show();
 
             }

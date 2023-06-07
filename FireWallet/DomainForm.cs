@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BitMiracle.LibTiff.Classic;
@@ -23,13 +25,21 @@ namespace FireWallet
         string domain;
         int network;
         int height;
+        bool own;
+        string state;
+        string explorerTX;
+        string explorerName;
 
-        public DomainForm(string domain)
+        public Form OriginalForm { get; set; }
+
+        public DomainForm(string domain, string explorerTX, string explorerName)
         {
             InitializeComponent();
             this.Text = domain + "/ | FireWallet";
             labelTitle.Text = domain + "/";
             this.domain = domain;
+            this.explorerTX = explorerTX;
+            this.explorerName = explorerName;
         }
 
         #region Theming
@@ -208,6 +218,7 @@ namespace FireWallet
         private void DomainForm_Load(object sender, EventArgs e)
         {
             UpdateTheme();
+            own = false;
             StreamReader sr = new StreamReader(dir + "node.txt");
             nodeSettings = new Dictionary<string, string>();
             while (!sr.EndOfStream)
@@ -227,6 +238,7 @@ namespace FireWallet
             network = Convert.ToInt32(nodeSettings["Network"]);
             GetName();
         }
+        #region API
         private async void GetName()
         {
             try
@@ -293,13 +305,14 @@ namespace FireWallet
                             else if (state == "BIDDING" || state == "REVEAL") GetBids(state);
                             else groupBoxDNS.Visible = false;
 
-
-
+                            //Setup action box
+                            ActionSetup(state);
                         }
                         catch (Exception ex)
                         {
                             // No info -> Domain not yet auctioned
                             labelStatusMain.Text = "Available";
+                            ActionSetup("AVAILABLE");
                             AddLog(ex.Message);
                             AddLog(result.ToString());
                         }
@@ -420,10 +433,19 @@ namespace FireWallet
             if (!response.Contains("\"error\":null"))
             {
                 AddLog("Syncing Domain");
+                Label syncingLabel = new Label();
+                syncingLabel.Text = "Syncing Bids...";
+                syncingLabel.Location = new System.Drawing.Point(10, 10);
+                syncingLabel.AutoSize = true;
+                panelBids.Controls.Add(syncingLabel);
+
                 // Error
                 // Try scanning for auction
                 contentBids = "{\"method\": \"importname\", \"params\": [\"" + domain + "\", " + (height - 2000) + "]}";
+                await APIPost("", true, contentBids);
+                contentBids = "{\"method\": \"getauctioninfo\", \"params\": [\"" + domain + "\"]}";
                 response = await APIPost("", true, contentBids);
+                panelBids.Controls.Clear();
             }
 
             if (state == "BIDDING")
@@ -466,6 +488,7 @@ namespace FireWallet
             }
             else if (state == "REVEAL")
             {
+                //! TODO Add reveal info
                 JObject resp = JObject.Parse(response);
                 JObject result = (JObject)resp["result"];
                 JArray bids = (JArray)result["bids"];
@@ -473,6 +496,7 @@ namespace FireWallet
                 int i = 1;
                 foreach (JObject bid in bids)
                 {
+
                     Panel bidPanel = new Panel();
                     // Count for scroll width
                     bidPanel.Width = panelBids.Width - SystemInformation.VerticalScrollBarWidth - 2;
@@ -486,7 +510,6 @@ namespace FireWallet
                     bidNumber.Font = new Font(bidNumber.Font.FontFamily, 11.0f, FontStyle.Bold);
                     bidPanel.Controls.Add(bidNumber);
                     Label bidAmount = new Label();
-
                     bidAmount.Text = convertHNS(bid["lockup"].ToString()) + " HNS";
                     bidAmount.Location = new System.Drawing.Point(10, 30);
                     bidAmount.AutoSize = true;
@@ -517,7 +540,7 @@ namespace FireWallet
         }
 
 
-        #region API
+
         HttpClient httpClient = new HttpClient();
         /// <summary>
         /// Post to HSD API
@@ -552,6 +575,7 @@ namespace FireWallet
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
+                AddLog("Post Error: " + await resp.Content.ReadAsStringAsync());
                 return "Error";
             }
 
@@ -601,5 +625,198 @@ namespace FireWallet
             sw.Dispose();
         }
         #endregion
+
+        private void ActionSetup(string state)
+        {
+            this.state = state;
+            switch (state)
+            {
+                case "AVAILABLE":
+                    groupBoxAction.Show();
+                    groupBoxAction.Text = "Open Auction";
+                    buttonActionMain.Text = "Send Open";
+                    buttonActionAlt.Text = "Open in Batch";
+                    break;
+                case "BIDDING":
+                    groupBoxAction.Show();
+                    labelBid.Show();
+                    textBoxBid.Show();
+                    labelBlind.Show();
+                    textBoxBlind.Show();
+                    break;
+                case "REVEAL":
+                    groupBoxAction.Show();
+                    groupBoxAction.Text = "Reveal Bid";
+                    buttonActionMain.Text = "Send Reveal";
+                    buttonActionAlt.Text = "Reveal in Batch";
+                    break;
+                case "CLOSED":
+                    if (own)
+                    {
+                        if (labelStatusTransferring.Text == "Yes")
+                        {
+                            // Check if can finalize
+
+                        }
+                        else
+                        {
+                            groupBoxAction.Show();
+                            groupBoxAction.Text = "Edit";
+                            buttonActionMain.Text = "Edit DNS";
+                            buttonActionAlt.Text = "Edit in Batch";
+                        }
+                    }
+                    break;
+            }
+        }
+        private void textBoxBlind_TextChanged(object sender, EventArgs e)
+        {
+            string cleanedText = Regex.Replace(textBoxBid.Text, "[^0-9.]", "");
+            textBoxBid.Text = cleanedText;
+            cleanedText = Regex.Replace(textBoxBlind.Text, "[^0-9.]", "");
+            textBoxBlind.Text = cleanedText;
+        }
+
+        private async void buttonActionMain_Click(object sender, EventArgs e)
+        {
+            if (state == "BIDDING")
+            {
+                int count = textBoxBid.Text.Count(c => c == '.');
+                int count2 = textBoxBlind.Text.Count(c => c == '.');
+                if (count > 1 || count2 > 1)
+                {
+                    NotifyForm notifyForm = new NotifyForm("Invalid bid amount");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+                if (textBoxBid.Text == "" || textBoxBid.Text == ".")
+                {
+                    textBoxBid.Text = "0";
+                }
+                if (textBoxBlind.Text == "" || textBoxBlind.Text == ".")
+                {
+                    textBoxBlind.Text = "0";
+                }
+                await APIPost("", true, "{\"method\": \"selectwallet\", \"params\": [\"" + explorerTX + "\"]}");
+                decimal bid = Convert.ToDecimal(textBoxBid.Text);
+                decimal blind = Convert.ToDecimal(textBoxBlind.Text);
+                decimal lockup = bid + blind;
+                string content = "{\"method\": \"sendbid\", \"params\": [\"" + domain + "\", " + bid.ToString() + ", " + lockup.ToString() + "]}";
+
+                string response = await APIPost("", true, content);
+
+                if (response == "Error")
+                {
+                    NotifyForm notifyForm = new NotifyForm("Error sending bid");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                else
+                {
+                    JObject jObject = JObject.Parse(response);
+                    if (jObject["result"].ToString() == "")
+                    {
+                        JObject error = (JObject)jObject["error"];
+                        string message = (string)error["message"];
+                        NotifyForm notifyForm2 = new NotifyForm("Error sending bid: \n" + message);
+                        notifyForm2.ShowDialog();
+                        notifyForm2.Dispose();
+                        return;
+                    }
+                    JObject result = (JObject)jObject["result"];
+                    string hash = (string)result["hash"];
+
+                    NotifyForm notifyForm = new NotifyForm("Bid sent: " + hash, "Explorer", explorerTX + hash);
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+
+                }
+
+            }
+            else if (state == "REVEAL")
+            {
+                await APIPost("", true, "{\"method\": \"selectwallet\", \"params\": [\"" + explorerTX + "\"]}");
+                decimal bid = Convert.ToDecimal(textBoxBid.Text);
+                decimal blind = Convert.ToDecimal(textBoxBlind.Text);
+                decimal lockup = bid + blind;
+                string content = "{\"method\": \"sendreveal\", \"params\": [\"" + domain + "\"]}";
+
+                string response = await APIPost("", true, content);
+
+                if (response == "Error")
+                {
+                    NotifyForm notifyForm = new NotifyForm("Error sending reveal");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                else
+                {
+                    JObject jObject = JObject.Parse(response);
+                    if (jObject["result"].ToString() == "")
+                    {
+                        JObject error = (JObject)jObject["error"];
+                        string message = (string)error["message"];
+                        NotifyForm notifyForm2 = new NotifyForm("Error sending reveal: \n" + message);
+                        notifyForm2.ShowDialog();
+                        notifyForm2.Dispose();
+                        return;
+                    }
+                    JObject result = (JObject)jObject["result"];
+                    string hash = (string)result["hash"];
+
+                    NotifyForm notifyForm = new NotifyForm("Reveal sent: " + hash, "Explorer", explorerTX + hash);
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+
+                }
+            }
+            else if (state == "AVAILABLE")
+            {
+                await APIPost("", true, "{\"method\": \"selectwallet\", \"params\": [\"" + explorerTX + "\"]}");
+                decimal bid = Convert.ToDecimal(textBoxBid.Text);
+                decimal blind = Convert.ToDecimal(textBoxBlind.Text);
+                decimal lockup = bid + blind;
+                string content = "{\"method\": \"sendopen\", \"params\": [\"" + domain + "\"]}";
+
+                string response = await APIPost("", true, content);
+
+                if (response == "Error")
+                {
+                    NotifyForm notifyForm = new NotifyForm("Error sending open");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                else
+                {
+                    JObject jObject = JObject.Parse(response);
+                    if (jObject["result"].ToString() == "")
+                    {
+                        JObject error = (JObject)jObject["error"];
+                        string message = (string)error["message"];
+                        NotifyForm notifyForm2 = new NotifyForm("Error sending open: \n" + message);
+                        notifyForm2.ShowDialog();
+                        notifyForm2.Dispose();
+                        return;
+                    }
+                    JObject result = (JObject)jObject["result"];
+                    string hash = (string)result["hash"];
+
+                    NotifyForm notifyForm = new NotifyForm("Open sent: " + hash, "Explorer", explorerTX + hash);
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+            }
+        }
+
+        private void Explorer_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = explorerName + domain,
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
     }
 }

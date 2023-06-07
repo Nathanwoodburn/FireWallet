@@ -46,9 +46,18 @@
             panelDNS = new Panel();
             groupBoxBids = new GroupBox();
             panelBids = new Panel();
+            groupBoxAction = new GroupBox();
+            textBoxBlind = new TextBox();
+            textBoxBid = new TextBox();
+            labelBlind = new Label();
+            labelBid = new Label();
+            buttonActionAlt = new Button();
+            buttonActionMain = new Button();
+            buttonExplorer = new Button();
             groupBoxStatus.SuspendLayout();
             groupBoxDNS.SuspendLayout();
             groupBoxBids.SuspendLayout();
+            groupBoxAction.SuspendLayout();
             SuspendLayout();
             // 
             // labelTitle
@@ -229,11 +238,101 @@
             panelBids.Size = new System.Drawing.Size(956, 291);
             panelBids.TabIndex = 0;
             // 
+            // groupBoxAction
+            // 
+            groupBoxAction.Controls.Add(textBoxBlind);
+            groupBoxAction.Controls.Add(textBoxBid);
+            groupBoxAction.Controls.Add(labelBlind);
+            groupBoxAction.Controls.Add(labelBid);
+            groupBoxAction.Controls.Add(buttonActionAlt);
+            groupBoxAction.Controls.Add(buttonActionMain);
+            groupBoxAction.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            groupBoxAction.Location = new System.Drawing.Point(396, 68);
+            groupBoxAction.Name = "groupBoxAction";
+            groupBoxAction.Size = new System.Drawing.Size(575, 173);
+            groupBoxAction.TabIndex = 14;
+            groupBoxAction.TabStop = false;
+            groupBoxAction.Text = "Bid";
+            groupBoxAction.Visible = false;
+            // 
+            // textBoxBlind
+            // 
+            textBoxBlind.Location = new System.Drawing.Point(60, 64);
+            textBoxBlind.Name = "textBoxBlind";
+            textBoxBlind.Size = new System.Drawing.Size(180, 29);
+            textBoxBlind.TabIndex = 5;
+            textBoxBlind.Visible = false;
+            textBoxBlind.TextChanged += textBoxBlind_TextChanged;
+            // 
+            // textBoxBid
+            // 
+            textBoxBid.Location = new System.Drawing.Point(60, 22);
+            textBoxBid.Name = "textBoxBid";
+            textBoxBid.Size = new System.Drawing.Size(180, 29);
+            textBoxBid.TabIndex = 4;
+            textBoxBid.Visible = false;
+            textBoxBid.TextChanged += textBoxBlind_TextChanged;
+            // 
+            // labelBlind
+            // 
+            labelBlind.AutoSize = true;
+            labelBlind.Location = new System.Drawing.Point(6, 67);
+            labelBlind.Name = "labelBlind";
+            labelBlind.Size = new System.Drawing.Size(48, 21);
+            labelBlind.TabIndex = 3;
+            labelBlind.Text = "Blind:";
+            labelBlind.Visible = false;
+            // 
+            // labelBid
+            // 
+            labelBid.AutoSize = true;
+            labelBid.Location = new System.Drawing.Point(19, 25);
+            labelBid.Name = "labelBid";
+            labelBid.Size = new System.Drawing.Size(35, 21);
+            labelBid.TabIndex = 2;
+            labelBid.Text = "Bid:";
+            labelBid.Visible = false;
+            // 
+            // buttonActionAlt
+            // 
+            buttonActionAlt.FlatStyle = FlatStyle.Flat;
+            buttonActionAlt.Location = new System.Drawing.Point(253, 130);
+            buttonActionAlt.Name = "buttonActionAlt";
+            buttonActionAlt.Size = new System.Drawing.Size(155, 37);
+            buttonActionAlt.TabIndex = 1;
+            buttonActionAlt.Text = "Bid in Batch";
+            buttonActionAlt.UseVisualStyleBackColor = true;
+            // 
+            // buttonActionMain
+            // 
+            buttonActionMain.FlatStyle = FlatStyle.Flat;
+            buttonActionMain.Location = new System.Drawing.Point(414, 130);
+            buttonActionMain.Name = "buttonActionMain";
+            buttonActionMain.Size = new System.Drawing.Size(155, 37);
+            buttonActionMain.TabIndex = 0;
+            buttonActionMain.Text = "Send Bid";
+            buttonActionMain.UseVisualStyleBackColor = true;
+            buttonActionMain.Click += buttonActionMain_Click;
+            // 
+            // buttonExplorer
+            // 
+            buttonExplorer.FlatStyle = FlatStyle.Flat;
+            buttonExplorer.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonExplorer.Location = new System.Drawing.Point(876, 12);
+            buttonExplorer.Name = "buttonExplorer";
+            buttonExplorer.Size = new System.Drawing.Size(98, 34);
+            buttonExplorer.TabIndex = 15;
+            buttonExplorer.Text = "Explorer";
+            buttonExplorer.UseVisualStyleBackColor = true;
+            buttonExplorer.Click += Explorer_Click;
+            // 
             // DomainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(986, 572);
+            Controls.Add(buttonExplorer);
+            Controls.Add(groupBoxAction);
             Controls.Add(groupBoxBids);
             Controls.Add(groupBoxDNS);
             Controls.Add(groupBoxStatus);
@@ -247,6 +346,8 @@
             groupBoxStatus.PerformLayout();
             groupBoxDNS.ResumeLayout(false);
             groupBoxBids.ResumeLayout(false);
+            groupBoxAction.ResumeLayout(false);
+            groupBoxAction.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -271,5 +372,13 @@
         private Panel panelDNS;
         private GroupBox groupBoxBids;
         private Panel panelBids;
+        private GroupBox groupBoxAction;
+        private TextBox textBoxBlind;
+        private TextBox textBoxBid;
+        private Label labelBlind;
+        private Label labelBid;
+        private Button buttonActionAlt;
+        private Button buttonActionMain;
+        private Button buttonExplorer;
     }
 }
