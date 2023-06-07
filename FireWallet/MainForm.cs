@@ -1,8 +1,15 @@
+using System;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
+using System.Windows.Forms;
 using Newtonsoft.Json.Linq;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
+using IronBarCode;
 
 namespace FireWallet
 {
@@ -451,6 +458,7 @@ namespace FireWallet
             panelaccount.Visible = true;
             panelNav.Visible = false;
             panelSend.Visible = false;
+            panelRecieve.Visible = false;
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             screen = 0;
 
@@ -478,7 +486,7 @@ namespace FireWallet
 
             JObject resp = JObject.Parse(response);
 
-            decimal available = Convert.ToDecimal(resp["unconfirmed"].ToString()) / 1000000;
+            decimal available = Convert.ToDecimal(resp["unconfirmed"].ToString()) - Convert.ToDecimal(resp["lockedUnconfirmed"].ToString()) / 1000000;
             decimal locked = Convert.ToDecimal(resp["lockedUnconfirmed"].ToString()) / 1000000;
             available = available - locked;
             available = decimal.Round(available, 2);
@@ -560,6 +568,19 @@ namespace FireWallet
                 AddLog("Get Error: " + ex.Message);
                 return "Error";
             }
+        }
+        private async Task<string> GetAddress()
+        {
+            string content = "{\"account\":\"default\"}";
+            string path = "wallet/" + account + "/address";
+            string APIresponse = await APIPost(path, true, content);
+            if (APIresponse == "Error")
+            {
+                AddLog("GetAddress Error");
+                return "Error";
+            }
+            JObject resp = JObject.Parse(APIresponse);
+            return resp["address"].ToString();
         }
 
         private async void GetTXHistory()
@@ -703,14 +724,16 @@ namespace FireWallet
             }
         }
         #endregion
-
         #region Nav
         private async void PortfolioPanel_Click(object sender, EventArgs e)
         {
-            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             panelSend.Hide();
             panelPortfolio.Show();
+            panelRecieve.Hide();
+            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             await UpdateBalance();
             GetTXHistory();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
@@ -727,8 +750,11 @@ namespace FireWallet
         {
             panelPortfolio.Hide();
             panelSend.Show();
+            panelRecieve.Hide();
             buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
                 buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
@@ -758,28 +784,98 @@ namespace FireWallet
             labelSendingError.Hide();
 
         }
+        private async void ReceivePanel_Click(object sender, EventArgs e)
+        {
+            panelSend.Hide();
+            panelPortfolio.Hide();
+            panelRecieve.Show();
+            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+
+
+            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            {
+                buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
+            labelReceive1.Left = (panelRecieve.Width - labelReceive1.Width) / 2;
+            labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
+            textBoxReceiveAddress.Left = (panelRecieve.Width - textBoxReceiveAddress.Width) / 2;
+
+
+            string address = await GetAddress();
+            textBoxReceiveAddress.Text = address;
+            textBoxReceiveAddress.TextAlign = HorizontalAlignment.Center;
+            Size size = TextRenderer.MeasureText(textBoxReceiveAddress.Text, textBoxReceiveAddress.Font);
+            textBoxReceiveAddress.Width = size.Width + 10;
+            textBoxReceiveAddress.Left = (panelRecieve.Width - textBoxReceiveAddress.Width) / 2;
+
+            GeneratedBarcode Qrcode = QRCodeWriter.CreateQrCode(textBoxReceiveAddress.Text);
+            pictureBoxReceiveQR.Image = Qrcode.Image;
+            pictureBoxReceiveQR.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxReceiveQR.Width = panelRecieve.Width / 3;
+            pictureBoxReceiveQR.Left = (panelRecieve.Width - pictureBoxReceiveQR.Width) / 2;
+
+
+
+        }
         #endregion
         #region Send
         private async void textBoxSendingTo_Leave(object sender, EventArgs e)
         {
-            try
-            {
-                bool valid = await ValidAddress(textBoxSendingTo.Text);
-                if (valid)
-                {
-                    labelSendingError.Hide();
-                    labelSendingError.Text = "";
-                }
-                else
-                {
-                    labelSendingError.Show();
-                    labelSendingError.Text = "Invalid Address";
-                }
-            }
-            catch (Exception ex)
+            if (textBoxSendingTo.Text == "") return;
+            if (textBoxSendingTo.Text.Substring(0, 1) == "@")
             {
                 labelSendingError.Show();
-                labelSendingError.Text = ex.Message;
+                labelSendingError.Text = "HIP-02 Not supported yet";
+                return;
+                /*
+                string domain = textBoxSendingTo.Text.Substring(1);
+                try
+                {
+                    string address = "";
+
+                    bool valid = await ValidAddress(address);
+                    if (valid)
+                    {
+                        labelSendingError.Hide();
+                        labelSendingError.Text = "";
+                    }
+                    else
+                    {
+                        labelSendingError.Show();
+                        labelSendingError.Text = "Invalid Address";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text = ex.Message;
+                }*/
+            }
+            else
+            {
+                try
+                {
+                    bool valid = await ValidAddress(textBoxSendingTo.Text);
+                    if (valid)
+                    {
+                        labelSendingError.Hide();
+                        labelSendingError.Text = "";
+                    }
+                    else
+                    {
+                        labelSendingError.Show();
+                        labelSendingError.Text = "Invalid Address";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text = ex.Message;
+                }
             }
         }
 
@@ -797,7 +893,7 @@ namespace FireWallet
                 labelSendingError.Text = "Invalid Amount";
             }
         }
-        
+
         private async void buttonSendMax_Click(object sender, EventArgs e)
         {
             string fee = await GetFee();
@@ -844,12 +940,12 @@ namespace FireWallet
                 {
                     NotifyForm notify = new NotifyForm("Error Transaction Failed");
                     notify.ShowDialog();
-                    return; 
+                    return;
                 }
                 string hash = APIresp["result"].ToString();
                 string link = userSettings["explorer-tx"] + hash;
                 NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
-                    "Explorer",link);
+                    "Explorer", link);
                 notifySuccess.ShowDialog();
                 textBoxSendingTo.Text = "";
                 textBoxSendingAmount.Text = "";
@@ -867,5 +963,11 @@ namespace FireWallet
         }
         #endregion
 
+        private void textBoxRecieveAddress_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(textBoxReceiveAddress.Text);
+            labelReceive2.Text = "Copied to clipboard";
+            labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
+        }
     }
 }

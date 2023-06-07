@@ -1,4 +1,8 @@
-﻿namespace FireWallet
+﻿using Color = System.Drawing.Color;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
+using SizeF = System.Drawing.SizeF;
+namespace FireWallet
 {
     partial class NotifyForm
     {

@@ -1,4 +1,9 @@
-﻿namespace FireWallet
+﻿using Color = System.Drawing.Color;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
+using SizeF = System.Drawing.SizeF;
+
+namespace FireWallet
 {
     partial class MainForm
     {
@@ -70,6 +75,11 @@
             labelSendingAmount = new Label();
             labelSendingTo = new Label();
             labelSendPrompt = new Label();
+            panelRecieve = new Panel();
+            pictureBoxReceiveQR = new PictureBox();
+            labelReceive2 = new Label();
+            textBoxReceiveAddress = new TextBox();
+            labelReceive1 = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -78,6 +88,8 @@
             groupBoxinfo.SuspendLayout();
             groupBoxbalance.SuspendLayout();
             panelSend.SuspendLayout();
+            panelRecieve.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).BeginInit();
             SuspendLayout();
             // 
             // statusStripmain
@@ -248,6 +260,7 @@
             buttonNavReceive.TabStop = false;
             buttonNavReceive.Text = "Receive";
             buttonNavReceive.UseVisualStyleBackColor = true;
+            buttonNavReceive.Click += ReceivePanel_Click;
             // 
             // buttonNavSend
             // 
@@ -393,7 +406,7 @@
             panelSend.Controls.Add(labelSendingAmount);
             panelSend.Controls.Add(labelSendingTo);
             panelSend.Controls.Add(labelSendPrompt);
-            panelSend.Location = new Point(120, 25);
+            panelSend.Location = new Point(448, 170);
             panelSend.Name = "panelSend";
             panelSend.Size = new Size(974, 521);
             panelSend.TabIndex = 2;
@@ -408,6 +421,7 @@
             checkBoxSendSubFee.Name = "checkBoxSendSubFee";
             checkBoxSendSubFee.Size = new Size(206, 25);
             checkBoxSendSubFee.TabIndex = 16;
+            checkBoxSendSubFee.TabStop = false;
             checkBoxSendSubFee.Text = "Subtract Fee from Output";
             checkBoxSendSubFee.UseVisualStyleBackColor = true;
             // 
@@ -419,6 +433,7 @@
             buttonSendMax.Name = "buttonSendMax";
             buttonSendMax.Size = new Size(81, 29);
             buttonSendMax.TabIndex = 15;
+            buttonSendMax.TabStop = false;
             buttonSendMax.Text = "Max";
             buttonSendMax.UseVisualStyleBackColor = true;
             buttonSendMax.Click += buttonSendMax_Click;
@@ -430,7 +445,7 @@
             buttonSendHNS.Location = new Point(361, 315);
             buttonSendHNS.Name = "buttonSendHNS";
             buttonSendHNS.Size = new Size(150, 46);
-            buttonSendHNS.TabIndex = 14;
+            buttonSendHNS.TabIndex = 3;
             buttonSendHNS.Text = "Send";
             buttonSendHNS.UseVisualStyleBackColor = true;
             buttonSendHNS.Click += buttonSendHNS_Click;
@@ -462,7 +477,7 @@
             textBoxSendingAmount.Location = new Point(346, 159);
             textBoxSendingAmount.Name = "textBoxSendingAmount";
             textBoxSendingAmount.Size = new Size(344, 29);
-            textBoxSendingAmount.TabIndex = 11;
+            textBoxSendingAmount.TabIndex = 2;
             textBoxSendingAmount.Leave += textBoxSendingAmount_Leave;
             // 
             // textBoxSendingTo
@@ -471,7 +486,7 @@
             textBoxSendingTo.Location = new Point(346, 98);
             textBoxSendingTo.Name = "textBoxSendingTo";
             textBoxSendingTo.Size = new Size(344, 29);
-            textBoxSendingTo.TabIndex = 11;
+            textBoxSendingTo.TabIndex = 1;
             textBoxSendingTo.Leave += textBoxSendingTo_Leave;
             // 
             // labelSendingMax
@@ -514,11 +529,63 @@
             labelSendPrompt.TabIndex = 0;
             labelSendPrompt.Text = "Send HNS";
             // 
+            // panelRecieve
+            // 
+            panelRecieve.Controls.Add(pictureBoxReceiveQR);
+            panelRecieve.Controls.Add(labelReceive2);
+            panelRecieve.Controls.Add(textBoxReceiveAddress);
+            panelRecieve.Controls.Add(labelReceive1);
+            panelRecieve.Location = new Point(120, 25);
+            panelRecieve.Name = "panelRecieve";
+            panelRecieve.Size = new Size(995, 523);
+            panelRecieve.TabIndex = 17;
+            panelRecieve.Visible = false;
+            // 
+            // pictureBoxReceiveQR
+            // 
+            pictureBoxReceiveQR.Location = new Point(391, 190);
+            pictureBoxReceiveQR.Name = "pictureBoxReceiveQR";
+            pictureBoxReceiveQR.Size = new Size(300, 300);
+            pictureBoxReceiveQR.SizeMode = PictureBoxSizeMode.AutoSize;
+            pictureBoxReceiveQR.TabIndex = 20;
+            pictureBoxReceiveQR.TabStop = false;
+            // 
+            // labelReceive2
+            // 
+            labelReceive2.AutoSize = true;
+            labelReceive2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelReceive2.Location = new Point(463, 148);
+            labelReceive2.Name = "labelReceive2";
+            labelReceive2.Size = new Size(205, 21);
+            labelReceive2.TabIndex = 19;
+            labelReceive2.Text = "Click your address to copy it";
+            // 
+            // textBoxReceiveAddress
+            // 
+            textBoxReceiveAddress.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point);
+            textBoxReceiveAddress.Location = new Point(299, 110);
+            textBoxReceiveAddress.Name = "textBoxReceiveAddress";
+            textBoxReceiveAddress.ReadOnly = true;
+            textBoxReceiveAddress.Size = new Size(464, 32);
+            textBoxReceiveAddress.TabIndex = 18;
+            textBoxReceiveAddress.Click += textBoxRecieveAddress_Click;
+            // 
+            // labelReceive1
+            // 
+            labelReceive1.AutoSize = true;
+            labelReceive1.Font = new Font("Segoe UI", 14F, FontStyle.Regular, GraphicsUnit.Point);
+            labelReceive1.Location = new Point(361, 77);
+            labelReceive1.Name = "labelReceive1";
+            labelReceive1.Size = new Size(252, 25);
+            labelReceive1.TabIndex = 0;
+            labelReceive1.Text = "Here is your receive address:";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelRecieve);
             Controls.Add(panelSend);
             Controls.Add(panelPortfolio);
             Controls.Add(panelNav);
@@ -542,6 +609,9 @@
             groupBoxbalance.PerformLayout();
             panelSend.ResumeLayout(false);
             panelSend.PerformLayout();
+            panelRecieve.ResumeLayout(false);
+            panelRecieve.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -589,5 +659,10 @@
         private Button buttonSendHNS;
         private Button buttonSendMax;
         private CheckBox checkBoxSendSubFee;
+        private Panel panelRecieve;
+        private Label labelReceive1;
+        private TextBox textBoxReceiveAddress;
+        private Label labelReceive2;
+        private PictureBox pictureBoxReceiveQR;
     }
 }
