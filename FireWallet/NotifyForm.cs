@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,10 +17,21 @@ namespace FireWallet
     {
         string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
         Dictionary<string, string> theme;
+        string altLink;
         public NotifyForm(string Message)
         {
             InitializeComponent();
             labelmessage.Text = Message;
+            altLink = "";
+        }
+
+        public NotifyForm(string Message, string altText, string altLink)
+        {
+            InitializeComponent();
+            labelmessage.Text = Message;
+            buttonALT.Text = altText;
+            buttonALT.Visible = true;
+            this.altLink = altLink;
         }
 
         #region Theming
@@ -199,9 +212,20 @@ namespace FireWallet
             UpdateTheme();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void OK_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void buttonALT_Click(object sender, EventArgs e)
+        {
+            // Open link
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = altLink,
+                UseShellExecute = true
+            };
+            Process.Start(psi);
         }
     }
 }

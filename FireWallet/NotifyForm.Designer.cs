@@ -29,7 +29,8 @@
         private void InitializeComponent()
         {
             labelmessage = new Label();
-            button1 = new Button();
+            buttonOK = new Button();
+            buttonALT = new Button();
             SuspendLayout();
             // 
             // labelmessage
@@ -43,23 +44,36 @@
             labelmessage.Text = "Message";
             labelmessage.TextAlign = ContentAlignment.TopCenter;
             // 
-            // button1
+            // buttonOK
             // 
-            button1.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            button1.Location = new Point(271, 120);
-            button1.Name = "button1";
-            button1.Size = new Size(99, 38);
-            button1.TabIndex = 1;
-            button1.Text = "Ok";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            buttonOK.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonOK.Location = new Point(271, 120);
+            buttonOK.Name = "buttonOK";
+            buttonOK.Size = new Size(99, 38);
+            buttonOK.TabIndex = 1;
+            buttonOK.Text = "Ok";
+            buttonOK.UseVisualStyleBackColor = true;
+            buttonOK.Click += OK_Click;
+            // 
+            // buttonALT
+            // 
+            buttonALT.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonALT.Location = new Point(12, 120);
+            buttonALT.Name = "buttonALT";
+            buttonALT.Size = new Size(99, 38);
+            buttonALT.TabIndex = 2;
+            buttonALT.Text = "ALT";
+            buttonALT.UseVisualStyleBackColor = true;
+            buttonALT.Visible = false;
+            buttonALT.Click += buttonALT_Click;
             // 
             // NotifyForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(382, 170);
-            Controls.Add(button1);
+            Controls.Add(buttonALT);
+            Controls.Add(buttonOK);
             Controls.Add(labelmessage);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Name = "NotifyForm";
@@ -71,6 +85,7 @@
         #endregion
 
         private Label labelmessage;
-        private Button button1;
+        private Button buttonOK;
+        private Button buttonALT;
     }
 }
