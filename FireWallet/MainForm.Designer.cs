@@ -50,6 +50,7 @@ namespace FireWallet
             labelaccountusername = new Label();
             buttonaccountnew = new Button();
             panelNav = new Panel();
+            buttonNavDomains = new Button();
             buttonNavReceive = new Button();
             buttonNavSend = new Button();
             buttonNavPortfolio = new Button();
@@ -80,6 +81,9 @@ namespace FireWallet
             labelReceive2 = new Label();
             textBoxReceiveAddress = new TextBox();
             labelReceive1 = new Label();
+            panelDomains = new Panel();
+            labelDomainSearch = new Label();
+            textBoxDomainSearch = new TextBox();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -90,6 +94,7 @@ namespace FireWallet
             panelSend.SuspendLayout();
             panelRecieve.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).BeginInit();
+            panelDomains.SuspendLayout();
             SuspendLayout();
             // 
             // statusStripmain
@@ -204,6 +209,7 @@ namespace FireWallet
             buttonaccountlogin.Name = "buttonaccountlogin";
             buttonaccountlogin.Size = new Size(99, 41);
             buttonaccountlogin.TabIndex = 3;
+            buttonaccountlogin.TabStop = false;
             buttonaccountlogin.Text = "Login";
             buttonaccountlogin.UseVisualStyleBackColor = true;
             buttonaccountlogin.Click += LoginClick;
@@ -235,11 +241,13 @@ namespace FireWallet
             buttonaccountnew.Name = "buttonaccountnew";
             buttonaccountnew.Size = new Size(99, 41);
             buttonaccountnew.TabIndex = 2;
+            buttonaccountnew.TabStop = false;
             buttonaccountnew.Text = "New";
             buttonaccountnew.UseVisualStyleBackColor = true;
             // 
             // panelNav
             // 
+            panelNav.Controls.Add(buttonNavDomains);
             panelNav.Controls.Add(buttonNavReceive);
             panelNav.Controls.Add(buttonNavSend);
             panelNav.Controls.Add(buttonNavPortfolio);
@@ -248,6 +256,19 @@ namespace FireWallet
             panelNav.Name = "panelNav";
             panelNav.Size = new Size(114, 553);
             panelNav.TabIndex = 6;
+            // 
+            // buttonNavDomains
+            // 
+            buttonNavDomains.FlatStyle = FlatStyle.Flat;
+            buttonNavDomains.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonNavDomains.Location = new Point(12, 189);
+            buttonNavDomains.Name = "buttonNavDomains";
+            buttonNavDomains.Size = new Size(89, 30);
+            buttonNavDomains.TabIndex = 2;
+            buttonNavDomains.TabStop = false;
+            buttonNavDomains.Text = "Domains";
+            buttonNavDomains.UseVisualStyleBackColor = true;
+            buttonNavDomains.Click += buttonNavDomains_Click;
             // 
             // buttonNavReceive
             // 
@@ -293,7 +314,7 @@ namespace FireWallet
             panelPortfolio.Controls.Add(groupBoxTransactions);
             panelPortfolio.Controls.Add(groupBoxinfo);
             panelPortfolio.Controls.Add(groupBoxbalance);
-            panelPortfolio.Location = new Point(448, 170);
+            panelPortfolio.Location = new Point(1085, 47);
             panelPortfolio.Name = "panelPortfolio";
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
@@ -406,7 +427,7 @@ namespace FireWallet
             panelSend.Controls.Add(labelSendingAmount);
             panelSend.Controls.Add(labelSendingTo);
             panelSend.Controls.Add(labelSendPrompt);
-            panelSend.Location = new Point(448, 170);
+            panelSend.Location = new Point(1113, 42);
             panelSend.Name = "panelSend";
             panelSend.Size = new Size(974, 521);
             panelSend.TabIndex = 2;
@@ -535,7 +556,7 @@ namespace FireWallet
             panelRecieve.Controls.Add(labelReceive2);
             panelRecieve.Controls.Add(textBoxReceiveAddress);
             panelRecieve.Controls.Add(labelReceive1);
-            panelRecieve.Location = new Point(120, 25);
+            panelRecieve.Location = new Point(1057, 62);
             panelRecieve.Name = "panelRecieve";
             panelRecieve.Size = new Size(995, 523);
             panelRecieve.TabIndex = 17;
@@ -580,11 +601,41 @@ namespace FireWallet
             labelReceive1.TabIndex = 0;
             labelReceive1.Text = "Here is your receive address:";
             // 
+            // panelDomains
+            // 
+            panelDomains.Controls.Add(labelDomainSearch);
+            panelDomains.Controls.Add(textBoxDomainSearch);
+            panelDomains.Location = new Point(120, 27);
+            panelDomains.Name = "panelDomains";
+            panelDomains.Size = new Size(920, 536);
+            panelDomains.TabIndex = 18;
+            panelDomains.Visible = false;
+            // 
+            // labelDomainSearch
+            // 
+            labelDomainSearch.AutoSize = true;
+            labelDomainSearch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelDomainSearch.Location = new Point(92, 47);
+            labelDomainSearch.Name = "labelDomainSearch";
+            labelDomainSearch.Size = new Size(57, 21);
+            labelDomainSearch.TabIndex = 1;
+            labelDomainSearch.Text = "Search";
+            // 
+            // textBoxDomainSearch
+            // 
+            textBoxDomainSearch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            textBoxDomainSearch.Location = new Point(155, 44);
+            textBoxDomainSearch.Name = "textBoxDomainSearch";
+            textBoxDomainSearch.Size = new Size(206, 29);
+            textBoxDomainSearch.TabIndex = 0;
+            textBoxDomainSearch.KeyDown += textBoxDomainSearch_KeyDown;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelDomains);
             Controls.Add(panelRecieve);
             Controls.Add(panelSend);
             Controls.Add(panelPortfolio);
@@ -612,6 +663,8 @@ namespace FireWallet
             panelRecieve.ResumeLayout(false);
             panelRecieve.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).EndInit();
+            panelDomains.ResumeLayout(false);
+            panelDomains.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -664,5 +717,9 @@ namespace FireWallet
         private TextBox textBoxReceiveAddress;
         private Label labelReceive2;
         private PictureBox pictureBoxReceiveQR;
+        private Button buttonNavDomains;
+        private Panel panelDomains;
+        private Label labelDomainSearch;
+        private TextBox textBoxDomainSearch;
     }
 }

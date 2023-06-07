@@ -75,7 +75,7 @@ namespace FireWallet
         {
             if (!File.Exists(dir + "node.txt"))
             {
-                CreateForm cf = new CreateForm();
+                NodeForm cf = new NodeForm();
                 cf.ShowDialog();
                 // Initial run
             }
@@ -459,6 +459,8 @@ namespace FireWallet
             panelNav.Visible = false;
             panelSend.Visible = false;
             panelRecieve.Visible = false;
+            panelDomains.Visible = false;
+            panelPortfolio.Visible = false;
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             screen = 0;
 
@@ -486,9 +488,8 @@ namespace FireWallet
 
             JObject resp = JObject.Parse(response);
 
-            decimal available = Convert.ToDecimal(resp["unconfirmed"].ToString()) - Convert.ToDecimal(resp["lockedUnconfirmed"].ToString()) / 1000000;
+            decimal available = (Convert.ToDecimal(resp["unconfirmed"].ToString()) - Convert.ToDecimal(resp["lockedUnconfirmed"].ToString())) / 1000000;
             decimal locked = Convert.ToDecimal(resp["lockedUnconfirmed"].ToString()) / 1000000;
-            available = available - locked;
             available = decimal.Round(available, 2);
             locked = decimal.Round(locked, 2);
             balance = available;
@@ -730,10 +731,13 @@ namespace FireWallet
             panelSend.Hide();
             panelPortfolio.Show();
             panelRecieve.Hide();
+            panelDomains.Hide();
             buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             await UpdateBalance();
             GetTXHistory();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
@@ -751,10 +755,13 @@ namespace FireWallet
             panelPortfolio.Hide();
             panelSend.Show();
             panelRecieve.Hide();
+            panelDomains.Hide();
             buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
                 buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
@@ -789,11 +796,13 @@ namespace FireWallet
             panelSend.Hide();
             panelPortfolio.Hide();
             panelRecieve.Show();
+            panelDomains.Hide();
             buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-
+            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
 
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
@@ -820,6 +829,27 @@ namespace FireWallet
 
 
 
+        }
+        private void buttonNavDomains_Click(object sender, EventArgs e)
+        {
+            panelSend.Hide();
+            panelPortfolio.Hide();
+            panelRecieve.Hide();
+            panelDomains.Show();
+
+            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+
+            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            {
+                buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
+            textBoxDomainSearch.Focus();
         }
         #endregion
         #region Send
@@ -962,12 +992,25 @@ namespace FireWallet
             }
         }
         #endregion
-
+        #region Receive
         private void textBoxRecieveAddress_Click(object sender, EventArgs e)
         {
             Clipboard.SetText(textBoxReceiveAddress.Text);
             labelReceive2.Text = "Copied to clipboard";
             labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
+        }
+        #endregion
+
+
+        private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue == 13)
+            {
+                e.SuppressKeyPress = true;
+                DomainForm domainForm = new DomainForm(textBoxDomainSearch.Text);
+                domainForm.Show();
+
+            }
         }
     }
 }
