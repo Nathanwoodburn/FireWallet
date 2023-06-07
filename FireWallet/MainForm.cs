@@ -126,6 +126,7 @@ namespace FireWallet
                 sw.WriteLine("explorer-block: https://niami.io/block/");
                 sw.WriteLine("explorer-domain: https://niami.io/domain/");
                 sw.WriteLine("confirmations: 1");
+                sw.WriteLine("portfolio-tx: 20");
                 sw.Dispose();
             }
 
@@ -475,6 +476,17 @@ namespace FireWallet
                 toolStripStatusLabelstatus.Text = "Status: Node Connected";
             }
 
+            // Try to keep wallet unlocked
+            string path = "wallet/" + account + "/unlock";
+            string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
+
+            await APIPost(path, true, content);
+
+            path = "";
+            content = "{\"method\": \"selectwallet\",\"params\":[ \"" + account + "\"]}";
+
+            await APIPost(path, true, content);
+            
         }
         private async Task UpdateBalance()
         {
@@ -614,6 +626,8 @@ namespace FireWallet
             JArray txs = JArray.Parse(APIresponse);
             int txCount = txs.Count;
             if (txCount > groupBoxTransactions.Height / 55) txCount = (int)Math.Floor(groupBoxTransactions.Height / 55.0);
+            if (userSettings.ContainsKey("portfolio-tx")) txCount = Convert.ToInt32(userSettings["portfolio-tx"]);
+            if (txCount > txs.Count) txCount = txs.Count;
             Control[] tmpControls = new Control[txCount];
             for (int i = 0; i < txCount; i++)
             {
@@ -625,9 +639,9 @@ namespace FireWallet
                 string date = tx["mdate"].ToString();
 
                 Panel tmpPanel = new Panel();
-                tmpPanel.Width = groupBoxTransactions.Width - 20;
+                tmpPanel.Width = groupBoxTransactions.Width - SystemInformation.VerticalScrollBarWidth - 20;
                 tmpPanel.Height = 50;
-                tmpPanel.Location = new Point(10, 20 + (i * 55));
+                tmpPanel.Location = new Point(5, (i * 55));
                 tmpPanel.BorderStyle = BorderStyle.FixedSingle;
                 tmpPanel.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
                 tmpPanel.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
@@ -692,7 +706,12 @@ namespace FireWallet
 
             }
             groupBoxTransactions.Controls.Clear();
-            groupBoxTransactions.Controls.AddRange(tmpControls);
+            Panel txPanel = new Panel();
+            txPanel.Width = groupBoxTransactions.Width - SystemInformation.VerticalScrollBarWidth;
+            txPanel.Controls.AddRange(tmpControls);
+            txPanel.AutoScroll = true;
+            txPanel.Dock = DockStyle.Fill;
+            groupBoxTransactions.Controls.Add(txPanel);
 
 
         }
@@ -728,11 +747,6 @@ namespace FireWallet
         private void timerNodeStatus_Tick(object sender, EventArgs e)
         {
             NodeStatus();
-            // If logged in, update info
-            if (panelaccount.Visible == false)
-            {
-                GetTXHistory();
-            }
         }
         #endregion
         #region Nav
@@ -1018,6 +1032,7 @@ namespace FireWallet
         {
             if (e.KeyValue == 13)
             {
+                textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
                 e.SuppressKeyPress = true;
                 DomainForm domainForm = new DomainForm(textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
                 domainForm.mainForm = this;

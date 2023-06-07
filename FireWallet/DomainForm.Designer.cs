@@ -47,6 +47,8 @@
             groupBoxBids = new GroupBox();
             panelBids = new Panel();
             groupBoxAction = new GroupBox();
+            buttonTransfer = new Button();
+            buttonRenew = new Button();
             textBoxBlind = new TextBox();
             textBoxBid = new TextBox();
             labelBlind = new Label();
@@ -240,6 +242,8 @@
             // 
             // groupBoxAction
             // 
+            groupBoxAction.Controls.Add(buttonTransfer);
+            groupBoxAction.Controls.Add(buttonRenew);
             groupBoxAction.Controls.Add(textBoxBlind);
             groupBoxAction.Controls.Add(textBoxBid);
             groupBoxAction.Controls.Add(labelBlind);
@@ -254,6 +258,30 @@
             groupBoxAction.TabStop = false;
             groupBoxAction.Text = "Bid";
             groupBoxAction.Visible = false;
+            // 
+            // buttonTransfer
+            // 
+            buttonTransfer.FlatStyle = FlatStyle.Flat;
+            buttonTransfer.Location = new System.Drawing.Point(253, 22);
+            buttonTransfer.Name = "buttonTransfer";
+            buttonTransfer.Size = new System.Drawing.Size(155, 37);
+            buttonTransfer.TabIndex = 6;
+            buttonTransfer.Text = "Transfer";
+            buttonTransfer.UseVisualStyleBackColor = true;
+            buttonTransfer.Visible = false;
+            buttonTransfer.Click += buttonTransfer_Click;
+            // 
+            // buttonRenew
+            // 
+            buttonRenew.FlatStyle = FlatStyle.Flat;
+            buttonRenew.Location = new System.Drawing.Point(414, 22);
+            buttonRenew.Name = "buttonRenew";
+            buttonRenew.Size = new System.Drawing.Size(155, 37);
+            buttonRenew.TabIndex = 6;
+            buttonRenew.Text = "Renew";
+            buttonRenew.UseVisualStyleBackColor = true;
+            buttonRenew.Visible = false;
+            buttonRenew.Click += buttonRenew_Click;
             // 
             // textBoxBlind
             // 
@@ -382,5 +410,7 @@
         private Button buttonActionAlt;
         private Button buttonActionMain;
         private Button buttonExplorer;
+        private Button buttonRenew;
+        private Button buttonTransfer;
     }
 }

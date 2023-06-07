@@ -38,6 +38,12 @@
             textBoxBlind = new TextBox();
             buttonImport = new Button();
             buttonCancel = new Button();
+            label5 = new Label();
+            groupBoxBid = new GroupBox();
+            groupBoxtransfer = new GroupBox();
+            textBoxToAddress = new TextBox();
+            groupBoxBid.SuspendLayout();
+            groupBoxtransfer.SuspendLayout();
             SuspendLayout();
             // 
             // listBoxDomains
@@ -65,11 +71,12 @@
             comboBoxMode.FlatStyle = FlatStyle.Flat;
             comboBoxMode.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             comboBoxMode.FormattingEnabled = true;
-            comboBoxMode.Items.AddRange(new object[] { "OPEN", "BID", "REVEAL", "REDEEM", "RENEW" });
+            comboBoxMode.Items.AddRange(new object[] { "OPEN", "BID", "REVEAL", "REDEEM", "RENEW", "TRANSFER", "FINALIZE" });
             comboBoxMode.Location = new System.Drawing.Point(346, 42);
             comboBoxMode.Name = "comboBoxMode";
             comboBoxMode.Size = new System.Drawing.Size(226, 29);
             comboBoxMode.TabIndex = 2;
+            comboBoxMode.SelectedIndexChanged += comboBoxMode_SelectedIndexChanged;
             // 
             // label2
             // 
@@ -85,7 +92,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label3.Location = new System.Drawing.Point(305, 111);
+            label3.Location = new System.Drawing.Point(25, 25);
             label3.Name = "label3";
             label3.Size = new System.Drawing.Size(35, 21);
             label3.TabIndex = 3;
@@ -95,7 +102,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label4.Location = new System.Drawing.Point(292, 159);
+            label4.Location = new System.Drawing.Point(12, 73);
             label4.Name = "label4";
             label4.Size = new System.Drawing.Size(48, 21);
             label4.TabIndex = 3;
@@ -104,7 +111,7 @@
             // textBoxBid
             // 
             textBoxBid.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            textBoxBid.Location = new System.Drawing.Point(346, 108);
+            textBoxBid.Location = new System.Drawing.Point(66, 22);
             textBoxBid.Name = "textBoxBid";
             textBoxBid.Size = new System.Drawing.Size(226, 29);
             textBoxBid.TabIndex = 4;
@@ -112,7 +119,7 @@
             // textBoxBlind
             // 
             textBoxBlind.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            textBoxBlind.Location = new System.Drawing.Point(346, 156);
+            textBoxBlind.Location = new System.Drawing.Point(66, 70);
             textBoxBlind.Name = "textBoxBlind";
             textBoxBlind.Size = new System.Drawing.Size(226, 29);
             textBoxBlind.TabIndex = 5;
@@ -141,17 +148,57 @@
             buttonCancel.UseVisualStyleBackColor = true;
             buttonCancel.Click += buttonCancel_Click;
             // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            label5.Location = new System.Drawing.Point(6, 19);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(67, 21);
+            label5.TabIndex = 7;
+            label5.Text = "Send To:";
+            // 
+            // groupBoxBid
+            // 
+            groupBoxBid.Controls.Add(textBoxBid);
+            groupBoxBid.Controls.Add(label3);
+            groupBoxBid.Controls.Add(label4);
+            groupBoxBid.Controls.Add(textBoxBlind);
+            groupBoxBid.Location = new System.Drawing.Point(287, 99);
+            groupBoxBid.Name = "groupBoxBid";
+            groupBoxBid.Size = new System.Drawing.Size(370, 200);
+            groupBoxBid.TabIndex = 8;
+            groupBoxBid.TabStop = false;
+            groupBoxBid.Text = "Bid Settings";
+            // 
+            // groupBoxtransfer
+            // 
+            groupBoxtransfer.Controls.Add(textBoxToAddress);
+            groupBoxtransfer.Controls.Add(label5);
+            groupBoxtransfer.Location = new System.Drawing.Point(287, 99);
+            groupBoxtransfer.Name = "groupBoxtransfer";
+            groupBoxtransfer.Size = new System.Drawing.Size(370, 200);
+            groupBoxtransfer.TabIndex = 0;
+            groupBoxtransfer.TabStop = false;
+            groupBoxtransfer.Text = "Transfer Settings";
+            // 
+            // textBoxToAddress
+            // 
+            textBoxToAddress.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            textBoxToAddress.Location = new System.Drawing.Point(6, 43);
+            textBoxToAddress.Name = "textBoxToAddress";
+            textBoxToAddress.Size = new System.Drawing.Size(358, 29);
+            textBoxToAddress.TabIndex = 8;
+            // 
             // BatchImportForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(950, 535);
+            Controls.Add(groupBoxtransfer);
+            Controls.Add(groupBoxBid);
             Controls.Add(buttonCancel);
             Controls.Add(buttonImport);
-            Controls.Add(textBoxBlind);
-            Controls.Add(textBoxBid);
-            Controls.Add(label4);
-            Controls.Add(label3);
             Controls.Add(label2);
             Controls.Add(comboBoxMode);
             Controls.Add(label1);
@@ -161,6 +208,10 @@
             Name = "BatchImportForm";
             Text = "Import";
             Load += BatchImportForm_Load;
+            groupBoxBid.ResumeLayout(false);
+            groupBoxBid.PerformLayout();
+            groupBoxtransfer.ResumeLayout(false);
+            groupBoxtransfer.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -177,5 +228,9 @@
         private TextBox textBoxBlind;
         private Button buttonImport;
         private Button buttonCancel;
+        private Label label5;
+        private GroupBox groupBoxBid;
+        private GroupBox groupBoxtransfer;
+        private TextBox textBoxToAddress;
     }
 }

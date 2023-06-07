@@ -17,6 +17,8 @@ namespace FireWallet
         string state;
         string explorerTX;
         string explorerName;
+        int TransferEnd;
+
 
         public MainForm mainForm { get; set; }
 
@@ -234,7 +236,6 @@ namespace FireWallet
                 string content = "{\"method\": \"getnameinfo\", \"params\": [\"" + domain + "\"]}";
                 string response = await APIPost("", false, content);
                 JObject jObject = JObject.Parse(response);
-
                 // Get block height
                 string Nodeinfo = await APIGet("", false);
                 JObject jObjectInfo = JObject.Parse(Nodeinfo);
@@ -259,10 +260,18 @@ namespace FireWallet
                             labelStatusHighest.Text = convertHNS(info["highest"].ToString()) + " HNS";
                             labelStatusPaid.Text = convertHNS(info["value"].ToString()) + " HNS";
 
-                            if (info["transfer"].ToString() == "0") labelStatusTransferring.Text = "No";
-                            else labelStatusTransferring.Text = "Yes";
-
                             JObject stats = (JObject)info["stats"];
+
+                            if (info["transfer"].ToString() == "0")
+                            {
+                                labelStatusTransferring.Text = "No";
+                                TransferEnd = 0;
+                            }
+                            else
+                            {
+                                labelStatusTransferring.Text = "Yes";
+                                TransferEnd = Convert.ToInt32(stats["transferLockupEnd"].ToString());
+                            }
 
                             if (state == "CLOSED")
                             {
@@ -294,13 +303,13 @@ namespace FireWallet
                             else groupBoxDNS.Visible = false;
 
                             //Setup action box
-                            ActionSetup(state);
+                            ActionSetupAsync(state);
                         }
                         catch (Exception ex)
                         {
                             // No info -> Domain not yet auctioned
                             labelStatusMain.Text = "Available";
-                            ActionSetup("AVAILABLE");
+                            ActionSetupAsync("AVAILABLE");
                         }
                     }
                 }
@@ -611,9 +620,18 @@ namespace FireWallet
             sw.Dispose();
         }
         #endregion
-
-        private void ActionSetup(string state)
+        private async Task<bool> DomainOwned()
         {
+            string ownedDomains = await APIGet("wallet/hot/name?own=true", true);
+            JArray ownedList = JArray.Parse(ownedDomains);
+            foreach (JObject d in ownedList) if (d["name"].ToString() == domain) return true;
+
+            return false;
+        }
+
+        private async void ActionSetupAsync(string state)
+        {
+            own = await DomainOwned();
             this.state = state;
             switch (state)
             {
@@ -641,8 +659,22 @@ namespace FireWallet
                     {
                         if (labelStatusTransferring.Text == "Yes")
                         {
-                            // Check if can finalize
+                            groupBoxAction.Show();
+                            groupBoxAction.Text = "Finalize";
 
+                            // Check if can finalize
+                            if (height >= TransferEnd)
+                            {
+                                buttonActionMain.Text = "Send Finalize";
+                                buttonActionAlt.Text = "Finalize in Batch";
+                            }
+                            else
+                            {
+                                labelBid.Text = "Finalize transfer in " + (TransferEnd - height).ToString() + " blocks";
+                                labelBid.Show();
+                                buttonActionMain.Text = "Cancel Transfer";
+                                buttonActionAlt.Text = "Cancel in Batch";
+                            }
                         }
                         else
                         {
@@ -650,6 +682,8 @@ namespace FireWallet
                             groupBoxAction.Text = "Edit";
                             buttonActionMain.Text = "Edit DNS";
                             buttonActionAlt.Text = "Edit in Batch";
+                            buttonRenew.Show();
+                            buttonTransfer.Show();
                         }
                     }
                     break;
@@ -684,7 +718,6 @@ namespace FireWallet
                 {
                     textBoxBlind.Text = "0";
                 }
-                await APIPost("", true, "{\"method\": \"selectwallet\", \"params\": [\"" + explorerTX + "\"]}");
                 decimal bid = Convert.ToDecimal(textBoxBid.Text);
                 decimal blind = Convert.ToDecimal(textBoxBlind.Text);
                 decimal lockup = bid + blind;
@@ -722,7 +755,6 @@ namespace FireWallet
             }
             else if (state == "REVEAL")
             {
-                await APIPost("", true, "{\"method\": \"selectwallet\", \"params\": [\"" + explorerTX + "\"]}");
                 decimal bid = Convert.ToDecimal(textBoxBid.Text);
                 decimal blind = Convert.ToDecimal(textBoxBlind.Text);
                 decimal lockup = bid + blind;
@@ -759,7 +791,6 @@ namespace FireWallet
             }
             else if (state == "AVAILABLE")
             {
-                await APIPost("", true, "{\"method\": \"selectwallet\", \"params\": [\"" + explorerTX + "\"]}");
                 decimal bid = Convert.ToDecimal(textBoxBid.Text);
                 decimal blind = Convert.ToDecimal(textBoxBlind.Text);
                 decimal lockup = bid + blind;
@@ -792,6 +823,46 @@ namespace FireWallet
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                 }
+            }
+            else if (state == "CLOSED")
+            {
+                if (labelStatusTransferring.Text == "Yes")
+                {                    
+                    string content = "{\"method\": \"sendfinalize\", \"params\": [\"" + domain + "\"]}";
+                    if (height < TransferEnd)
+                    {
+                        content = "{\"method\": \"sendcancel\", \"params\": [\"" + domain + "\"]}";
+                    }
+                    string response = await APIPost("", true, content);
+
+                    if (response == "Error")
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error sending finalize");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+                    else
+                    {
+                        JObject jObject = JObject.Parse(response);
+                        if (jObject["result"].ToString() == "")
+                        {
+                            JObject error = (JObject)jObject["error"];
+                            string message = (string)error["message"];
+                            NotifyForm notifyForm2 = new NotifyForm("Error sending finalize: \n" + message);
+                            notifyForm2.ShowDialog();
+                            notifyForm2.Dispose();
+                            return;
+                        }
+                        JObject result = (JObject)jObject["result"];
+                        string hash = (string)result["hash"];
+
+                        NotifyForm notifyForm = new NotifyForm("Finalize sent: " + hash, "Explorer", explorerTX + hash);
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+
+                    }
+                }
+
             }
         }
 
@@ -835,7 +906,19 @@ namespace FireWallet
             }
             else if (state == "CLOSED")
             {
-
+                if (labelStatusTransferring.Text == "Yes")
+                {
+                    if (height >= TransferEnd)
+                    {
+                        mainForm.AddBatch(domain, "FINALIZE");
+                        this.Close();
+                    }
+                    else
+                    {
+                        mainForm.AddBatch(domain, "CANCEL");
+                        this.Close();
+                    }
+                }
             }
             else
             {
@@ -851,6 +934,16 @@ namespace FireWallet
                         break;
                 }
             }
+        }
+
+        private void buttonRenew_Click(object sender, EventArgs e)
+        {
+            mainForm.AddBatch(domain, "RENEW");
+        }
+
+        private void buttonTransfer_Click(object sender, EventArgs e)
+        {
+            // Transfer
         }
     }
 }

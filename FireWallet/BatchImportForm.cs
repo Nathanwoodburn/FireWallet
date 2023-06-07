@@ -234,18 +234,21 @@ namespace FireWallet
 
                             Batch[] newBatch = new Batch[batches.Length + 1];
                             Array.Copy(batches, newBatch, batches.Length);
-                            newBatch[newBatch.Length - 1] = new Batch(domain, "BID", bid , lockup);
+                            newBatch[newBatch.Length - 1] = new Batch(domain, "BID", bid, lockup);
                             batches = newBatch;
-                        } catch (Exception ex)
+                        }
+                        catch (Exception ex)
                         {
                             NotifyForm notify = new NotifyForm("Import error: \n" + ex.Message);
                             notify.ShowDialog();
                             notify.Dispose();
-                        }                        
+                        }
                     }
                 }
                 this.Close();
-            } else if (comboBoxMode.Text == "OPEN" || comboBoxMode.Text == "REVEAL" || comboBoxMode.Text == "REDEEM" || comboBoxMode.Text == "RENEW")
+            }
+            else if (comboBoxMode.Text == "OPEN" || comboBoxMode.Text == "REVEAL" || comboBoxMode.Text == "REDEEM"
+                || comboBoxMode.Text == "RENEW" || comboBoxMode.Text == "FINALIZE")
             {
                 batches = new Batch[0];
                 foreach (string domain in listBoxDomains.Items)
@@ -259,9 +262,44 @@ namespace FireWallet
                     }
                 }
                 this.Close();
-            } else
+            }
+            else if (comboBoxMode.Text == "TRANSFER")
+            {
+                batches = new Batch[0];
+                foreach (string domain in listBoxDomains.Items)
+                {
+                    if (domain != "")
+                    {
+                        Batch[] newBatch = new Batch[batches.Length + 1];
+                        Array.Copy(batches, newBatch, batches.Length);
+                        newBatch[newBatch.Length - 1] = new Batch(domain, comboBoxMode.Text, textBoxToAddress.Text);
+                        batches = newBatch;
+                    }
+                }
+                this.Close();
+            }
+            else
             {
                 MessageBox.Show("Please select a mode");
+            }
+        }
+
+        private void comboBoxMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBoxMode.Text == "BID")
+            {
+                groupBoxBid.Visible = true;
+                groupBoxtransfer.Visible = false;
+            }
+            else if (comboBoxMode.Text == "TRANSFER")
+            {
+                groupBoxBid.Visible = false;
+                groupBoxtransfer.Visible = true;
+            }
+            else
+            {
+                groupBoxBid.Visible = false;
+                groupBoxtransfer.Visible = false;
             }
         }
     }
@@ -272,10 +310,20 @@ public class Batch
     public string operation { get; }
     public decimal bid { get; }
     public decimal lockup { get; }
+    public string toAddress { get; }
     public Batch(string domain, string operation)
     {
         this.domain = domain;
         this.operation = operation;
+        bid = 0;
+        lockup = 0;
+        toAddress = "";
+    }
+    public Batch(string domain, string operation, string toAddress)
+    {
+        this.domain = domain;
+        this.operation = operation;
+        this.toAddress = toAddress;
         bid = 0;
         lockup = 0;
     }
@@ -285,5 +333,6 @@ public class Batch
         this.operation = operation;
         this.bid = bid;
         this.lockup = lockup;
+        toAddress = "";
     }
 }

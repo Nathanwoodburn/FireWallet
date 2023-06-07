@@ -50,6 +50,7 @@ namespace FireWallet
             labelaccountusername = new Label();
             buttonaccountnew = new Button();
             panelNav = new Panel();
+            buttonBatch = new Button();
             buttonNavDomains = new Button();
             buttonNavReceive = new Button();
             buttonNavSend = new Button();
@@ -84,7 +85,6 @@ namespace FireWallet
             panelDomains = new Panel();
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
-            buttonBatch = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -258,6 +258,19 @@ namespace FireWallet
             panelNav.Name = "panelNav";
             panelNav.Size = new Size(114, 553);
             panelNav.TabIndex = 6;
+            // 
+            // buttonBatch
+            // 
+            buttonBatch.FlatStyle = FlatStyle.Flat;
+            buttonBatch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonBatch.Location = new Point(12, 245);
+            buttonBatch.Name = "buttonBatch";
+            buttonBatch.Size = new Size(89, 30);
+            buttonBatch.TabIndex = 3;
+            buttonBatch.TabStop = false;
+            buttonBatch.Text = "Batch";
+            buttonBatch.UseVisualStyleBackColor = true;
+            buttonBatch.Click += buttonBatch_Click;
             // 
             // buttonNavDomains
             // 
@@ -631,19 +644,6 @@ namespace FireWallet
             textBoxDomainSearch.Size = new Size(206, 29);
             textBoxDomainSearch.TabIndex = 0;
             textBoxDomainSearch.KeyDown += textBoxDomainSearch_KeyDown;
-            // 
-            // buttonBatch
-            // 
-            buttonBatch.FlatStyle = FlatStyle.Flat;
-            buttonBatch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonBatch.Location = new Point(12, 245);
-            buttonBatch.Name = "buttonBatch";
-            buttonBatch.Size = new Size(89, 30);
-            buttonBatch.TabIndex = 3;
-            buttonBatch.TabStop = false;
-            buttonBatch.Text = "Batch";
-            buttonBatch.UseVisualStyleBackColor = true;
-            buttonBatch.Click += buttonBatch_Click;
             // 
             // MainForm
             // 

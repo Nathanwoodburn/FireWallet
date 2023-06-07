@@ -130,6 +130,65 @@ namespace FireWallet
             panelTXs.Controls.Add(tx);
             UpdateTheme();
         }
+        public void AddBatch(string domain, string operation, string toAddress)
+        {
+            if (operation != "TRANSFER")
+            {
+                AddBatch(domain, operation);
+                return;
+            }
+            batches = batches.Concat(new Batch[] { new Batch(domain, operation, toAddress) }).ToArray();
+            Panel tx = new Panel();
+            tx.Left = 0;
+            tx.Top = panelTXs.Controls.Count * 52 + 2;
+            tx.Width = panelTXs.Width - SystemInformation.VerticalScrollBarWidth;
+            tx.Height = 50;
+            tx.BorderStyle = BorderStyle.FixedSingle;
+
+            Label action = new Label();
+            action.Text = operation;
+            action.Location = new Point(10, 10);
+            action.AutoSize = true;
+            tx.Controls.Add(action);
+            Label target = new Label();
+            target.Text = domain;
+            target.Location = new Point(10, 30);
+            target.AutoSize = true;
+            tx.Controls.Add(target);
+
+            Label toAddressLabel = new Label();
+            toAddressLabel.Text = "-> " + toAddress;
+            toAddressLabel.Location = new Point(200, 10);
+            toAddressLabel.AutoSize = true;
+            tx.Controls.Add(toAddressLabel);
+           
+
+            Button deleteTX = new Button();
+            deleteTX.Text = "X";
+            deleteTX.Location = new Point(tx.Width - 40, 10);
+            deleteTX.Width = 25;
+            deleteTX.Height = 25;
+            deleteTX.TextAlign = ContentAlignment.MiddleCenter;
+            deleteTX.Click += (sender, e) => {
+                panelTXs.Controls.Remove(tx);
+                FixSpacing();
+                List<Batch> temp = new List<Batch>();
+                foreach (Batch batch in batches)
+                {
+                    if (batch.domain != domain && batch.method != operation)
+                    {
+                        temp.Add(batch);
+                    }
+                }
+                batches = temp.ToArray();
+            };
+            deleteTX.FlatStyle = FlatStyle.Flat;
+            deleteTX.Font = new Font(deleteTX.Font.FontFamily, 9F, FontStyle.Bold);
+            tx.Controls.Add(deleteTX);
+
+            panelTXs.Controls.Add(tx);
+            UpdateTheme();
+        }
 
         private void FixSpacing()
         {
@@ -389,7 +448,17 @@ namespace FireWallet
                 StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
                 foreach (Batch b in batches)
                 {
-                    sw.WriteLine(b.domain + "," + b.method + "," + b.bid + "," + b.lockup);
+                    if (b.method == "BID")
+                    {
+                        sw.WriteLine(b.domain + "," + b.method + "," + b.bid + "," + b.lockup, b.toAddress);
+                    }
+                    else if (b.method == "TRANSFER")
+                    {
+                        sw.WriteLine(b.domain + "," + b.method + "," + b.toAddress);
+                    } else
+                    {
+                        sw.WriteLine(b.domain + "," + b.method);
+                    }
                 }
                 sw.Dispose();
             }
@@ -413,6 +482,10 @@ namespace FireWallet
                         if (split.Length == 2)
                         {
                             AddBatch(split[0], split[1]);
+                        }
+                        else if (split.Length == 3)
+                        {
+                            AddBatch(split[0], split[1], split[2]);
                         }
                         else if (split.Length == 4)
                         {
@@ -446,7 +519,16 @@ namespace FireWallet
                     {
                         foreach (Batch b in batchImportForm.batches)
                         {
-                            AddBatch(b.domain, b.method, b.bid, b.lockup);
+                            if (b.method == "BID")
+                            {
+                                AddBatch(b.domain, b.method, b.bid, b.lockup);
+                            } else if (b.method == "TRANSFER")
+                            {
+                                AddBatch(b.domain, b.method, b.toAddress);
+                            } else
+                            {
+                                AddBatch(b.domain, b.method);
+                            }
                         }
                     }
                 }
@@ -499,25 +581,47 @@ namespace FireWallet
         public string method { get; }
         public decimal bid { get; }
         public decimal lockup { get; }
-        public Batch(string domain, string operation)
+        public string toAddress { get; }
+        public Batch(string domain, string method)
         {
             this.domain = domain;
-            this.method = operation;
+            this.method = method;
+            bid = 0;
+            lockup = 0;
+            toAddress = "";
+        }
+        public Batch(string domain, string method, string toAddress)
+        {
+            this.domain = domain;
+            this.method = method;
+            this.toAddress = toAddress;
             bid = 0;
             lockup = 0;
         }
-        public Batch(string domain, string operation, decimal bid, decimal lockup)
+        public Batch(string domain, string method, decimal bid, decimal lockup)
         {
             this.domain = domain;
-            this.method = operation;
+            this.method = method;
             this.bid = bid;
             this.lockup = lockup;
+            toAddress = "";
+        }
+        public Batch(string domain, string method, decimal bid, decimal lockup, string toAddress)
+        {
+            this.domain = domain;
+            this.method = method;
+            this.bid = bid;
+            this.lockup = lockup;
+            this.toAddress = toAddress;
         }
         public override string ToString()
         {
             if (method == "BID")
             {
                 return "[\"BID\", \"" + domain + "\", " + bid + ", " + lockup + "]";
+            } else if (method == "TRANSFER")
+            {
+                return "[\"TRANSFER\", \"" + domain + "\", \"" + toAddress + "\"]";
             }
             return "[\"" + method + "\", \"" + domain + "\"]";
         }
