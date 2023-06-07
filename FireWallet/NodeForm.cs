@@ -13,10 +13,10 @@ using System.Xml.Linq;
 
 namespace FireWallet
 {
-    public partial class CreateForm : Form
+    public partial class NodeForm : Form
     {
         string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
-        public CreateForm()
+        public NodeForm()
         {
             InitializeComponent();
         }

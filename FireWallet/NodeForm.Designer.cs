@@ -5,7 +5,7 @@ using SizeF = System.Drawing.SizeF;
 
 namespace FireWallet
 {
-    partial class CreateForm
+    partial class NodeForm
     {
         /// <summary>
         /// Required designer variable.
@@ -160,7 +160,7 @@ namespace FireWallet
             labelNodeIP.TabIndex = 0;
             labelNodeIP.Text = "IP:";
             // 
-            // CreateForm
+            // NodeForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -168,7 +168,7 @@ namespace FireWallet
             Controls.Add(groupBoxNode);
             Controls.Add(labelWelcome);
             FormBorderStyle = FormBorderStyle.Fixed3D;
-            Name = "CreateForm";
+            Name = "NodeForm";
             Text = "Setup";
             Load += CreateForm_Load;
             Resize += CreateForm_Resize;
