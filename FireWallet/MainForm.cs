@@ -984,12 +984,13 @@ namespace FireWallet
                     amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
                 string output = await APIPost("", true, content);
                 JObject APIresp = JObject.Parse(output);
-                if (APIresp["error"].ToString() == "null")
+                if (APIresp["error"].ToString() != "")
                 {
                     NotifyForm notify = new NotifyForm("Error Transaction Failed");
                     notify.ShowDialog();
                     return;
                 }
+                AddLog(APIresp.ToString());
                 string hash = APIresp["result"].ToString();
                 string link = userSettings["explorer-tx"] + hash;
                 NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
