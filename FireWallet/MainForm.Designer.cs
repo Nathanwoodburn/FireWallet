@@ -37,7 +37,7 @@
             timerNodeStatus = new System.Windows.Forms.Timer(components);
             panelaccount = new Panel();
             groupBoxaccount = new GroupBox();
-            label1 = new Label();
+            labelloginprompt = new Label();
             comboBoxaccount = new ComboBox();
             textBoxaccountpassword = new TextBox();
             buttonaccountlogin = new Button();
@@ -45,9 +45,9 @@
             labelaccountusername = new Label();
             buttonaccountnew = new Button();
             panelNav = new Panel();
-            buttonReceive = new Button();
-            buttonSend = new Button();
-            buttonPortfolio = new Button();
+            buttonNavReceive = new Button();
+            buttonNavSend = new Button();
+            buttonNavPortfolio = new Button();
             panelPortfolio = new Panel();
             groupBoxTransactions = new GroupBox();
             groupBoxinfo = new GroupBox();
@@ -59,6 +59,17 @@
             labelLocked = new Label();
             labelBalance = new Label();
             panelSend = new Panel();
+            checkBoxSendSubFee = new CheckBox();
+            buttonSendMax = new Button();
+            buttonSendHNS = new Button();
+            labelSendingError = new Label();
+            labelSendingFee = new Label();
+            textBoxSendingAmount = new TextBox();
+            textBoxSendingTo = new TextBox();
+            labelSendingMax = new Label();
+            labelSendingAmount = new Label();
+            labelSendingTo = new Label();
+            labelSendPrompt = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -66,6 +77,7 @@
             panelPortfolio.SuspendLayout();
             groupBoxinfo.SuspendLayout();
             groupBoxbalance.SuspendLayout();
+            panelSend.SuspendLayout();
             SuspendLayout();
             // 
             // statusStripmain
@@ -128,7 +140,7 @@
             // 
             // groupBoxaccount
             // 
-            groupBoxaccount.Controls.Add(label1);
+            groupBoxaccount.Controls.Add(labelloginprompt);
             groupBoxaccount.Controls.Add(comboBoxaccount);
             groupBoxaccount.Controls.Add(textBoxaccountpassword);
             groupBoxaccount.Controls.Add(buttonaccountlogin);
@@ -143,15 +155,15 @@
             groupBoxaccount.TabStop = false;
             groupBoxaccount.Text = "Login";
             // 
-            // label1
+            // labelloginprompt
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 15.75F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(6, 19);
-            label1.Name = "label1";
-            label1.Size = new Size(281, 30);
-            label1.TabIndex = 7;
-            label1.Text = "Please Login to your account";
+            labelloginprompt.AutoSize = true;
+            labelloginprompt.Font = new Font("Segoe UI", 15.75F, FontStyle.Regular, GraphicsUnit.Point);
+            labelloginprompt.Location = new Point(6, 19);
+            labelloginprompt.Name = "labelloginprompt";
+            labelloginprompt.Size = new Size(281, 30);
+            labelloginprompt.TabIndex = 7;
+            labelloginprompt.Text = "Please Login to your account";
             // 
             // comboBoxaccount
             // 
@@ -216,49 +228,52 @@
             // 
             // panelNav
             // 
-            panelNav.Controls.Add(buttonReceive);
-            panelNav.Controls.Add(buttonSend);
-            panelNav.Controls.Add(buttonPortfolio);
+            panelNav.Controls.Add(buttonNavReceive);
+            panelNav.Controls.Add(buttonNavSend);
+            panelNav.Controls.Add(buttonNavPortfolio);
             panelNav.Dock = DockStyle.Left;
             panelNav.Location = new Point(0, 22);
             panelNav.Name = "panelNav";
             panelNav.Size = new Size(114, 553);
             panelNav.TabIndex = 6;
             // 
-            // buttonReceive
+            // buttonNavReceive
             // 
-            buttonReceive.FlatStyle = FlatStyle.Flat;
-            buttonReceive.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonReceive.Location = new Point(12, 134);
-            buttonReceive.Name = "buttonReceive";
-            buttonReceive.Size = new Size(89, 30);
-            buttonReceive.TabIndex = 1;
-            buttonReceive.Text = "Receive";
-            buttonReceive.UseVisualStyleBackColor = true;
+            buttonNavReceive.FlatStyle = FlatStyle.Flat;
+            buttonNavReceive.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonNavReceive.Location = new Point(12, 134);
+            buttonNavReceive.Name = "buttonNavReceive";
+            buttonNavReceive.Size = new Size(89, 30);
+            buttonNavReceive.TabIndex = 1;
+            buttonNavReceive.TabStop = false;
+            buttonNavReceive.Text = "Receive";
+            buttonNavReceive.UseVisualStyleBackColor = true;
             // 
-            // buttonSend
+            // buttonNavSend
             // 
-            buttonSend.FlatStyle = FlatStyle.Flat;
-            buttonSend.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonSend.Location = new Point(12, 80);
-            buttonSend.Name = "buttonSend";
-            buttonSend.Size = new Size(89, 30);
-            buttonSend.TabIndex = 1;
-            buttonSend.Text = "Send";
-            buttonSend.UseVisualStyleBackColor = true;
-            buttonSend.Click += buttonSend_Click;
+            buttonNavSend.FlatStyle = FlatStyle.Flat;
+            buttonNavSend.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonNavSend.Location = new Point(12, 80);
+            buttonNavSend.Name = "buttonNavSend";
+            buttonNavSend.Size = new Size(89, 30);
+            buttonNavSend.TabIndex = 1;
+            buttonNavSend.TabStop = false;
+            buttonNavSend.Text = "Send";
+            buttonNavSend.UseVisualStyleBackColor = true;
+            buttonNavSend.Click += SendPanel_Click;
             // 
-            // buttonPortfolio
+            // buttonNavPortfolio
             // 
-            buttonPortfolio.FlatStyle = FlatStyle.Flat;
-            buttonPortfolio.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonPortfolio.Location = new Point(12, 25);
-            buttonPortfolio.Name = "buttonPortfolio";
-            buttonPortfolio.Size = new Size(89, 30);
-            buttonPortfolio.TabIndex = 0;
-            buttonPortfolio.Text = "Portfolio";
-            buttonPortfolio.UseVisualStyleBackColor = true;
-            buttonPortfolio.Click += buttonPortfolio_Click;
+            buttonNavPortfolio.FlatStyle = FlatStyle.Flat;
+            buttonNavPortfolio.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonNavPortfolio.Location = new Point(12, 25);
+            buttonNavPortfolio.Name = "buttonNavPortfolio";
+            buttonNavPortfolio.Size = new Size(89, 30);
+            buttonNavPortfolio.TabIndex = 0;
+            buttonNavPortfolio.TabStop = false;
+            buttonNavPortfolio.Text = "Portfolio";
+            buttonNavPortfolio.UseVisualStyleBackColor = true;
+            buttonNavPortfolio.Click += PortfolioPanel_Click;
             // 
             // panelPortfolio
             // 
@@ -367,11 +382,137 @@
             // 
             // panelSend
             // 
+            panelSend.Controls.Add(checkBoxSendSubFee);
+            panelSend.Controls.Add(buttonSendMax);
+            panelSend.Controls.Add(buttonSendHNS);
+            panelSend.Controls.Add(labelSendingError);
+            panelSend.Controls.Add(labelSendingFee);
+            panelSend.Controls.Add(textBoxSendingAmount);
+            panelSend.Controls.Add(textBoxSendingTo);
+            panelSend.Controls.Add(labelSendingMax);
+            panelSend.Controls.Add(labelSendingAmount);
+            panelSend.Controls.Add(labelSendingTo);
+            panelSend.Controls.Add(labelSendPrompt);
             panelSend.Location = new Point(120, 25);
             panelSend.Name = "panelSend";
-            panelSend.Size = new Size(200, 100);
+            panelSend.Size = new Size(974, 521);
             panelSend.TabIndex = 2;
             panelSend.Visible = false;
+            // 
+            // checkBoxSendSubFee
+            // 
+            checkBoxSendSubFee.AutoSize = true;
+            checkBoxSendSubFee.CheckAlign = ContentAlignment.MiddleRight;
+            checkBoxSendSubFee.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            checkBoxSendSubFee.Location = new Point(254, 258);
+            checkBoxSendSubFee.Name = "checkBoxSendSubFee";
+            checkBoxSendSubFee.Size = new Size(206, 25);
+            checkBoxSendSubFee.TabIndex = 16;
+            checkBoxSendSubFee.Text = "Subtract Fee from Output";
+            checkBoxSendSubFee.UseVisualStyleBackColor = true;
+            // 
+            // buttonSendMax
+            // 
+            buttonSendMax.FlatStyle = FlatStyle.Flat;
+            buttonSendMax.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSendMax.Location = new Point(609, 159);
+            buttonSendMax.Name = "buttonSendMax";
+            buttonSendMax.Size = new Size(81, 29);
+            buttonSendMax.TabIndex = 15;
+            buttonSendMax.Text = "Max";
+            buttonSendMax.UseVisualStyleBackColor = true;
+            buttonSendMax.Click += buttonSendMax_Click;
+            // 
+            // buttonSendHNS
+            // 
+            buttonSendHNS.FlatStyle = FlatStyle.Flat;
+            buttonSendHNS.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSendHNS.Location = new Point(361, 315);
+            buttonSendHNS.Name = "buttonSendHNS";
+            buttonSendHNS.Size = new Size(150, 46);
+            buttonSendHNS.TabIndex = 14;
+            buttonSendHNS.Text = "Send";
+            buttonSendHNS.UseVisualStyleBackColor = true;
+            buttonSendHNS.Click += buttonSendHNS_Click;
+            // 
+            // labelSendingError
+            // 
+            labelSendingError.AutoSize = true;
+            labelSendingError.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSendingError.Location = new Point(615, 131);
+            labelSendingError.Name = "labelSendingError";
+            labelSendingError.Size = new Size(52, 21);
+            labelSendingError.TabIndex = 13;
+            labelSendingError.Text = "label1";
+            labelSendingError.Visible = false;
+            // 
+            // labelSendingFee
+            // 
+            labelSendingFee.AutoSize = true;
+            labelSendingFee.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSendingFee.Location = new Point(254, 234);
+            labelSendingFee.Name = "labelSendingFee";
+            labelSendingFee.Size = new Size(109, 21);
+            labelSendingFee.TabIndex = 12;
+            labelSendingFee.Text = "Estimated Fee:";
+            // 
+            // textBoxSendingAmount
+            // 
+            textBoxSendingAmount.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            textBoxSendingAmount.Location = new Point(346, 159);
+            textBoxSendingAmount.Name = "textBoxSendingAmount";
+            textBoxSendingAmount.Size = new Size(344, 29);
+            textBoxSendingAmount.TabIndex = 11;
+            textBoxSendingAmount.Leave += textBoxSendingAmount_Leave;
+            // 
+            // textBoxSendingTo
+            // 
+            textBoxSendingTo.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            textBoxSendingTo.Location = new Point(346, 98);
+            textBoxSendingTo.Name = "textBoxSendingTo";
+            textBoxSendingTo.Size = new Size(344, 29);
+            textBoxSendingTo.TabIndex = 11;
+            textBoxSendingTo.Leave += textBoxSendingTo_Leave;
+            // 
+            // labelSendingMax
+            // 
+            labelSendingMax.AutoSize = true;
+            labelSendingMax.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSendingMax.Location = new Point(254, 204);
+            labelSendingMax.Name = "labelSendingMax";
+            labelSendingMax.Size = new Size(99, 21);
+            labelSendingMax.TabIndex = 10;
+            labelSendingMax.Text = "Max Amount";
+            // 
+            // labelSendingAmount
+            // 
+            labelSendingAmount.AutoSize = true;
+            labelSendingAmount.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSendingAmount.Location = new Point(254, 162);
+            labelSendingAmount.Name = "labelSendingAmount";
+            labelSendingAmount.Size = new Size(66, 21);
+            labelSendingAmount.TabIndex = 9;
+            labelSendingAmount.Text = "Amount";
+            // 
+            // labelSendingTo
+            // 
+            labelSendingTo.AutoSize = true;
+            labelSendingTo.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSendingTo.Location = new Point(254, 101);
+            labelSendingTo.Name = "labelSendingTo";
+            labelSendingTo.Size = new Size(86, 21);
+            labelSendingTo.TabIndex = 8;
+            labelSendingTo.Text = "Sending To";
+            // 
+            // labelSendPrompt
+            // 
+            labelSendPrompt.AutoSize = true;
+            labelSendPrompt.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSendPrompt.Location = new Point(395, 38);
+            labelSendPrompt.Name = "labelSendPrompt";
+            labelSendPrompt.Size = new Size(101, 28);
+            labelSendPrompt.TabIndex = 0;
+            labelSendPrompt.Text = "Send HNS";
             // 
             // MainForm
             // 
@@ -399,6 +540,8 @@
             groupBoxinfo.PerformLayout();
             groupBoxbalance.ResumeLayout(false);
             groupBoxbalance.PerformLayout();
+            panelSend.ResumeLayout(false);
+            panelSend.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -415,15 +558,15 @@
         private Label labelaccountusername;
         private Label labelaccountpassword;
         private GroupBox groupBoxaccount;
-        private Label label1;
+        private Label labelloginprompt;
         private ComboBox comboBoxaccount;
         private TextBox textBoxaccountpassword;
         private ToolStripStatusLabel toolStripStatusLabelstatus;
         private ToolStripSplitButton toolStripSplitButtonlogout;
         private Panel panelNav;
-        private Button buttonPortfolio;
-        private Button buttonSend;
-        private Button buttonReceive;
+        private Button buttonNavPortfolio;
+        private Button buttonNavSend;
+        private Button buttonNavReceive;
         private Panel panelPortfolio;
         private Label labelLocked;
         private Label labelBalance;
@@ -435,5 +578,16 @@
         private Label labelSyncPercent;
         private GroupBox groupBoxTransactions;
         private Panel panelSend;
+        private Label labelSendPrompt;
+        private Label labelSendingMax;
+        private Label labelSendingAmount;
+        private Label labelSendingTo;
+        private TextBox textBoxSendingTo;
+        private TextBox textBoxSendingAmount;
+        private Label labelSendingFee;
+        private Label labelSendingError;
+        private Button buttonSendHNS;
+        private Button buttonSendMax;
+        private CheckBox checkBoxSendSubFee;
     }
 }

@@ -16,8 +16,8 @@ namespace FireWallet
         int Network;
         string account;
         string password;
-        double balance;
-        double balanceLocked;
+        decimal balance;
+        decimal balanceLocked;
         int screen; // 0 = login, 1 = portfolio
         int height;
         double syncProgress;
@@ -288,6 +288,7 @@ namespace FireWallet
             sw.WriteLine("transparency-percent: 90");
             sw.WriteLine("selected-bg: #000000");
             sw.WriteLine("selected-fg: #ffffff");
+            sw.WriteLine("error: #ff0000");
 
             sw.Dispose();
             AddLog("Created theme file");
@@ -415,7 +416,7 @@ namespace FireWallet
                 toolStripSplitButtonlogout.Visible = true;
                 panelNav.Visible = true;
                 screen = 1;
-                buttonPortfolio.PerformClick();
+                buttonNavPortfolio.PerformClick();
             }
         }
 
@@ -449,6 +450,7 @@ namespace FireWallet
             }
             panelaccount.Visible = true;
             panelNav.Visible = false;
+            panelSend.Visible = false;
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             screen = 0;
 
@@ -476,15 +478,21 @@ namespace FireWallet
 
             JObject resp = JObject.Parse(response);
 
-            double available = Convert.ToDouble(resp["unconfirmed"].ToString()) / 1000000;
-            double locked = Convert.ToDouble(resp["lockedUnconfirmed"].ToString()) / 1000000;
+            decimal available = Convert.ToDecimal(resp["unconfirmed"].ToString()) / 1000000;
+            decimal locked = Convert.ToDecimal(resp["lockedUnconfirmed"].ToString()) / 1000000;
             available = available - locked;
-            available = Math.Round(available, 2);
-            locked = Math.Round(locked, 2);
+            available = decimal.Round(available, 2);
+            locked = decimal.Round(locked, 2);
             balance = available;
             balanceLocked = locked;
         }
-
+        /// <summary>
+        /// Post to HSD API
+        /// </summary>
+        /// <param name="path">Path to post to</param>
+        /// <param name="wallet">Whether to use port 12039</param>
+        /// <param name="content">Content to post</param>
+        /// <returns></returns>
         private async Task<string> APIPost(string path, bool wallet, string content)
         {
             string key = nodeSettings["Key"];
@@ -516,6 +524,12 @@ namespace FireWallet
 
             return await resp.Content.ReadAsStringAsync();
         }
+        /// <summary>
+        /// Get from HSD API
+        /// </summary>
+        /// <param name="path">Path to get</param>
+        /// <param name="wallet">Whether to use port 12039</param>
+        /// <returns></returns>
         private async Task<string> APIGet(string path, bool wallet)
         {
             string key = nodeSettings["Key"];
@@ -548,7 +562,7 @@ namespace FireWallet
             }
         }
 
-        private async void GetInfo()
+        private async void GetTXHistory()
         {
             // Get height and progress
             String APIresponse = await APIGet("", false);
@@ -650,6 +664,32 @@ namespace FireWallet
 
 
         }
+        private async Task<string> GetFee()
+        {
+            try
+            {
+                string response = await APIGet("fee", false);
+                JObject resp = JObject.Parse(response);
+                decimal fee = Convert.ToDecimal(resp["rate"].ToString());
+                fee = fee / 1000000;
+                if (fee < 0.0001m) fee = 1;
+
+                return fee.ToString();
+                //return resp["rate"].ToString();
+            }
+            catch
+            {
+                return "1";
+            }
+        }
+        private async Task<bool> ValidAddress(string address)
+        {
+            string output = await APIPost("", false, "{\"method\": \"validateaddress\",\"params\": [ \"" + address + "\" ]}");
+            JObject APIresp = JObject.Parse(output);
+            JObject result = JObject.Parse(APIresp["result"].ToString());
+            if (result["isvalid"].ToString() == "True") return true;
+            else return false;
+        }
 
         #endregion
         #region Timers
@@ -659,42 +699,173 @@ namespace FireWallet
             // If logged in, update info
             if (panelaccount.Visible == false)
             {
-                GetInfo();
+                GetTXHistory();
             }
         }
         #endregion
 
         #region Nav
-        private async void buttonPortfolio_Click(object sender, EventArgs e)
+        private async void PortfolioPanel_Click(object sender, EventArgs e)
         {
-            buttonSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             panelSend.Hide();
             panelPortfolio.Show();
             await UpdateBalance();
-            GetInfo();
+            GetTXHistory();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
             labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS";
             labelBalanceTotal.Text = "Total: " + (balance + balanceLocked).ToString() + " HNS";
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
-                buttonPortfolio.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonPortfolio.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+                buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
+        }
+
+        private async void SendPanel_Click(object sender, EventArgs e)
+        {
+            panelPortfolio.Hide();
+            panelSend.Show();
+            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            {
+                buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
+            if (theme.ContainsKey("error"))
+            {
+                labelSendingError.ForeColor = ColorTranslator.FromHtml(theme["error"]);
+            }
+
+            labelSendPrompt.Left = (panelSend.Width - labelSendPrompt.Width) / 2;
+            buttonSendHNS.Left = (panelSend.Width - buttonSendHNS.Width) / 2;
+            labelSendingTo.Left = (panelSend.Width - labelSendingTo.Width - textBoxSendingTo.Width) / 2;
+            labelSendingAmount.Left = labelSendingTo.Left;
+            textBoxSendingTo.Left = labelSendingTo.Left + labelSendingTo.Width + 10;
+            textBoxSendingAmount.Left = textBoxSendingTo.Left;
+            labelSendingMax.Left = labelSendingTo.Left;
+            labelSendingError.Left = textBoxSendingTo.Left + textBoxSendingTo.Width + 10;
+            labelSendingFee.Left = labelSendingTo.Left;
+            buttonSendMax.Left = textBoxSendingAmount.Left + textBoxSendingAmount.Width - buttonSendMax.Width;
+            checkBoxSendSubFee.Left = labelSendingTo.Left;
+
+            labelSendingMax.Text = "Max: " + balance.ToString() + " HNS";
+            textBoxSendingTo.Focus();
+            string fee = await GetFee();
+            labelSendingFee.Text = "Est. Fee: " + fee + " HNS";
+            labelSendingError.Hide();
+
+        }
+        #endregion
+        #region Send
+        private async void textBoxSendingTo_Leave(object sender, EventArgs e)
+        {
+            try
+            {
+                bool valid = await ValidAddress(textBoxSendingTo.Text);
+                if (valid)
+                {
+                    labelSendingError.Hide();
+                    labelSendingError.Text = "";
+                }
+                else
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text = "Invalid Address";
+                }
+            }
+            catch (Exception ex)
+            {
+                labelSendingError.Show();
+                labelSendingError.Text = ex.Message;
+            }
+        }
+
+        private void textBoxSendingAmount_Leave(object sender, EventArgs e)
+        {
+            decimal amount = 0;
+            if (decimal.TryParse(textBoxSendingAmount.Text, out amount))
+            {
+                labelSendingError.Hide();
+                labelSendingError.Text = "";
+            }
+            else
+            {
+                labelSendingError.Show();
+                labelSendingError.Text = "Invalid Amount";
+            }
+        }
+        
+        private async void buttonSendMax_Click(object sender, EventArgs e)
+        {
+            string fee = await GetFee();
+            decimal feeDecimal = decimal.Parse(fee);
+            textBoxSendingAmount.Text = (balance - feeDecimal).ToString();
+        }
+
+        private async void buttonSendHNS_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string address = textBoxSendingTo.Text;
+                bool valid = await ValidAddress(address);
+                if (!valid)
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text = "Invalid Address";
+                    return;
+                }
+                decimal amount = 0;
+                if (!decimal.TryParse(textBoxSendingAmount.Text, out amount))
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text += " Invalid Amount";
+                    return;
+                }
+                string feeString = await GetFee();
+                decimal fee = decimal.Parse(feeString);
+                string subtractFee = "false";
+                if (checkBoxSendSubFee.Checked) subtractFee = "true";
+                else if (amount > (balance - fee))
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text += " Insufficient Funds";
+                    return;
+                }
+
+                AddLog("Sending " + amount.ToString() + " HNS to " + address);
+                string content = "{\"method\": \"sendtoaddress\",\"params\": [ \"" + address + "\", " +
+                    amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
+                string output = await APIPost("", true, content);
+                JObject APIresp = JObject.Parse(output);
+                if (APIresp["error"].ToString() == "null")
+                {
+                    NotifyForm notify = new NotifyForm("Error Transaction Failed");
+                    notify.ShowDialog();
+                    return; 
+                }
+                string hash = APIresp["result"].ToString();
+                string link = userSettings["explorer-tx"] + hash;
+                NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
+                    "Explorer",link);
+                notifySuccess.ShowDialog();
+                textBoxSendingTo.Text = "";
+                textBoxSendingAmount.Text = "";
+                labelSendingError.Hide();
+                labelSendingError.Text = "";
+                buttonNavPortfolio.PerformClick();
+
+            }
+            catch (Exception ex)
+            {
+                AddLog(ex.Message);
+                labelSendingError.Show();
+                labelSendingError.Text = ex.Message;
             }
         }
         #endregion
 
-        private void buttonSend_Click(object sender, EventArgs e)
-        {
-            panelPortfolio.Hide();
-            panelSend.Show();
-            buttonPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
-            {
-                buttonSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonSend.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
-            }
-        }
     }
 }
