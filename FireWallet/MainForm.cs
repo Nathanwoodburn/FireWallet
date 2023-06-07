@@ -17,19 +17,20 @@ namespace FireWallet
     public partial class MainForm : Form
     {
         #region Variables
-        string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
-        Dictionary<string, string> nodeSettings;
-        Dictionary<string, string> userSettings;
-        Dictionary<string, string> theme;
-        int Network;
-        string account;
-        string password;
-        decimal balance;
-        decimal balanceLocked;
-        int screen; // 0 = login, 1 = portfolio
-        int height;
-        double syncProgress;
-        int pendingTransactions;
+        public string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
+        public Dictionary<string, string> nodeSettings { get; set; }
+        public Dictionary<string, string> userSettings { get; set; }
+        public Dictionary<string, string> theme { get; set; }
+        public int Network { get; set; }
+        public string account { get; set; }
+        public string password { get; set; }
+        public decimal balance { get; set; }
+        public decimal balanceLocked { get; set; }
+        public int height { get; set; }
+        public double syncProgress { get; set; }
+        public int pendingTransactions { get; set; }
+        public bool batchMode { get; set; }
+        BatchForm batchForm { get; set; }
 
         #endregion
         #region Application
@@ -55,12 +56,12 @@ namespace FireWallet
 
             ResizeForm();
             panelNav.Visible = false;
-            screen = 0;
 
             // Prompt for login
             GetAccounts();
 
             AddLog("Loaded");
+            batchMode = false;
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
@@ -425,7 +426,6 @@ namespace FireWallet
                 panelaccount.Visible = false;
                 toolStripSplitButtonlogout.Visible = true;
                 panelNav.Visible = true;
-                screen = 1;
                 buttonNavPortfolio.PerformClick();
             }
         }
@@ -465,7 +465,6 @@ namespace FireWallet
             panelDomains.Visible = false;
             panelPortfolio.Visible = false;
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
-            screen = 0;
             textBoxaccountpassword.Focus();
         }
         #endregion
@@ -986,11 +985,12 @@ namespace FireWallet
                 JObject APIresp = JObject.Parse(output);
                 if (APIresp["error"].ToString() != "")
                 {
+                    AddLog("Failed:");
+                    AddLog(APIresp.ToString());
                     NotifyForm notify = new NotifyForm("Error Transaction Failed");
                     notify.ShowDialog();
                     return;
                 }
-                AddLog(APIresp.ToString());
                 string hash = APIresp["result"].ToString();
                 string link = userSettings["explorer-tx"] + hash;
                 NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
@@ -1027,11 +1027,45 @@ namespace FireWallet
             {
                 e.SuppressKeyPress = true;
                 DomainForm domainForm = new DomainForm(textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
-                domainForm.OriginalForm = this;
+                domainForm.mainForm = this;
 
                 domainForm.Show();
 
             }
         }
+
+
+        
+        #region Batching
+        public void AddBatch(string domain, string operation)
+        {
+            if (operation == "BID") return;
+            if (!batchMode)
+            {
+                batchForm = new BatchForm(this);
+                batchForm.Show();
+                batchMode = true;
+            }
+            batchForm.AddBatch(domain, operation);
+
+        }
+        public void AddBatch(string domain, string operation, decimal bid, decimal lockup)
+        {
+            if (operation != "BID") return;
+            if (!batchMode)
+            {
+                batchForm = new BatchForm(this);
+                batchForm.Show();
+                batchMode = true;
+            }
+            batchForm.AddBatch(domain, operation, bid, lockup);
+
+        }
+        public void FinishBatch()
+        {
+            batchMode = false;
+            batchForm.Dispose();
+        }
+        #endregion
     }
 }

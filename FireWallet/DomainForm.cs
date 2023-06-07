@@ -30,7 +30,7 @@ namespace FireWallet
         string explorerTX;
         string explorerName;
 
-        public Form OriginalForm { get; set; }
+        public MainForm mainForm { get; set; }
 
         public DomainForm(string domain, string explorerTX, string explorerName)
         {
@@ -313,8 +313,6 @@ namespace FireWallet
                             // No info -> Domain not yet auctioned
                             labelStatusMain.Text = "Available";
                             ActionSetup("AVAILABLE");
-                            AddLog(ex.Message);
-                            AddLog(result.ToString());
                         }
                     }
                 }
@@ -817,6 +815,54 @@ namespace FireWallet
                 UseShellExecute = true
             };
             Process.Start(psi);
+        }
+
+        private void buttonActionAlt_Click(object sender, EventArgs e)
+        {
+            if (state == "BIDDING")
+            {
+                int count = textBoxBid.Text.Count(c => c == '.');
+                int count2 = textBoxBlind.Text.Count(c => c == '.');
+                if (count > 1 || count2 > 1)
+                {
+                    NotifyForm notifyForm = new NotifyForm("Invalid bid amount");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+                if (textBoxBid.Text == "" || textBoxBid.Text == ".")
+                {
+                    textBoxBid.Text = "0";
+                }
+                if (textBoxBlind.Text == "" || textBoxBlind.Text == ".")
+                {
+                    textBoxBlind.Text = "0";
+                }
+                decimal bid = Convert.ToDecimal(textBoxBid.Text);
+                decimal blind = Convert.ToDecimal(textBoxBlind.Text);
+                decimal lockup = bid + blind;
+
+                mainForm.AddBatch(domain, "BID", bid, lockup);
+                this.Close();
+            }
+            else if (state == "CLOSED")
+            {
+
+            }
+            else
+            {
+                switch (state)
+                {
+                    case "REVEAL":
+                        mainForm.AddBatch(domain, "REVEAL");
+                        this.Close();
+                        break;
+                    case "AVAILABLE":
+                        mainForm.AddBatch(domain, "OPEN");
+                        this.Close();
+                        break;
+                }
+            }
         }
     }
 }

@@ -302,6 +302,7 @@
             buttonActionAlt.TabIndex = 1;
             buttonActionAlt.Text = "Bid in Batch";
             buttonActionAlt.UseVisualStyleBackColor = true;
+            buttonActionAlt.Click += buttonActionAlt_Click;
             // 
             // buttonActionMain
             // 
@@ -322,6 +323,7 @@
             buttonExplorer.Name = "buttonExplorer";
             buttonExplorer.Size = new System.Drawing.Size(98, 34);
             buttonExplorer.TabIndex = 15;
+            buttonExplorer.TabStop = false;
             buttonExplorer.Text = "Explorer";
             buttonExplorer.UseVisualStyleBackColor = true;
             buttonExplorer.Click += Explorer_Click;
