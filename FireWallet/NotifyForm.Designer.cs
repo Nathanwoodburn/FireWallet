@@ -50,7 +50,7 @@
             buttonOK.Location = new Point(271, 120);
             buttonOK.Name = "buttonOK";
             buttonOK.Size = new Size(99, 38);
-            buttonOK.TabIndex = 1;
+            buttonOK.TabIndex = 0;
             buttonOK.Text = "Ok";
             buttonOK.UseVisualStyleBackColor = true;
             buttonOK.Click += OK_Click;

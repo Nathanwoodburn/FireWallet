@@ -32,6 +32,7 @@ namespace FireWallet
             buttonALT.Text = altText;
             buttonALT.Visible = true;
             this.altLink = altLink;
+            buttonOK.Focus();
         }
 
         #region Theming
