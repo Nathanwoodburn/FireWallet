@@ -292,6 +292,12 @@ namespace FireWallet
                                 labelStatusTimeToNext.Text = reveal;
                                 labelStatusNextState.Text = "Closing in:";
                             }
+                            else if (state == "OPENING")
+                            {
+                                labelStatusNextState.Text = "Bidding in:";
+                                string expires = stats["blocksUntilBidding"].ToString() + " Blocks (~" + stats["hoursUntilBidding"].ToString() + " hrs)";
+                                labelStatusTimeToNext.Text = expires;
+                            }
                             else
                             {
                                 AddLog("State not added yet: " + state);

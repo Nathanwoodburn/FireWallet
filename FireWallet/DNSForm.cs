@@ -30,6 +30,7 @@ namespace FireWallet
             nodeSettings = mainForm.nodeSettings;
 
             cancel = true;
+            this.Text = domain + "/ DNS | FireWallet";
         }
         private void DNSForm_Load(object sender, EventArgs e)
         {

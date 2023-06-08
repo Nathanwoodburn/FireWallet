@@ -51,6 +51,7 @@ namespace FireWallet
             labelaccountusername = new Label();
             buttonaccountnew = new Button();
             panelNav = new Panel();
+            buttonNavSettings = new Button();
             buttonBatch = new Button();
             buttonNavDomains = new Button();
             buttonNavReceive = new Button();
@@ -88,6 +89,18 @@ namespace FireWallet
             panelDomainList = new Panel();
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
+            panelSettings = new Panel();
+            labelSettingsSaved = new Label();
+            buttonSettingsSave = new Button();
+            groupBoxSettingsExplorer = new GroupBox();
+            labelSettings1 = new Label();
+            textBoxExName = new TextBox();
+            labelSettings2 = new Label();
+            textBoxExBlock = new TextBox();
+            labelSettings3 = new Label();
+            textBoxExAddr = new TextBox();
+            labelSettings4 = new Label();
+            textBoxExTX = new TextBox();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -100,6 +113,8 @@ namespace FireWallet
             ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).BeginInit();
             panelDomains.SuspendLayout();
             groupBoxDomains.SuspendLayout();
+            panelSettings.SuspendLayout();
+            groupBoxSettingsExplorer.SuspendLayout();
             SuspendLayout();
             // 
             // statusStripmain
@@ -255,6 +270,7 @@ namespace FireWallet
             // 
             // panelNav
             // 
+            panelNav.Controls.Add(buttonNavSettings);
             panelNav.Controls.Add(buttonBatch);
             panelNav.Controls.Add(buttonNavDomains);
             panelNav.Controls.Add(buttonNavReceive);
@@ -265,6 +281,19 @@ namespace FireWallet
             panelNav.Name = "panelNav";
             panelNav.Size = new Size(114, 553);
             panelNav.TabIndex = 6;
+            // 
+            // buttonNavSettings
+            // 
+            buttonNavSettings.FlatStyle = FlatStyle.Flat;
+            buttonNavSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonNavSettings.Location = new Point(12, 508);
+            buttonNavSettings.Name = "buttonNavSettings";
+            buttonNavSettings.Size = new Size(89, 33);
+            buttonNavSettings.TabIndex = 4;
+            buttonNavSettings.TabStop = false;
+            buttonNavSettings.Text = "Settings";
+            buttonNavSettings.UseVisualStyleBackColor = true;
+            buttonNavSettings.Click += buttonNavSettings_Click;
             // 
             // buttonBatch
             // 
@@ -628,7 +657,7 @@ namespace FireWallet
             panelDomains.Controls.Add(groupBoxDomains);
             panelDomains.Controls.Add(labelDomainSearch);
             panelDomains.Controls.Add(textBoxDomainSearch);
-            panelDomains.Location = new Point(120, 27);
+            panelDomains.Location = new Point(1129, 22);
             panelDomains.Name = "panelDomains";
             panelDomains.Size = new Size(920, 536);
             panelDomains.TabIndex = 18;
@@ -674,11 +703,128 @@ namespace FireWallet
             textBoxDomainSearch.TextChanged += textBoxDomainSearch_TextChanged;
             textBoxDomainSearch.KeyDown += textBoxDomainSearch_KeyDown;
             // 
+            // panelSettings
+            // 
+            panelSettings.Controls.Add(labelSettingsSaved);
+            panelSettings.Controls.Add(buttonSettingsSave);
+            panelSettings.Controls.Add(groupBoxSettingsExplorer);
+            panelSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            panelSettings.Location = new Point(121, 21);
+            panelSettings.Name = "panelSettings";
+            panelSettings.Size = new Size(930, 550);
+            panelSettings.TabIndex = 19;
+            panelSettings.Visible = false;
+            // 
+            // labelSettingsSaved
+            // 
+            labelSettingsSaved.AutoSize = true;
+            labelSettingsSaved.Location = new Point(109, 515);
+            labelSettingsSaved.Name = "labelSettingsSaved";
+            labelSettingsSaved.Size = new Size(52, 21);
+            labelSettingsSaved.TabIndex = 6;
+            labelSettingsSaved.Text = "Saved";
+            labelSettingsSaved.Visible = false;
+            // 
+            // buttonSettingsSave
+            // 
+            buttonSettingsSave.FlatStyle = FlatStyle.Flat;
+            buttonSettingsSave.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSettingsSave.Location = new Point(14, 509);
+            buttonSettingsSave.Name = "buttonSettingsSave";
+            buttonSettingsSave.Size = new Size(89, 33);
+            buttonSettingsSave.TabIndex = 4;
+            buttonSettingsSave.TabStop = false;
+            buttonSettingsSave.Text = "Save";
+            buttonSettingsSave.UseVisualStyleBackColor = true;
+            buttonSettingsSave.Click += buttonSettingsSave_Click;
+            // 
+            // groupBoxSettingsExplorer
+            // 
+            groupBoxSettingsExplorer.Controls.Add(labelSettings1);
+            groupBoxSettingsExplorer.Controls.Add(textBoxExName);
+            groupBoxSettingsExplorer.Controls.Add(labelSettings2);
+            groupBoxSettingsExplorer.Controls.Add(textBoxExBlock);
+            groupBoxSettingsExplorer.Controls.Add(labelSettings3);
+            groupBoxSettingsExplorer.Controls.Add(textBoxExAddr);
+            groupBoxSettingsExplorer.Controls.Add(labelSettings4);
+            groupBoxSettingsExplorer.Controls.Add(textBoxExTX);
+            groupBoxSettingsExplorer.Location = new Point(14, 16);
+            groupBoxSettingsExplorer.Name = "groupBoxSettingsExplorer";
+            groupBoxSettingsExplorer.Size = new Size(487, 188);
+            groupBoxSettingsExplorer.TabIndex = 5;
+            groupBoxSettingsExplorer.TabStop = false;
+            groupBoxSettingsExplorer.Text = "Explorer Settings";
+            // 
+            // labelSettings1
+            // 
+            labelSettings1.AutoSize = true;
+            labelSettings1.Location = new Point(43, 31);
+            labelSettings1.Name = "labelSettings1";
+            labelSettings1.Size = new Size(108, 21);
+            labelSettings1.TabIndex = 0;
+            labelSettings1.Text = "Explorer (TXs):";
+            // 
+            // textBoxExName
+            // 
+            textBoxExName.Location = new Point(157, 133);
+            textBoxExName.Name = "textBoxExName";
+            textBoxExName.Size = new Size(307, 29);
+            textBoxExName.TabIndex = 4;
+            // 
+            // labelSettings2
+            // 
+            labelSettings2.AutoSize = true;
+            labelSettings2.Location = new Point(11, 66);
+            labelSettings2.Name = "labelSettings2";
+            labelSettings2.Size = new Size(140, 21);
+            labelSettings2.TabIndex = 0;
+            labelSettings2.Text = "Explorer (Address):";
+            // 
+            // textBoxExBlock
+            // 
+            textBoxExBlock.Location = new Point(157, 98);
+            textBoxExBlock.Name = "textBoxExBlock";
+            textBoxExBlock.Size = new Size(307, 29);
+            textBoxExBlock.TabIndex = 3;
+            // 
+            // labelSettings3
+            // 
+            labelSettings3.AutoSize = true;
+            labelSettings3.Location = new Point(23, 101);
+            labelSettings3.Name = "labelSettings3";
+            labelSettings3.Size = new Size(128, 21);
+            labelSettings3.TabIndex = 0;
+            labelSettings3.Text = "Explorer (Blocks):";
+            // 
+            // textBoxExAddr
+            // 
+            textBoxExAddr.Location = new Point(157, 63);
+            textBoxExAddr.Name = "textBoxExAddr";
+            textBoxExAddr.Size = new Size(307, 29);
+            textBoxExAddr.TabIndex = 2;
+            // 
+            // labelSettings4
+            // 
+            labelSettings4.AutoSize = true;
+            labelSettings4.Location = new Point(5, 136);
+            labelSettings4.Name = "labelSettings4";
+            labelSettings4.Size = new Size(146, 21);
+            labelSettings4.TabIndex = 0;
+            labelSettings4.Text = "Explorer (Domains):";
+            // 
+            // textBoxExTX
+            // 
+            textBoxExTX.Location = new Point(157, 28);
+            textBoxExTX.Name = "textBoxExTX";
+            textBoxExTX.Size = new Size(307, 29);
+            textBoxExTX.TabIndex = 1;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelSettings);
             Controls.Add(panelDomains);
             Controls.Add(panelRecieve);
             Controls.Add(panelSend);
@@ -711,6 +857,10 @@ namespace FireWallet
             panelDomains.ResumeLayout(false);
             panelDomains.PerformLayout();
             groupBoxDomains.ResumeLayout(false);
+            panelSettings.ResumeLayout(false);
+            panelSettings.PerformLayout();
+            groupBoxSettingsExplorer.ResumeLayout(false);
+            groupBoxSettingsExplorer.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -770,5 +920,18 @@ namespace FireWallet
         private Button buttonBatch;
         private GroupBox groupBoxDomains;
         private Panel panelDomainList;
+        private Button buttonNavSettings;
+        private Panel panelSettings;
+        private Label labelSettings1;
+        private Label labelSettings2;
+        private TextBox textBoxExName;
+        private TextBox textBoxExBlock;
+        private TextBox textBoxExAddr;
+        private TextBox textBoxExTX;
+        private Label labelSettings4;
+        private Label labelSettings3;
+        private Button buttonSettingsSave;
+        private GroupBox groupBoxSettingsExplorer;
+        private Label labelSettingsSaved;
     }
 }

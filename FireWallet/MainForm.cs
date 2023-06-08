@@ -47,7 +47,7 @@ namespace FireWallet
 
             UpdateTheme();
             LoadNode();
-            
+
 
             // Edit the theme of the navigation panel
             panelNav.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
@@ -215,7 +215,7 @@ namespace FireWallet
             this.Height = Screen.PrimaryScreen.Bounds.Height / 5 * 3;
             applyTransparency(theme);
 
-
+            ResizeForm();
         }
         private void ThemeControl(Control c)
         {
@@ -360,6 +360,10 @@ namespace FireWallet
             groupBoxaccount.Top = (this.ClientSize.Height - groupBoxaccount.Height) / 2;
             groupBoxDomains.Width = panelDomains.Width - 20;
             groupBoxDomains.Left = 10;
+            groupBoxDomains.Height = panelDomains.Height - groupBoxDomains.Top - 10;
+
+            buttonNavSettings.Top = panelNav.Height - buttonNavSettings.Height - 10;
+            buttonSettingsSave.Top = panelSettings.Height - buttonSettingsSave.Height - 10;
         }
         #endregion
         #region Accounts
@@ -792,10 +796,8 @@ namespace FireWallet
 
         private async void SendPanel_Click(object sender, EventArgs e)
         {
-            panelPortfolio.Hide();
+            hidePages();
             panelSend.Show();
-            panelRecieve.Hide();
-            panelDomains.Hide();
             buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
@@ -833,10 +835,8 @@ namespace FireWallet
         }
         private async void ReceivePanel_Click(object sender, EventArgs e)
         {
-            panelSend.Hide();
-            panelPortfolio.Hide();
+            hidePages();
             panelRecieve.Show();
-            panelDomains.Hide();
             buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
             buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
@@ -874,9 +874,7 @@ namespace FireWallet
         }
         private void buttonNavDomains_Click(object sender, EventArgs e)
         {
-            panelSend.Hide();
-            panelPortfolio.Hide();
-            panelRecieve.Hide();
+            hidePages();
             panelDomains.Show();
 
             buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
@@ -894,8 +892,28 @@ namespace FireWallet
             textBoxDomainSearch.Focus();
             groupBoxDomains.Width = panelDomains.Width - 20;
             groupBoxDomains.Left = 10;
+            groupBoxDomains.Height = panelDomains.Height - groupBoxDomains.Top - 10;
             UpdateDomains();
 
+        }
+        private void hidePages()
+        {
+            panelSend.Hide();
+            panelPortfolio.Hide();
+            panelRecieve.Hide();
+            panelDomains.Hide();
+            panelSettings.Hide();
+        }
+        private void buttonNavSettings_Click(object sender, EventArgs e)
+        {
+            hidePages();
+            panelSettings.Show();
+            buttonSettingsSave.Top = panelSettings.Height - buttonSettingsSave.Height - 10;
+            textBoxExTX.Text = userSettings["explorer-tx"];
+            textBoxExAddr.Text = userSettings["explorer-addr"];
+            textBoxExBlock.Text = userSettings["explorer-block"];
+            textBoxExName.Text = userSettings["explorer-domain"];
+            labelSettingsSaved.Hide();
         }
         #endregion
         #region Send
@@ -1096,22 +1114,6 @@ namespace FireWallet
             }
         }
         #endregion
-
-        private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyValue == 13)
-            {
-                textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
-                e.SuppressKeyPress = true;
-                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
-
-                domainForm.Show();
-
-            }
-        }
-
-
-
         #region Batching
         public void AddBatch(string domain, string operation)
         {
@@ -1164,11 +1166,39 @@ namespace FireWallet
         }
         #endregion
 
+        private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue == 13)
+            {
+                textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
+                e.SuppressKeyPress = true;
+                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
+
+                domainForm.Show();
+
+            }
+        }
         private void textBoxDomainSearch_TextChanged(object sender, EventArgs e)
         {
             string domainSearch = textBoxDomainSearch.Text;
             domainSearch = Regex.Replace(textBoxDomainSearch.Text, "[^a-zA-Z0-9-_]", "");
             textBoxDomainSearch.Text = domainSearch;
+        }
+
+        private void buttonSettingsSave_Click(object sender, EventArgs e)
+        {
+            StreamWriter sw = new StreamWriter(dir + "settings.txt");
+            sw.WriteLine("explorer-tx: " + textBoxExTX.Text);
+            sw.WriteLine("explorer-addr: " + textBoxExAddr.Text);
+            sw.WriteLine("explorer-block: " + textBoxExBlock.Text);
+            sw.WriteLine("explorer-domain: " + textBoxExName.Text);
+
+            sw.WriteLine("confirmations: " + userSettings["confirmations"]);
+            sw.WriteLine("portfolio-tx: " + userSettings["portfolio-tx"]);
+            sw.WriteLine("hide-splash: " + userSettings["hide-splash"]);
+            sw.Dispose();
+            LoadSettings();
+            labelSettingsSaved.Show();
         }
     }
 }

@@ -67,21 +67,23 @@
             // buttonAddRecord
             // 
             buttonAddRecord.FlatStyle = FlatStyle.Flat;
-            buttonAddRecord.Location = new Point(6, 163);
+            buttonAddRecord.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonAddRecord.Location = new Point(6, 172);
             buttonAddRecord.Name = "buttonAddRecord";
             buttonAddRecord.Size = new Size(93, 46);
             buttonAddRecord.TabIndex = 1;
             buttonAddRecord.TabStop = false;
-            buttonAddRecord.Text = "Add Record";
+            buttonAddRecord.Text = "Add ";
             buttonAddRecord.UseVisualStyleBackColor = true;
             buttonAddRecord.Click += buttonAddRecord_Click;
             // 
             // buttonCancel
             // 
             buttonCancel.FlatStyle = FlatStyle.Flat;
-            buttonCancel.Location = new Point(557, 500);
+            buttonCancel.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonCancel.Location = new Point(566, 500);
             buttonCancel.Name = "buttonCancel";
-            buttonCancel.Size = new Size(93, 46);
+            buttonCancel.Size = new Size(102, 46);
             buttonCancel.TabIndex = 1;
             buttonCancel.TabStop = false;
             buttonCancel.Text = "Cancel Edit";
@@ -91,9 +93,10 @@
             // buttonSend
             // 
             buttonSend.FlatStyle = FlatStyle.Flat;
-            buttonSend.Location = new Point(888, 500);
+            buttonSend.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSend.Location = new Point(879, 500);
             buttonSend.Name = "buttonSend";
-            buttonSend.Size = new Size(93, 46);
+            buttonSend.Size = new Size(102, 46);
             buttonSend.TabIndex = 1;
             buttonSend.TabStop = false;
             buttonSend.Text = "Send Edit";

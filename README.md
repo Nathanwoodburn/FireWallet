@@ -85,6 +85,9 @@ You can add transactions to the batch from the domain window or the DNS editor.
 
 ## Importing
 You can also import a list of domains to the batch window.  
+The "CANCEL" transaction type is used to cancel an transfer.
+
+At the momemt "UPDATE" or coin only transactions are not supported.
 
 ![Batch Import](assets/batch_import.png)
 

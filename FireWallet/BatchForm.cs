@@ -516,6 +516,9 @@ namespace FireWallet
                     else if (b.method == "TRANSFER")
                     {
                         sw.WriteLine(b.domain + "," + b.method + "," + b.toAddress);
+                    } else if (b.method == "UPDATE")
+                    {
+                        sw.WriteLine(b.domain + "," + b.method + ",[" + string.Join(", ", b.update.Select(record => record.ToString())) + "]");
                     }
                     else
                     {
@@ -541,6 +544,22 @@ namespace FireWallet
                     string[] split = line.Split(',');
                     try
                     {
+                        if (split.Length > 2)
+                        {
+                            if (split[1] == "UPDATE")
+                            {
+                                // Select operation and import domains
+                                string[] newDomains = new string[domains.Length + 1];
+                                for (int i = 0; i < domains.Length; i++)
+                                {
+                                    newDomains[i] = domains[i];
+                                }
+                                newDomains[domains.Length] = split[0];
+                                domains = newDomains;
+                                continue;
+                            }
+                        }
+
                         if (split.Length == 2)
                         {
                             AddBatch(split[0], split[1]);
@@ -648,7 +667,7 @@ namespace FireWallet
         public decimal bid { get; }
         public decimal lockup { get; }
         public string toAddress { get; }
-        DNS[]? update;
+        public DNS[]? update { get; }
         public Batch(string domain, string method) // Normal TXs
         {
             this.domain = domain;
