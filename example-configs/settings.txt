@@ -1,0 +1,7 @@
+explorer-tx: http://lookup.tx/
+explorer-addr: https://niami.io/address/
+explorer-block: https://niami.io/block/
+explorer-domain: https://niami.io/domain/
+confirmations: 1
+portfolio-tx: 20
+hide-splash: false

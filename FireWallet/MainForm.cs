@@ -35,9 +35,19 @@ namespace FireWallet
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
+            LoadSettings();
+
+            if (userSettings.ContainsKey("hide-splash"))
+            {
+                if (userSettings["hide-splash"] == "false")
+                {
+                    // Show splash screen
+                }
+            }
+
             UpdateTheme();
             LoadNode();
-            LoadSettings();
+            
 
             // Edit the theme of the navigation panel
             panelNav.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
@@ -130,6 +140,7 @@ namespace FireWallet
                 sw.WriteLine("explorer-domain: https://niami.io/domain/");
                 sw.WriteLine("confirmations: 1");
                 sw.WriteLine("portfolio-tx: 20");
+                sw.WriteLine("hide-splash: false");
                 sw.Dispose();
             }
 

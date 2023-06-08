@@ -1,0 +1,10 @@
+background: #000000
+foreground: #8e05c2
+background-alt: #3e065f
+foreground-alt: #ffffff
+transparent-mode: off
+transparency-key: main
+transparency-percent: 90
+selected-bg: #000000
+selected-fg: #ffffff
+error: #ff0000

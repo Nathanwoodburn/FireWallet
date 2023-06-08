@@ -1,0 +1,3 @@
+IP: 127.0.0.1
+Network: 0
+Key: my-super-secret-api-key
