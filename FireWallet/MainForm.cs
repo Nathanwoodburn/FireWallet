@@ -35,6 +35,7 @@ namespace FireWallet
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
+            timerNodeStatus.Stop();
             LoadSettings();
 
             if (userSettings.ContainsKey("hide-splash"))
@@ -42,7 +43,9 @@ namespace FireWallet
                 if (userSettings["hide-splash"] == "false")
                 {
                     // Show splash screen
-
+                    SplashScreen ss = new SplashScreen();
+                    ss.ShowDialog();
+                    ss.Dispose();
                 }
             }
 
@@ -68,6 +71,8 @@ namespace FireWallet
 
             AddLog("Loaded");
             batchMode = false;
+
+            timerNodeStatus.Start();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {

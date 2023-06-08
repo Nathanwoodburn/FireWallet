@@ -516,7 +516,8 @@ namespace FireWallet
                     else if (b.method == "TRANSFER")
                     {
                         sw.WriteLine(b.domain + "," + b.method + "," + b.toAddress);
-                    } else if (b.method == "UPDATE")
+                    }
+                    else if (b.method == "UPDATE")
                     {
                         sw.WriteLine(b.domain + "," + b.method + ",[" + string.Join(", ", b.update.Select(record => record.ToString())) + "]");
                     }
