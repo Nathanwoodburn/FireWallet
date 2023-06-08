@@ -42,6 +42,7 @@ namespace FireWallet
                 if (userSettings["hide-splash"] == "false")
                 {
                     // Show splash screen
+
                 }
             }
 
@@ -905,6 +906,7 @@ namespace FireWallet
             textBoxExBlock.Text = userSettings["explorer-block"];
             textBoxExName.Text = userSettings["explorer-domain"];
             numericUpDownConfirmations.Value = int.Parse(userSettings["confirmations"]);
+            numericUpDownTXCount.Value = int.Parse(userSettings["portfolio-tx"]);
             labelSettingsSaved.Hide();
         }
         #endregion
@@ -1184,9 +1186,8 @@ namespace FireWallet
             sw.WriteLine("explorer-addr: " + textBoxExAddr.Text);
             sw.WriteLine("explorer-block: " + textBoxExBlock.Text);
             sw.WriteLine("explorer-domain: " + textBoxExName.Text);
-
             sw.WriteLine("confirmations: " + numericUpDownConfirmations.Value);
-            sw.WriteLine("portfolio-tx: " + userSettings["portfolio-tx"]);
+            sw.WriteLine("portfolio-tx: " + numericUpDownTXCount.Value);
             sw.WriteLine("hide-splash: " + userSettings["hide-splash"]);
             sw.Dispose();
             LoadSettings();

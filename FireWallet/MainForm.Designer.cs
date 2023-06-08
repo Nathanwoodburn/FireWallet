@@ -90,6 +90,10 @@ namespace FireWallet
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
             panelSettings = new Panel();
+            groupBoxSettingsMisc = new GroupBox();
+            labelSettings6 = new Label();
+            numericUpDownConfirmations = new NumericUpDown();
+            labelSettings5 = new Label();
             labelSettingsSaved = new Label();
             buttonSettingsSave = new Button();
             groupBoxSettingsExplorer = new GroupBox();
@@ -101,10 +105,9 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            groupBoxSettingsMisc = new GroupBox();
-            labelSettings5 = new Label();
-            numericUpDownConfirmations = new NumericUpDown();
-            labelSettings6 = new Label();
+            labelSettings7 = new Label();
+            numericUpDownTXCount = new NumericUpDown();
+            labelSettings8 = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -118,9 +121,10 @@ namespace FireWallet
             panelDomains.SuspendLayout();
             groupBoxDomains.SuspendLayout();
             panelSettings.SuspendLayout();
-            groupBoxSettingsExplorer.SuspendLayout();
             groupBoxSettingsMisc.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).BeginInit();
+            groupBoxSettingsExplorer.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).BeginInit();
             SuspendLayout();
             // 
             // statusStripmain
@@ -722,6 +726,47 @@ namespace FireWallet
             panelSettings.TabIndex = 19;
             panelSettings.Visible = false;
             // 
+            // groupBoxSettingsMisc
+            // 
+            groupBoxSettingsMisc.Controls.Add(labelSettings8);
+            groupBoxSettingsMisc.Controls.Add(labelSettings6);
+            groupBoxSettingsMisc.Controls.Add(numericUpDownTXCount);
+            groupBoxSettingsMisc.Controls.Add(labelSettings7);
+            groupBoxSettingsMisc.Controls.Add(numericUpDownConfirmations);
+            groupBoxSettingsMisc.Controls.Add(labelSettings5);
+            groupBoxSettingsMisc.Location = new Point(14, 210);
+            groupBoxSettingsMisc.Name = "groupBoxSettingsMisc";
+            groupBoxSettingsMisc.Size = new Size(487, 194);
+            groupBoxSettingsMisc.TabIndex = 7;
+            groupBoxSettingsMisc.TabStop = false;
+            groupBoxSettingsMisc.Text = "Misc Settings";
+            // 
+            // labelSettings6
+            // 
+            labelSettings6.AutoSize = true;
+            labelSettings6.Location = new Point(255, 36);
+            labelSettings6.Name = "labelSettings6";
+            labelSettings6.Size = new Size(54, 21);
+            labelSettings6.TabIndex = 2;
+            labelSettings6.Text = "blocks";
+            // 
+            // numericUpDownConfirmations
+            // 
+            numericUpDownConfirmations.Location = new Point(129, 34);
+            numericUpDownConfirmations.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numericUpDownConfirmations.Name = "numericUpDownConfirmations";
+            numericUpDownConfirmations.Size = new Size(120, 29);
+            numericUpDownConfirmations.TabIndex = 1;
+            // 
+            // labelSettings5
+            // 
+            labelSettings5.AutoSize = true;
+            labelSettings5.Location = new Point(11, 36);
+            labelSettings5.Name = "labelSettings5";
+            labelSettings5.Size = new Size(112, 21);
+            labelSettings5.TabIndex = 0;
+            labelSettings5.Text = "Confirmations:";
+            // 
             // labelSettingsSaved
             // 
             labelSettingsSaved.AutoSize = true;
@@ -826,43 +871,31 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // groupBoxSettingsMisc
+            // labelSettings7
             // 
-            groupBoxSettingsMisc.Controls.Add(labelSettings6);
-            groupBoxSettingsMisc.Controls.Add(numericUpDownConfirmations);
-            groupBoxSettingsMisc.Controls.Add(labelSettings5);
-            groupBoxSettingsMisc.Location = new Point(14, 210);
-            groupBoxSettingsMisc.Name = "groupBoxSettingsMisc";
-            groupBoxSettingsMisc.Size = new Size(487, 194);
-            groupBoxSettingsMisc.TabIndex = 7;
-            groupBoxSettingsMisc.TabStop = false;
-            groupBoxSettingsMisc.Text = "Misc Settings";
+            labelSettings7.AutoSize = true;
+            labelSettings7.Location = new Point(71, 73);
+            labelSettings7.Name = "labelSettings7";
+            labelSettings7.Size = new Size(52, 21);
+            labelSettings7.TabIndex = 0;
+            labelSettings7.Text = "Show:";
             // 
-            // labelSettings5
+            // numericUpDownTXCount
             // 
-            labelSettings5.AutoSize = true;
-            labelSettings5.Location = new Point(11, 36);
-            labelSettings5.Name = "labelSettings5";
-            labelSettings5.Size = new Size(112, 21);
-            labelSettings5.TabIndex = 0;
-            labelSettings5.Text = "Confirmations:";
+            numericUpDownTXCount.Location = new Point(129, 69);
+            numericUpDownTXCount.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numericUpDownTXCount.Name = "numericUpDownTXCount";
+            numericUpDownTXCount.Size = new Size(120, 29);
+            numericUpDownTXCount.TabIndex = 1;
             // 
-            // numericUpDown1
+            // labelSettings8
             // 
-            numericUpDownConfirmations.Location = new Point(129, 34);
-            numericUpDownConfirmations.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
-            numericUpDownConfirmations.Name = "numericUpDown1";
-            numericUpDownConfirmations.Size = new Size(120, 29);
-            numericUpDownConfirmations.TabIndex = 1;
-            // 
-            // labelSettings6
-            // 
-            labelSettings6.AutoSize = true;
-            labelSettings6.Location = new Point(255, 36);
-            labelSettings6.Name = "labelSettings6";
-            labelSettings6.Size = new Size(54, 21);
-            labelSettings6.TabIndex = 2;
-            labelSettings6.Text = "blocks";
+            labelSettings8.AutoSize = true;
+            labelSettings8.Location = new Point(255, 71);
+            labelSettings8.Name = "labelSettings8";
+            labelSettings8.Size = new Size(120, 21);
+            labelSettings8.TabIndex = 2;
+            labelSettings8.Text = "TXs on portfolio";
             // 
             // MainForm
             // 
@@ -904,11 +937,12 @@ namespace FireWallet
             groupBoxDomains.ResumeLayout(false);
             panelSettings.ResumeLayout(false);
             panelSettings.PerformLayout();
-            groupBoxSettingsExplorer.ResumeLayout(false);
-            groupBoxSettingsExplorer.PerformLayout();
             groupBoxSettingsMisc.ResumeLayout(false);
             groupBoxSettingsMisc.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).EndInit();
+            groupBoxSettingsExplorer.ResumeLayout(false);
+            groupBoxSettingsExplorer.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -985,5 +1019,8 @@ namespace FireWallet
         private Label labelSettings6;
         private NumericUpDown numericUpDownConfirmations;
         private Label labelSettings5;
+        private Label labelSettings8;
+        private NumericUpDown numericUpDownTXCount;
+        private Label labelSettings7;
     }
 }
