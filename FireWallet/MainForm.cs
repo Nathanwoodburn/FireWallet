@@ -228,7 +228,8 @@ namespace FireWallet
                 }
             }
             if (c.GetType() == typeof(TextBox) || c.GetType() == typeof(Button)
-                || c.GetType() == typeof(ComboBox) || c.GetType() == typeof(StatusStrip) || c.GetType() == typeof(ToolStrip))
+                || c.GetType() == typeof(ComboBox) || c.GetType() == typeof(StatusStrip) || c.GetType() == typeof(ToolStrip)
+                || c.GetType() == typeof(NumericUpDown))
             {
                 c.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
                 c.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
@@ -772,16 +773,8 @@ namespace FireWallet
         #region Nav
         private async void PortfolioPanel_Click(object sender, EventArgs e)
         {
-            panelSend.Hide();
-            panelPortfolio.Show();
-            panelRecieve.Hide();
-            panelDomains.Hide();
-            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            hidePages();
+
             await UpdateBalance();
             GetTXHistory();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
@@ -798,12 +791,6 @@ namespace FireWallet
         {
             hidePages();
             panelSend.Show();
-            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
                 buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
@@ -837,12 +824,6 @@ namespace FireWallet
         {
             hidePages();
             panelRecieve.Show();
-            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
 
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
@@ -877,13 +858,6 @@ namespace FireWallet
             hidePages();
             panelDomains.Show();
 
-            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
                 buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
@@ -903,16 +877,34 @@ namespace FireWallet
             panelRecieve.Hide();
             panelDomains.Hide();
             panelSettings.Hide();
+            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavSettings.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            buttonNavSettings.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
         }
         private void buttonNavSettings_Click(object sender, EventArgs e)
         {
             hidePages();
+            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            {
+                buttonNavSettings.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
+                buttonNavSettings.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+            }
+
             panelSettings.Show();
             buttonSettingsSave.Top = panelSettings.Height - buttonSettingsSave.Height - 10;
+            labelSettingsSaved.Top = buttonSettingsSave.Top + 10;
             textBoxExTX.Text = userSettings["explorer-tx"];
             textBoxExAddr.Text = userSettings["explorer-addr"];
             textBoxExBlock.Text = userSettings["explorer-block"];
             textBoxExName.Text = userSettings["explorer-domain"];
+            numericUpDownConfirmations.Value = int.Parse(userSettings["confirmations"]);
             labelSettingsSaved.Hide();
         }
         #endregion
@@ -1193,7 +1185,7 @@ namespace FireWallet
             sw.WriteLine("explorer-block: " + textBoxExBlock.Text);
             sw.WriteLine("explorer-domain: " + textBoxExName.Text);
 
-            sw.WriteLine("confirmations: " + userSettings["confirmations"]);
+            sw.WriteLine("confirmations: " + numericUpDownConfirmations.Value);
             sw.WriteLine("portfolio-tx: " + userSettings["portfolio-tx"]);
             sw.WriteLine("hide-splash: " + userSettings["hide-splash"]);
             sw.Dispose();

@@ -101,6 +101,10 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
+            groupBoxSettingsMisc = new GroupBox();
+            labelSettings5 = new Label();
+            numericUpDownConfirmations = new NumericUpDown();
+            labelSettings6 = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -115,6 +119,8 @@ namespace FireWallet
             groupBoxDomains.SuspendLayout();
             panelSettings.SuspendLayout();
             groupBoxSettingsExplorer.SuspendLayout();
+            groupBoxSettingsMisc.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).BeginInit();
             SuspendLayout();
             // 
             // statusStripmain
@@ -705,6 +711,7 @@ namespace FireWallet
             // 
             // panelSettings
             // 
+            panelSettings.Controls.Add(groupBoxSettingsMisc);
             panelSettings.Controls.Add(labelSettingsSaved);
             panelSettings.Controls.Add(buttonSettingsSave);
             panelSettings.Controls.Add(groupBoxSettingsExplorer);
@@ -819,6 +826,44 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
+            // groupBoxSettingsMisc
+            // 
+            groupBoxSettingsMisc.Controls.Add(labelSettings6);
+            groupBoxSettingsMisc.Controls.Add(numericUpDownConfirmations);
+            groupBoxSettingsMisc.Controls.Add(labelSettings5);
+            groupBoxSettingsMisc.Location = new Point(14, 210);
+            groupBoxSettingsMisc.Name = "groupBoxSettingsMisc";
+            groupBoxSettingsMisc.Size = new Size(487, 194);
+            groupBoxSettingsMisc.TabIndex = 7;
+            groupBoxSettingsMisc.TabStop = false;
+            groupBoxSettingsMisc.Text = "Misc Settings";
+            // 
+            // labelSettings5
+            // 
+            labelSettings5.AutoSize = true;
+            labelSettings5.Location = new Point(11, 36);
+            labelSettings5.Name = "labelSettings5";
+            labelSettings5.Size = new Size(112, 21);
+            labelSettings5.TabIndex = 0;
+            labelSettings5.Text = "Confirmations:";
+            // 
+            // numericUpDown1
+            // 
+            numericUpDownConfirmations.Location = new Point(129, 34);
+            numericUpDownConfirmations.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numericUpDownConfirmations.Name = "numericUpDown1";
+            numericUpDownConfirmations.Size = new Size(120, 29);
+            numericUpDownConfirmations.TabIndex = 1;
+            // 
+            // labelSettings6
+            // 
+            labelSettings6.AutoSize = true;
+            labelSettings6.Location = new Point(255, 36);
+            labelSettings6.Name = "labelSettings6";
+            labelSettings6.Size = new Size(54, 21);
+            labelSettings6.TabIndex = 2;
+            labelSettings6.Text = "blocks";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -861,6 +906,9 @@ namespace FireWallet
             panelSettings.PerformLayout();
             groupBoxSettingsExplorer.ResumeLayout(false);
             groupBoxSettingsExplorer.PerformLayout();
+            groupBoxSettingsMisc.ResumeLayout(false);
+            groupBoxSettingsMisc.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -933,5 +981,9 @@ namespace FireWallet
         private Button buttonSettingsSave;
         private GroupBox groupBoxSettingsExplorer;
         private Label labelSettingsSaved;
+        private GroupBox groupBoxSettingsMisc;
+        private Label labelSettings6;
+        private NumericUpDown numericUpDownConfirmations;
+        private Label labelSettings5;
     }
 }
