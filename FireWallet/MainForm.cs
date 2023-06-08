@@ -73,8 +73,9 @@ namespace FireWallet
             if (!File.Exists(dir + "node.txt"))
             {
                 NodeForm cf = new NodeForm();
+                timerNodeStatus.Stop();
                 cf.ShowDialog();
-                // Initial run
+                timerNodeStatus.Start();
             }
             if (!File.Exists(dir + "node.txt"))
             {
