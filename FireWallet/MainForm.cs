@@ -774,7 +774,7 @@ namespace FireWallet
         private async void PortfolioPanel_Click(object sender, EventArgs e)
         {
             hidePages();
-
+            panelPortfolio.Show();
             await UpdateBalance();
             GetTXHistory();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
