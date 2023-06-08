@@ -83,6 +83,8 @@ namespace FireWallet
             textBoxReceiveAddress = new TextBox();
             labelReceive1 = new Label();
             panelDomains = new Panel();
+            groupBoxDomains = new GroupBox();
+            panelDomainList = new Panel();
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
             statusStripmain.SuspendLayout();
@@ -96,6 +98,7 @@ namespace FireWallet
             panelRecieve.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).BeginInit();
             panelDomains.SuspendLayout();
+            groupBoxDomains.SuspendLayout();
             SuspendLayout();
             // 
             // statusStripmain
@@ -618,6 +621,7 @@ namespace FireWallet
             // 
             // panelDomains
             // 
+            panelDomains.Controls.Add(groupBoxDomains);
             panelDomains.Controls.Add(labelDomainSearch);
             panelDomains.Controls.Add(textBoxDomainSearch);
             panelDomains.Location = new Point(120, 27);
@@ -626,23 +630,44 @@ namespace FireWallet
             panelDomains.TabIndex = 18;
             panelDomains.Visible = false;
             // 
+            // groupBoxDomains
+            // 
+            groupBoxDomains.Controls.Add(panelDomainList);
+            groupBoxDomains.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            groupBoxDomains.Location = new Point(18, 59);
+            groupBoxDomains.Name = "groupBoxDomains";
+            groupBoxDomains.Size = new Size(887, 466);
+            groupBoxDomains.TabIndex = 2;
+            groupBoxDomains.TabStop = false;
+            groupBoxDomains.Text = "Domains";
+            // 
+            // panelDomainList
+            // 
+            panelDomainList.AutoScroll = true;
+            panelDomainList.Dock = DockStyle.Fill;
+            panelDomainList.Location = new Point(3, 25);
+            panelDomainList.Name = "panelDomainList";
+            panelDomainList.Size = new Size(881, 438);
+            panelDomainList.TabIndex = 0;
+            // 
             // labelDomainSearch
             // 
             labelDomainSearch.AutoSize = true;
             labelDomainSearch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDomainSearch.Location = new Point(92, 47);
+            labelDomainSearch.Location = new Point(18, 15);
             labelDomainSearch.Name = "labelDomainSearch";
-            labelDomainSearch.Size = new Size(57, 21);
+            labelDomainSearch.Size = new Size(60, 21);
             labelDomainSearch.TabIndex = 1;
-            labelDomainSearch.Text = "Search";
+            labelDomainSearch.Text = "Search:";
             // 
             // textBoxDomainSearch
             // 
             textBoxDomainSearch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            textBoxDomainSearch.Location = new Point(155, 44);
+            textBoxDomainSearch.Location = new Point(84, 12);
             textBoxDomainSearch.Name = "textBoxDomainSearch";
-            textBoxDomainSearch.Size = new Size(206, 29);
+            textBoxDomainSearch.Size = new Size(261, 29);
             textBoxDomainSearch.TabIndex = 0;
+            textBoxDomainSearch.TextChanged += textBoxDomainSearch_TextChanged;
             textBoxDomainSearch.KeyDown += textBoxDomainSearch_KeyDown;
             // 
             // MainForm
@@ -680,6 +705,7 @@ namespace FireWallet
             ((System.ComponentModel.ISupportInitialize)pictureBoxReceiveQR).EndInit();
             panelDomains.ResumeLayout(false);
             panelDomains.PerformLayout();
+            groupBoxDomains.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -737,5 +763,7 @@ namespace FireWallet
         private Label labelDomainSearch;
         private TextBox textBoxDomainSearch;
         private Button buttonBatch;
+        private GroupBox groupBoxDomains;
+        private Panel panelDomainList;
     }
 }

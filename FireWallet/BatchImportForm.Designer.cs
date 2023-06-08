@@ -71,7 +71,7 @@
             comboBoxMode.FlatStyle = FlatStyle.Flat;
             comboBoxMode.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             comboBoxMode.FormattingEnabled = true;
-            comboBoxMode.Items.AddRange(new object[] { "OPEN", "BID", "REVEAL", "REDEEM", "RENEW", "TRANSFER", "FINALIZE" });
+            comboBoxMode.Items.AddRange(new object[] { "OPEN", "BID", "REVEAL", "REDEEM", "RENEW", "TRANSFER", "FINALIZE", "CANCEL" });
             comboBoxMode.Location = new System.Drawing.Point(346, 42);
             comboBoxMode.Name = "comboBoxMode";
             comboBoxMode.Size = new System.Drawing.Size(226, 29);

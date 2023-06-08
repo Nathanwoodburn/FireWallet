@@ -290,7 +290,7 @@
             textBoxBlind.Size = new System.Drawing.Size(180, 29);
             textBoxBlind.TabIndex = 5;
             textBoxBlind.Visible = false;
-            textBoxBlind.TextChanged += textBoxBlind_TextChanged;
+            textBoxBlind.TextChanged += BidBlind_TextChanged;
             // 
             // textBoxBid
             // 
@@ -299,7 +299,7 @@
             textBoxBid.Size = new System.Drawing.Size(180, 29);
             textBoxBid.TabIndex = 4;
             textBoxBid.Visible = false;
-            textBoxBid.TextChanged += textBoxBlind_TextChanged;
+            textBoxBid.TextChanged += BidBlind_TextChanged;
             // 
             // labelBlind
             // 

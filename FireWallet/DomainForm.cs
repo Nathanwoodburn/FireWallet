@@ -620,18 +620,21 @@ namespace FireWallet
             sw.Dispose();
         }
         #endregion
-        private async Task<bool> DomainOwned()
+        private bool DomainOwned()
         {
-            string ownedDomains = await APIGet("wallet/hot/name?own=true", true);
-            JArray ownedList = JArray.Parse(ownedDomains);
-            foreach (JObject d in ownedList) if (d["name"].ToString() == domain) return true;
-
+            foreach (string d in mainForm.Domains)
+            {
+                if (d==domain)
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
-        private async void ActionSetupAsync(string state)
+        private void ActionSetupAsync(string state)
         {
-            own = await DomainOwned();
+            own = DomainOwned();
             this.state = state;
             switch (state)
             {
@@ -689,7 +692,7 @@ namespace FireWallet
                     break;
             }
         }
-        private void textBoxBlind_TextChanged(object sender, EventArgs e)
+        private void BidBlind_TextChanged(object sender, EventArgs e)
         {
             string cleanedText = Regex.Replace(textBoxBid.Text, "[^0-9.]", "");
             textBoxBid.Text = cleanedText;

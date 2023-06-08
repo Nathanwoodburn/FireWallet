@@ -248,7 +248,7 @@ namespace FireWallet
                 this.Close();
             }
             else if (comboBoxMode.Text == "OPEN" || comboBoxMode.Text == "REVEAL" || comboBoxMode.Text == "REDEEM"
-                || comboBoxMode.Text == "RENEW" || comboBoxMode.Text == "FINALIZE")
+                || comboBoxMode.Text == "RENEW" || comboBoxMode.Text == "FINALIZE" || comboBoxMode.Text == "CANCEL")
             {
                 batches = new Batch[0];
                 foreach (string domain in listBoxDomains.Items)

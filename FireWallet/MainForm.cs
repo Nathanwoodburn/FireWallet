@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 using IronBarCode;
+using System.Text.RegularExpressions;
 
 namespace FireWallet
 {
@@ -344,6 +345,8 @@ namespace FireWallet
         {
             groupBoxaccount.Left = (this.ClientSize.Width - groupBoxaccount.Width) / 2;
             groupBoxaccount.Top = (this.ClientSize.Height - groupBoxaccount.Height) / 2;
+            groupBoxDomains.Width = panelDomains.Width - 20;
+            groupBoxDomains.Left = 10;
         }
         #endregion
         #region Accounts
@@ -486,7 +489,7 @@ namespace FireWallet
             content = "{\"method\": \"selectwallet\",\"params\":[ \"" + account + "\"]}";
 
             await APIPost(path, true, content);
-            
+
         }
         private async Task UpdateBalance()
         {
@@ -874,6 +877,10 @@ namespace FireWallet
                 buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
             }
             textBoxDomainSearch.Focus();
+            groupBoxDomains.Width = panelDomains.Width - 20;
+            groupBoxDomains.Left = 10;
+            UpdateDomains();
+
         }
         #endregion
         #region Send
@@ -1026,7 +1033,53 @@ namespace FireWallet
             labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
         }
         #endregion
+        #region Domains
+        public string[] Domains { get; set; }
+        private async void UpdateDomains()
+        {
+            string response = await APIGet("wallet/" + account + "/name?own=true", true);
+            JArray names = JArray.Parse(response);
+            Domains = new string[names.Count];
+            int i = 0;
+            panelDomainList.Controls.Clear();
+            foreach (JObject name in names)
+            {
+                Domains[i] = name["name"].ToString();
+                Panel domainTMP = new Panel();
+                domainTMP.Width = panelDomainList.Width - 20 - SystemInformation.VerticalScrollBarWidth;
+                domainTMP.Height = 30;
+                domainTMP.Top = 30 * (i);
+                domainTMP.Left = 10;
+                domainTMP.BorderStyle = BorderStyle.FixedSingle;
 
+                // On Click open domain
+                domainTMP.Click += new EventHandler((sender, e) =>
+                {
+                    DomainForm domainForm = new DomainForm(name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                    domainForm.Show();
+                });
+
+                Label domainName = new Label();
+                domainName.Text = Domains[i];
+                domainName.Top = 5;
+                domainName.Left = 5;
+                domainName.AutoSize = true;
+
+                JObject stats = JObject.Parse(name["stats"].ToString());
+
+                Label expiry = new Label();
+                expiry.Text = "Expires: " + stats["blocksUntilExpire"].ToString() + " blocks";
+                expiry.Top = 5;
+                expiry.Left = domainTMP.Width - expiry.Width - 5;
+                expiry.AutoSize = true;
+
+                domainTMP.Controls.Add(domainName);
+                domainTMP.Controls.Add(expiry);
+                panelDomainList.Controls.Add(domainTMP);
+                i++;
+            }
+        }
+        #endregion
 
         private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
         {
@@ -1074,8 +1127,6 @@ namespace FireWallet
             batchMode = false;
             batchForm.Dispose();
         }
-        #endregion
-
         private void buttonBatch_Click(object sender, EventArgs e)
         {
             if (!batchMode)
@@ -1085,6 +1136,14 @@ namespace FireWallet
                 batchMode = true;
             }
             else batchForm.Focus();
+        }
+        #endregion
+
+        private void textBoxDomainSearch_TextChanged(object sender, EventArgs e)
+        {
+            string domainSearch = textBoxDomainSearch.Text;
+            domainSearch = Regex.Replace(textBoxDomainSearch.Text, "[^a-zA-Z0-9-_]", "");
+            textBoxDomainSearch.Text = domainSearch;
         }
     }
 }
