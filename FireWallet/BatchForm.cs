@@ -1,5 +1,7 @@
 ﻿using System.Data;
+using System.Net;
 using System.Runtime.InteropServices;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
 
@@ -47,7 +49,8 @@ namespace FireWallet
             deleteTX.Width = 25;
             deleteTX.Height = 25;
             deleteTX.TextAlign = ContentAlignment.MiddleCenter;
-            deleteTX.Click += (sender, e) => { 
+            deleteTX.Click += (sender, e) =>
+            {
                 panelTXs.Controls.Remove(tx);
                 FixSpacing();
                 List<Batch> temp = new List<Batch>();
@@ -110,7 +113,8 @@ namespace FireWallet
             deleteTX.Width = 25;
             deleteTX.Height = 25;
             deleteTX.TextAlign = ContentAlignment.MiddleCenter;
-            deleteTX.Click += (sender, e) => { 
+            deleteTX.Click += (sender, e) =>
+            {
                 panelTXs.Controls.Remove(tx);
                 FixSpacing();
                 List<Batch> temp = new List<Batch>();
@@ -161,7 +165,7 @@ namespace FireWallet
             toAddressLabel.Location = new Point(200, 10);
             toAddressLabel.AutoSize = true;
             tx.Controls.Add(toAddressLabel);
-           
+
 
             Button deleteTX = new Button();
             deleteTX.Text = "X";
@@ -169,7 +173,64 @@ namespace FireWallet
             deleteTX.Width = 25;
             deleteTX.Height = 25;
             deleteTX.TextAlign = ContentAlignment.MiddleCenter;
-            deleteTX.Click += (sender, e) => {
+            deleteTX.Click += (sender, e) =>
+            {
+                panelTXs.Controls.Remove(tx);
+                FixSpacing();
+                List<Batch> temp = new List<Batch>();
+                foreach (Batch batch in batches)
+                {
+                    if (batch.domain != domain && batch.method != operation)
+                    {
+                        temp.Add(batch);
+                    }
+                }
+                batches = temp.ToArray();
+            };
+            deleteTX.FlatStyle = FlatStyle.Flat;
+            deleteTX.Font = new Font(deleteTX.Font.FontFamily, 9F, FontStyle.Bold);
+            tx.Controls.Add(deleteTX);
+
+            panelTXs.Controls.Add(tx);
+            UpdateTheme();
+        }
+
+        public void AddBatch(string domain, string operation, DNS[] updateRecords)
+        {
+            batches = batches.Concat(new Batch[] { new Batch(domain, operation, updateRecords) }).ToArray();
+            Panel tx = new Panel();
+            tx.Left = 0;
+            tx.Top = panelTXs.Controls.Count * 52 + 2;
+            tx.Width = panelTXs.Width - SystemInformation.VerticalScrollBarWidth;
+            tx.Height = 50;
+            tx.BorderStyle = BorderStyle.FixedSingle;
+
+            Label action = new Label();
+            action.Text = operation;
+            action.Location = new Point(10, 10);
+            action.AutoSize = true;
+            tx.Controls.Add(action);
+            Label target = new Label();
+            target.Text = domain;
+            target.Location = new Point(10, 30);
+            target.AutoSize = true;
+            tx.Controls.Add(target);
+
+            Label toAddressLabel = new Label();
+            toAddressLabel.Text = "-> UPDATE RECORDS";
+            toAddressLabel.Location = new Point(200, 10);
+            toAddressLabel.AutoSize = true;
+            tx.Controls.Add(toAddressLabel);
+
+
+            Button deleteTX = new Button();
+            deleteTX.Text = "X";
+            deleteTX.Location = new Point(tx.Width - 40, 10);
+            deleteTX.Width = 25;
+            deleteTX.Height = 25;
+            deleteTX.TextAlign = ContentAlignment.MiddleCenter;
+            deleteTX.Click += (sender, e) =>
+            {
                 panelTXs.Controls.Remove(tx);
                 FixSpacing();
                 List<Batch> temp = new List<Batch>();
@@ -400,10 +461,10 @@ namespace FireWallet
         HttpClient httpClient = new HttpClient();
         private async void buttonSend_Click(object sender, EventArgs e)
         {
-            string batchTX = "[" +string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
+            string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
             string content = "{\"method\": \"sendbatch\",\"params\":[ " + batchTX + "]}";
-            string responce = await APIPost("",true,content);
-            
+            string responce = await APIPost("", true, content);
+
             if (responce == "Error")
             {
                 AddLog("Error sending batch");
@@ -412,7 +473,7 @@ namespace FireWallet
                 notifyForm.Dispose();
                 return;
             }
-            
+
             JObject jObject = JObject.Parse(responce);
             if (jObject["error"].ToString() != "")
             {
@@ -423,11 +484,11 @@ namespace FireWallet
                 notifyForm.Dispose();
                 return;
             }
-            
+
             JObject result = JObject.Parse(jObject["result"].ToString());
             string hash = result["hash"].ToString();
             AddLog("Batch sent with hash: " + hash);
-            NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.userSettings["explorer-tx"]+hash);
+            NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.userSettings["explorer-tx"] + hash);
             notifyForm2.ShowDialog();
             notifyForm2.Dispose();
             this.Close();
@@ -455,7 +516,8 @@ namespace FireWallet
                     else if (b.method == "TRANSFER")
                     {
                         sw.WriteLine(b.domain + "," + b.method + "," + b.toAddress);
-                    } else
+                    }
+                    else
                     {
                         sw.WriteLine(b.domain + "," + b.method);
                     }
@@ -522,10 +584,12 @@ namespace FireWallet
                             if (b.method == "BID")
                             {
                                 AddBatch(b.domain, b.method, b.bid, b.lockup);
-                            } else if (b.method == "TRANSFER")
+                            }
+                            else if (b.method == "TRANSFER")
                             {
                                 AddBatch(b.domain, b.method, b.toAddress);
-                            } else
+                            }
+                            else
                             {
                                 AddBatch(b.domain, b.method);
                             }
@@ -582,48 +646,131 @@ namespace FireWallet
         public decimal bid { get; }
         public decimal lockup { get; }
         public string toAddress { get; }
-        public Batch(string domain, string method)
+        DNS[]? update;
+        public Batch(string domain, string method) // Normal TXs
         {
             this.domain = domain;
             this.method = method;
             bid = 0;
             lockup = 0;
             toAddress = "";
+            update = null;
         }
-        public Batch(string domain, string method, string toAddress)
+        public Batch(string domain, string method, string toAddress) // Transfers
         {
             this.domain = domain;
             this.method = method;
             this.toAddress = toAddress;
             bid = 0;
             lockup = 0;
+            update = null;
         }
-        public Batch(string domain, string method, decimal bid, decimal lockup)
+        public Batch(string domain, string method, decimal bid, decimal lockup) // Bids
         {
             this.domain = domain;
             this.method = method;
             this.bid = bid;
             this.lockup = lockup;
             toAddress = "";
+            update = null;
         }
-        public Batch(string domain, string method, decimal bid, decimal lockup, string toAddress)
+        public Batch(string domain, string method, DNS[] update) // DNS Update
         {
             this.domain = domain;
             this.method = method;
-            this.bid = bid;
-            this.lockup = lockup;
-            this.toAddress = toAddress;
+            this.update = update;
+
         }
         public override string ToString()
         {
             if (method == "BID")
             {
                 return "[\"BID\", \"" + domain + "\", " + bid + ", " + lockup + "]";
-            } else if (method == "TRANSFER")
+            }
+            else if (method == "TRANSFER")
             {
                 return "[\"TRANSFER\", \"" + domain + "\", \"" + toAddress + "\"]";
             }
+            else if (method == "UPDATE" && update != null)
+            {
+
+                string records = "{records:[" + string.Join(", ", update.Select(record => record.ToString())) + "]}";
+                return "[\"UPDATE\", \"" + domain + "\", " + records + "]";
+
+            }
             return "[\"" + method + "\", \"" + domain + "\"]";
+        }
+    }
+    public class DNS
+    {
+        public string? type { get; }
+        public string? ns { get; }
+        public string? address { get; }
+        public string[]? TXT { get; }
+        public int? keyTag { get; }
+        public int? algorithm { get; }
+        public int? digestType { get; }
+        public string? digest { get; }
+
+        public DNS(string type, string content) // NS, SYNTH4, SYNTH6
+        {
+            this.type = type;
+            switch (type)
+            {
+                case "NS":
+                    ns = content;
+                    break;
+                case "SYNTH4":
+                    address = content;
+                    break;
+                case "SYNTH6":
+                    address = content;
+                    break;
+            }
+        }
+        public DNS(string type, string[] content) // TXT
+        {
+            this.type = type;
+            TXT = content;
+        }
+        public DNS(string type, string ns, string address) // GLUE4, GLUE6
+        {
+            this.type = type;
+            this.ns = ns;
+            this.address = address;
+        }
+        public DNS(string type, int keyTag, int algorithm, int digestType, string digest) // DS
+        {
+            this.type = type;
+            this.keyTag = keyTag;
+            this.algorithm = algorithm;
+            this.digestType = digestType;
+            this.digest = digest;
+        }
+        public override string ToString()
+        {
+            switch (type)
+            {
+                case "DS":
+                    return "{\"type\": \"" + type + "\",\"keyTag\": " + keyTag + ",\"algorithm\": " + algorithm + ",\"digestType\": " + digestType + ",\"digest\":\"" + digest + "\"}";
+                    break;
+                case "NS":
+                    return "{\"type\": \"" + type + "\",\"ns\": \"" + ns + "\"}";
+                    break;
+                case "GLUE4":
+                case "GLUE6":
+                    return "{\"type\": \"" + type + "\",\"ns\": \"" + ns + "\",\"address\": \"" + address + "\"}";
+                    break;
+                case "SYNTH4":
+                case "SYNTH6":
+                    return "{\"type\": \"" + type + "\",\"address\": \"" + address + "\"}";
+                    break;
+                case "TXT":
+                    return "{\"type\": \"" + type + "\",\"txt\": [" + string.Join(", ", TXT.Select(record => ("\"" + record + "\""))) + "]}";
+                    break;
+            }
+            return "";
+
         }
     }
 }

@@ -34,6 +34,7 @@ namespace FireWallet
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             statusStripmain = new StatusStrip();
             toolStripStatusLabelNetwork = new ToolStripStatusLabel();
             toolStripStatusLabelstatus = new ToolStripStatusLabel();
@@ -682,6 +683,7 @@ namespace FireWallet
             Controls.Add(panelNav);
             Controls.Add(panelaccount);
             Controls.Add(statusStripmain);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             Text = "FireWallet";
             FormClosing += MainForm_Closing;

@@ -6,11 +6,28 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>Firewallet.ico</ApplicationIcon>
+    <Title>FireWallet</Title>
+    <PackageProjectUrl>https://l.woodburn.au</PackageProjectUrl>
+    <PackageIcon>HSDBatcher.png</PackageIcon>
+    <RepositoryUrl>https://github.com/Nathanwoodburn/FireWallet</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BarCode" Version="2023.6.1" />
+    <Content Include="Firewallet.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\..\Downloads\HSDBatcher.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="QRCoder" Version="1.4.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BatchImportForm));
             listBoxDomains = new ListBox();
             label1 = new Label();
             comboBoxMode = new ComboBox();
@@ -50,18 +51,18 @@
             // 
             listBoxDomains.FormattingEnabled = true;
             listBoxDomains.ItemHeight = 15;
-            listBoxDomains.Location = new System.Drawing.Point(12, 42);
+            listBoxDomains.Location = new Point(12, 42);
             listBoxDomains.Name = "listBoxDomains";
-            listBoxDomains.Size = new System.Drawing.Size(241, 484);
+            listBoxDomains.Size = new Size(241, 484);
             listBoxDomains.TabIndex = 0;
             // 
             // label1
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new System.Drawing.Point(12, 9);
+            label1.Location = new Point(12, 9);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(75, 21);
+            label1.Size = new Size(75, 21);
             label1.TabIndex = 1;
             label1.Text = "Domains:";
             // 
@@ -72,9 +73,9 @@
             comboBoxMode.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             comboBoxMode.FormattingEnabled = true;
             comboBoxMode.Items.AddRange(new object[] { "OPEN", "BID", "REVEAL", "REDEEM", "RENEW", "TRANSFER", "FINALIZE", "CANCEL" });
-            comboBoxMode.Location = new System.Drawing.Point(346, 42);
+            comboBoxMode.Location = new Point(346, 42);
             comboBoxMode.Name = "comboBoxMode";
-            comboBoxMode.Size = new System.Drawing.Size(226, 29);
+            comboBoxMode.Size = new Size(226, 29);
             comboBoxMode.TabIndex = 2;
             comboBoxMode.SelectedIndexChanged += comboBoxMode_SelectedIndexChanged;
             // 
@@ -82,9 +83,9 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label2.Location = new System.Drawing.Point(287, 45);
+            label2.Location = new Point(287, 45);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(53, 21);
+            label2.Size = new Size(53, 21);
             label2.TabIndex = 3;
             label2.Text = "Mode:";
             // 
@@ -92,9 +93,9 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label3.Location = new System.Drawing.Point(25, 25);
+            label3.Location = new Point(25, 25);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(35, 21);
+            label3.Size = new Size(35, 21);
             label3.TabIndex = 3;
             label3.Text = "Bid:";
             // 
@@ -102,35 +103,35 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label4.Location = new System.Drawing.Point(12, 73);
+            label4.Location = new Point(12, 73);
             label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(48, 21);
+            label4.Size = new Size(48, 21);
             label4.TabIndex = 3;
             label4.Text = "Blind:";
             // 
             // textBoxBid
             // 
             textBoxBid.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            textBoxBid.Location = new System.Drawing.Point(66, 22);
+            textBoxBid.Location = new Point(66, 22);
             textBoxBid.Name = "textBoxBid";
-            textBoxBid.Size = new System.Drawing.Size(226, 29);
+            textBoxBid.Size = new Size(226, 29);
             textBoxBid.TabIndex = 4;
             // 
             // textBoxBlind
             // 
             textBoxBlind.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            textBoxBlind.Location = new System.Drawing.Point(66, 70);
+            textBoxBlind.Location = new Point(66, 70);
             textBoxBlind.Name = "textBoxBlind";
-            textBoxBlind.Size = new System.Drawing.Size(226, 29);
+            textBoxBlind.Size = new Size(226, 29);
             textBoxBlind.TabIndex = 5;
             // 
             // buttonImport
             // 
             buttonImport.FlatStyle = FlatStyle.Flat;
             buttonImport.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonImport.Location = new System.Drawing.Point(851, 485);
+            buttonImport.Location = new Point(851, 485);
             buttonImport.Name = "buttonImport";
-            buttonImport.Size = new System.Drawing.Size(87, 38);
+            buttonImport.Size = new Size(87, 38);
             buttonImport.TabIndex = 6;
             buttonImport.Text = "Import";
             buttonImport.UseVisualStyleBackColor = true;
@@ -140,9 +141,9 @@
             // 
             buttonCancel.FlatStyle = FlatStyle.Flat;
             buttonCancel.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonCancel.Location = new System.Drawing.Point(731, 485);
+            buttonCancel.Location = new Point(731, 485);
             buttonCancel.Name = "buttonCancel";
-            buttonCancel.Size = new System.Drawing.Size(87, 38);
+            buttonCancel.Size = new Size(87, 38);
             buttonCancel.TabIndex = 6;
             buttonCancel.Text = "Cancel";
             buttonCancel.UseVisualStyleBackColor = true;
@@ -152,9 +153,9 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            label5.Location = new System.Drawing.Point(6, 19);
+            label5.Location = new Point(6, 19);
             label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(67, 21);
+            label5.Size = new Size(67, 21);
             label5.TabIndex = 7;
             label5.Text = "Send To:";
             // 
@@ -164,9 +165,9 @@
             groupBoxBid.Controls.Add(label3);
             groupBoxBid.Controls.Add(label4);
             groupBoxBid.Controls.Add(textBoxBlind);
-            groupBoxBid.Location = new System.Drawing.Point(287, 99);
+            groupBoxBid.Location = new Point(287, 99);
             groupBoxBid.Name = "groupBoxBid";
-            groupBoxBid.Size = new System.Drawing.Size(370, 200);
+            groupBoxBid.Size = new Size(370, 200);
             groupBoxBid.TabIndex = 8;
             groupBoxBid.TabStop = false;
             groupBoxBid.Text = "Bid Settings";
@@ -175,9 +176,9 @@
             // 
             groupBoxtransfer.Controls.Add(textBoxToAddress);
             groupBoxtransfer.Controls.Add(label5);
-            groupBoxtransfer.Location = new System.Drawing.Point(287, 99);
+            groupBoxtransfer.Location = new Point(287, 99);
             groupBoxtransfer.Name = "groupBoxtransfer";
-            groupBoxtransfer.Size = new System.Drawing.Size(370, 200);
+            groupBoxtransfer.Size = new Size(370, 200);
             groupBoxtransfer.TabIndex = 0;
             groupBoxtransfer.TabStop = false;
             groupBoxtransfer.Text = "Transfer Settings";
@@ -185,16 +186,16 @@
             // textBoxToAddress
             // 
             textBoxToAddress.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            textBoxToAddress.Location = new System.Drawing.Point(6, 43);
+            textBoxToAddress.Location = new Point(6, 43);
             textBoxToAddress.Name = "textBoxToAddress";
-            textBoxToAddress.Size = new System.Drawing.Size(358, 29);
+            textBoxToAddress.Size = new Size(358, 29);
             textBoxToAddress.TabIndex = 8;
             // 
             // BatchImportForm
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(950, 535);
+            ClientSize = new Size(950, 535);
             Controls.Add(groupBoxtransfer);
             Controls.Add(groupBoxBid);
             Controls.Add(buttonCancel);
@@ -204,6 +205,7 @@
             Controls.Add(label1);
             Controls.Add(listBoxDomains);
             FormBorderStyle = FormBorderStyle.Fixed3D;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "BatchImportForm";
             Text = "Import";

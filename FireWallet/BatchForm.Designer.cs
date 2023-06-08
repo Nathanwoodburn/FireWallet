@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BatchForm));
             buttonCancel = new Button();
             buttonSend = new Button();
             groupBoxTransactions = new GroupBox();
@@ -41,9 +42,9 @@
             // 
             buttonCancel.FlatStyle = FlatStyle.Flat;
             buttonCancel.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonCancel.Location = new System.Drawing.Point(707, 401);
+            buttonCancel.Location = new Point(707, 401);
             buttonCancel.Name = "buttonCancel";
-            buttonCancel.Size = new System.Drawing.Size(81, 37);
+            buttonCancel.Size = new Size(81, 37);
             buttonCancel.TabIndex = 0;
             buttonCancel.TabStop = false;
             buttonCancel.Text = "Cancel Batch";
@@ -54,9 +55,9 @@
             // 
             buttonSend.FlatStyle = FlatStyle.Flat;
             buttonSend.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonSend.Location = new System.Drawing.Point(620, 401);
+            buttonSend.Location = new Point(620, 401);
             buttonSend.Name = "buttonSend";
-            buttonSend.Size = new System.Drawing.Size(81, 37);
+            buttonSend.Size = new Size(81, 37);
             buttonSend.TabIndex = 1;
             buttonSend.TabStop = false;
             buttonSend.Text = "Send";
@@ -66,9 +67,9 @@
             // groupBoxTransactions
             // 
             groupBoxTransactions.Controls.Add(panelTXs);
-            groupBoxTransactions.Location = new System.Drawing.Point(0, 0);
+            groupBoxTransactions.Location = new Point(0, 0);
             groupBoxTransactions.Name = "groupBoxTransactions";
-            groupBoxTransactions.Size = new System.Drawing.Size(614, 438);
+            groupBoxTransactions.Size = new Size(614, 438);
             groupBoxTransactions.TabIndex = 2;
             groupBoxTransactions.TabStop = false;
             groupBoxTransactions.Text = "Transactions";
@@ -77,18 +78,18 @@
             // 
             panelTXs.AutoScroll = true;
             panelTXs.Dock = DockStyle.Fill;
-            panelTXs.Location = new System.Drawing.Point(3, 19);
+            panelTXs.Location = new Point(3, 19);
             panelTXs.Name = "panelTXs";
-            panelTXs.Size = new System.Drawing.Size(608, 416);
+            panelTXs.Size = new Size(608, 416);
             panelTXs.TabIndex = 3;
             // 
             // buttonImport
             // 
             buttonImport.FlatStyle = FlatStyle.Flat;
             buttonImport.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonImport.Location = new System.Drawing.Point(620, 19);
+            buttonImport.Location = new Point(620, 19);
             buttonImport.Name = "buttonImport";
-            buttonImport.Size = new System.Drawing.Size(81, 37);
+            buttonImport.Size = new Size(81, 37);
             buttonImport.TabIndex = 3;
             buttonImport.TabStop = false;
             buttonImport.Text = "Import";
@@ -99,9 +100,9 @@
             // 
             buttonExport.FlatStyle = FlatStyle.Flat;
             buttonExport.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonExport.Location = new System.Drawing.Point(707, 19);
+            buttonExport.Location = new Point(707, 19);
             buttonExport.Name = "buttonExport";
-            buttonExport.Size = new System.Drawing.Size(81, 37);
+            buttonExport.Size = new Size(81, 37);
             buttonExport.TabIndex = 4;
             buttonExport.TabStop = false;
             buttonExport.Text = "Export";
@@ -110,15 +111,16 @@
             // 
             // BatchForm
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(800, 450);
+            ClientSize = new Size(800, 450);
             Controls.Add(buttonExport);
             Controls.Add(buttonImport);
             Controls.Add(groupBoxTransactions);
             Controls.Add(buttonSend);
             Controls.Add(buttonCancel);
             FormBorderStyle = FormBorderStyle.Fixed3D;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "BatchForm";
             Text = "Batch";

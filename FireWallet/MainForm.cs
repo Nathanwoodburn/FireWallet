@@ -3,8 +3,9 @@ using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
-using IronBarCode;
+using QRCoder;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 
 namespace FireWallet
 {
@@ -848,8 +849,10 @@ namespace FireWallet
             textBoxReceiveAddress.Width = size.Width + 10;
             textBoxReceiveAddress.Left = (panelRecieve.Width - textBoxReceiveAddress.Width) / 2;
 
-            GeneratedBarcode Qrcode = QRCodeWriter.CreateQrCode(textBoxReceiveAddress.Text);
-            pictureBoxReceiveQR.Image = Qrcode.Image;
+            QRCodeGenerator qrcode = new QRCodeGenerator();
+            QRCodeData qrData = qrcode.CreateQrCode(textBoxReceiveAddress.Text, QRCodeGenerator.ECCLevel.Q);
+            QRCode qrCode = new QRCode(qrData);
+            pictureBoxReceiveQR.Image = qrCode.GetGraphic(20, theme["foreground"], theme["background"]);
             pictureBoxReceiveQR.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxReceiveQR.Width = panelRecieve.Width / 3;
             pictureBoxReceiveQR.Left = (panelRecieve.Width - pictureBoxReceiveQR.Width) / 2;
@@ -1055,7 +1058,7 @@ namespace FireWallet
                 // On Click open domain
                 domainTMP.Click += new EventHandler((sender, e) =>
                 {
-                    DomainForm domainForm = new DomainForm(name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                    DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
                     domainForm.Show();
                 });
 
@@ -1068,10 +1071,11 @@ namespace FireWallet
                 JObject stats = JObject.Parse(name["stats"].ToString());
 
                 Label expiry = new Label();
-                expiry.Text = "Expires: " + stats["blocksUntilExpire"].ToString() + " blocks";
+                expiry.Text = "Expires: " + stats["daysUntilExpire"].ToString() + " days";
                 expiry.Top = 5;
-                expiry.Left = domainTMP.Width - expiry.Width - 5;
                 expiry.AutoSize = true;
+                expiry.Left = domainTMP.Width - expiry.Width - 100;
+
 
                 domainTMP.Controls.Add(domainName);
                 domainTMP.Controls.Add(expiry);
@@ -1087,8 +1091,7 @@ namespace FireWallet
             {
                 textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
                 e.SuppressKeyPress = true;
-                DomainForm domainForm = new DomainForm(textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
-                domainForm.mainForm = this;
+                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
 
                 domainForm.Show();
 
@@ -1121,6 +1124,16 @@ namespace FireWallet
             }
             batchForm.AddBatch(domain, operation, bid, lockup);
 
+        }
+        public void AddBatch(string domain, string operation, DNS[] updateRecords)
+        {
+            if (!batchMode)
+            {
+                batchForm = new BatchForm(this);
+                batchForm.Show();
+                batchMode = true;
+            }
+            batchForm.AddBatch(domain, operation, updateRecords);
         }
         public void FinishBatch()
         {

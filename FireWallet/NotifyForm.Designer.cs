@@ -32,6 +32,7 @@ namespace FireWallet
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NotifyForm));
             labelmessage = new Label();
             buttonOK = new Button();
             buttonALT = new Button();
@@ -80,6 +81,7 @@ namespace FireWallet
             Controls.Add(buttonOK);
             Controls.Add(labelmessage);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "NotifyForm";
             Text = "FireWallet";
             Load += NotifyForm_Load;

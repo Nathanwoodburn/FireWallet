@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
 
 namespace FireWallet
@@ -20,9 +21,9 @@ namespace FireWallet
         int TransferEnd;
 
 
-        public MainForm mainForm { get; set; }
+        private MainForm mainForm;
 
-        public DomainForm(string domain, string explorerTX, string explorerName)
+        public DomainForm(MainForm mainForm, string domain, string explorerTX, string explorerName)
         {
             InitializeComponent();
             this.Text = domain + "/ | FireWallet";
@@ -30,6 +31,7 @@ namespace FireWallet
             this.domain = domain;
             this.explorerTX = explorerTX;
             this.explorerName = explorerName;
+            this.mainForm = mainForm;
         }
 
         #region Theming
@@ -624,7 +626,7 @@ namespace FireWallet
         {
             foreach (string d in mainForm.Domains)
             {
-                if (d==domain)
+                if (d == domain)
                 {
                     return true;
                 }
@@ -830,7 +832,7 @@ namespace FireWallet
             else if (state == "CLOSED")
             {
                 if (labelStatusTransferring.Text == "Yes")
-                {                    
+                {
                     string content = "{\"method\": \"sendfinalize\", \"params\": [\"" + domain + "\"]}";
                     if (height < TransferEnd)
                     {
@@ -864,6 +866,50 @@ namespace FireWallet
                         notifyForm.Dispose();
 
                     }
+                }
+                else
+                {
+                    DNSForm DNSEdit = new DNSForm(mainForm, domain);
+                    DNSEdit.ShowDialog();
+
+                    if (!DNSEdit.cancel)
+                    {
+                        string records = string.Join(", ", DNSEdit.DNSrecords.Select(record => record.ToString()));
+
+                        string content = "{\"method\": \"sendupdate\", \"params\": [\"" + domain + "\", {\"records\": [" + records + "]}]}";
+                        AddLog(content);
+                        string response = await APIPost("", true, content);
+
+                        if (response == "Error")
+                        {
+                            NotifyForm notifyForm = new NotifyForm("Error sending update");
+                            notifyForm.ShowDialog();
+                            notifyForm.Dispose();
+                        }
+                        else
+                        {
+                            JObject jObject = JObject.Parse(response);
+                            if (jObject["result"].ToString() == "")
+                            {
+                                JObject error = (JObject)jObject["error"];
+                                string message = (string)error["message"];
+                                NotifyForm notifyForm2 = new NotifyForm("Error sending update: \n" + message);
+                                notifyForm2.ShowDialog();
+                                notifyForm2.Dispose();
+                                return;
+                            }
+                            JObject result = (JObject)jObject["result"];
+                            string hash = (string)result["hash"];
+
+                            NotifyForm notifyForm = new NotifyForm("Update sent: " + hash, "Explorer", explorerTX + hash);
+                            notifyForm.ShowDialog();
+                            notifyForm.Dispose();
+
+                        }
+
+                    }
+
+                    DNSEdit.Dispose();
                 }
 
             }
@@ -921,6 +967,16 @@ namespace FireWallet
                         mainForm.AddBatch(domain, "CANCEL");
                         this.Close();
                     }
+                }
+                else
+                {
+                    DNSForm dnsEdit = new DNSForm(mainForm, domain);
+                    dnsEdit.ShowDialog();
+                    if (!dnsEdit.cancel)
+                    {
+                        mainForm.AddBatch(domain, "UPDATE", dnsEdit.DNSrecords);
+                    }
+                    dnsEdit.Dispose();
                 }
             }
             else

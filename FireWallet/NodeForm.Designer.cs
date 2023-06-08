@@ -33,6 +33,7 @@ namespace FireWallet
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NodeForm));
             labelWelcome = new Label();
             groupBoxNode = new GroupBox();
             labelNodeStatus = new Label();
@@ -168,6 +169,7 @@ namespace FireWallet
             Controls.Add(groupBoxNode);
             Controls.Add(labelWelcome);
             FormBorderStyle = FormBorderStyle.Fixed3D;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "NodeForm";
             Text = "Setup";
             Load += CreateForm_Load;
