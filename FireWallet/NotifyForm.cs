@@ -18,6 +18,7 @@ namespace FireWallet
         string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
         Dictionary<string, string> theme;
         string altLink;
+        bool Linkcopy;
         public NotifyForm(string Message)
         {
             InitializeComponent();
@@ -33,6 +34,23 @@ namespace FireWallet
             buttonALT.Visible = true;
             this.altLink = altLink;
             buttonOK.Focus();
+            Linkcopy = false;
+        }
+        public NotifyForm(string Message, string altText, string altLink, bool Linkcopy)
+        {
+            InitializeComponent();
+            labelmessage.Text = Message;
+            buttonALT.Text = altText;
+            buttonALT.Visible = true;
+            this.altLink = altLink;
+            buttonOK.Focus();
+            this.Linkcopy = Linkcopy;
+
+            if (Linkcopy)
+            {
+                // Small font to fix more data
+                labelmessage.Font = new Font(labelmessage.Font.FontFamily, 10);
+            }
         }
 
         #region Theming
@@ -220,6 +238,12 @@ namespace FireWallet
 
         private void buttonALT_Click(object sender, EventArgs e)
         {
+            if (Linkcopy)
+            {
+                // Copy link to clipboard
+                Clipboard.SetText(altLink);
+                return;
+            }
             // Open link
             ProcessStartInfo psi = new ProcessStartInfo
             {

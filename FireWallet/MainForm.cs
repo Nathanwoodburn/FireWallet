@@ -6,6 +6,8 @@ using Size = System.Drawing.Size;
 using QRCoder;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
+using System.Text;
+using System.Security.Policy;
 
 namespace FireWallet
 {
@@ -224,7 +226,7 @@ namespace FireWallet
 
             ResizeForm();
         }
-        private void ThemeControl(Control c)
+        public void ThemeControl(Control c)
         {
             if (c.GetType() == typeof(GroupBox) || c.GetType() == typeof(Panel))
             {
@@ -375,7 +377,13 @@ namespace FireWallet
         }
         #endregion
         #region Accounts
-
+        private void buttonaccountnew_Click(object sender, EventArgs e)
+        {
+            NewAccountForm newAccount = new NewAccountForm(this);
+            newAccount.ShowDialog();
+            newAccount.Dispose();
+            GetAccounts();
+        }
         private async void GetAccounts()
         {
             string APIresponse = await APIGet("wallet", true);
@@ -407,7 +415,13 @@ namespace FireWallet
         private async Task<bool> Login()
         {
             string path = "wallet/" + account + "/unlock";
+            
             string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
+            if (password == "")
+            {
+                AddLog("No password entered");
+                content = "{\"passphrase\": \"password\" ,\"timeout\": 60}";
+            }
 
             string APIresponse = await APIPost(path, true, content);
 
@@ -467,6 +481,7 @@ namespace FireWallet
 
         private async void Logout(object sender, EventArgs e)
         {
+            password = ""; // Clear password from memory as soon as possible
             toolStripSplitButtonlogout.Visible = false;
             string path = "wallet/" + account + "/lock";
             string content = "";
@@ -482,10 +497,7 @@ namespace FireWallet
             }
             panelaccount.Visible = true;
             panelNav.Visible = false;
-            panelSend.Visible = false;
-            panelRecieve.Visible = false;
-            panelDomains.Visible = false;
-            panelPortfolio.Visible = false;
+            hidePages();
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             textBoxaccountpassword.Focus();
         }
@@ -506,7 +518,7 @@ namespace FireWallet
                 toolStripStatusLabelstatus.Text = "Status: Node Connected";
             }
             if (account == "") return; // Don't update balance if not logged in
-            
+
             // Try to keep wallet unlocked
             string path = "wallet/" + account + "/unlock";
             string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
@@ -1201,6 +1213,63 @@ namespace FireWallet
             sw.Dispose();
             LoadSettings();
             labelSettingsSaved.Show();
+        }
+
+
+
+        private async void buttonSeed_Click(object sender, EventArgs e)
+        {
+            string path = "wallet/" + account + "/master";
+            string response = await APIGet(path, true);
+            AddLog(response);
+            JObject resp = JObject.Parse(response);
+            if (resp["encrypted"].ToString() == "False")
+            {
+                JObject mnemonic = JObject.Parse(resp["mnemonic"].ToString());
+                string phrase = mnemonic["phrase"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Your seed phrase is:\n" + phrase, "Copy", phrase, true);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+            }
+            else
+            {
+                string algorithm = resp["algorithm"].ToString();
+                if (algorithm != "pbkdf2")
+                {
+                    AddLog("Invalid algorithm");
+                    AddLog(response);
+                    NotifyForm notifyForm = new NotifyForm("Invalid algorithm");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+
+                try
+                {
+                    string iv = resp["iv"].ToString();
+                    string ciphertext = resp["ciphertext"].ToString();
+                    string tmpn = resp["n"].ToString();
+                    string tmpr = resp["r"].ToString();
+                    string tmpp = resp["p"].ToString();
+
+                    int n = int.Parse(tmpn);
+                    int p = int.Parse(tmpp);
+
+                    int iterations = n;
+
+
+                }
+                catch (Exception ex)
+                {
+                    AddLog("Error decrypting seed");
+                    AddLog(ex.ToString());
+                    NotifyForm notifyForm = new NotifyForm("Error decrypting seed");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+
+
+            }
         }
     }
 }

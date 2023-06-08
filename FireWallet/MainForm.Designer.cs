@@ -90,8 +90,12 @@ namespace FireWallet
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
             panelSettings = new Panel();
+            buttonSeed = new Button();
             groupBoxSettingsMisc = new GroupBox();
+            labelSettings8 = new Label();
             labelSettings6 = new Label();
+            numericUpDownTXCount = new NumericUpDown();
+            labelSettings7 = new Label();
             numericUpDownConfirmations = new NumericUpDown();
             labelSettings5 = new Label();
             labelSettingsSaved = new Label();
@@ -105,9 +109,6 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            labelSettings7 = new Label();
-            numericUpDownTXCount = new NumericUpDown();
-            labelSettings8 = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -122,9 +123,9 @@ namespace FireWallet
             groupBoxDomains.SuspendLayout();
             panelSettings.SuspendLayout();
             groupBoxSettingsMisc.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).BeginInit();
             groupBoxSettingsExplorer.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).BeginInit();
             SuspendLayout();
             // 
             // statusStripmain
@@ -277,6 +278,7 @@ namespace FireWallet
             buttonaccountnew.TabStop = false;
             buttonaccountnew.Text = "New";
             buttonaccountnew.UseVisualStyleBackColor = true;
+            buttonaccountnew.Click += buttonaccountnew_Click;
             // 
             // panelNav
             // 
@@ -715,6 +717,7 @@ namespace FireWallet
             // 
             // panelSettings
             // 
+            panelSettings.Controls.Add(buttonSeed);
             panelSettings.Controls.Add(groupBoxSettingsMisc);
             panelSettings.Controls.Add(labelSettingsSaved);
             panelSettings.Controls.Add(buttonSettingsSave);
@@ -725,6 +728,17 @@ namespace FireWallet
             panelSettings.Size = new Size(930, 550);
             panelSettings.TabIndex = 19;
             panelSettings.Visible = false;
+            // 
+            // buttonSeed
+            // 
+            buttonSeed.FlatStyle = FlatStyle.Flat;
+            buttonSeed.Location = new Point(507, 7);
+            buttonSeed.Name = "buttonSeed";
+            buttonSeed.Size = new Size(157, 68);
+            buttonSeed.TabIndex = 8;
+            buttonSeed.Text = "Seed Phrase";
+            buttonSeed.UseVisualStyleBackColor = true;
+            buttonSeed.Click += buttonSeed_Click;
             // 
             // groupBoxSettingsMisc
             // 
@@ -741,6 +755,15 @@ namespace FireWallet
             groupBoxSettingsMisc.TabStop = false;
             groupBoxSettingsMisc.Text = "Misc Settings";
             // 
+            // labelSettings8
+            // 
+            labelSettings8.AutoSize = true;
+            labelSettings8.Location = new Point(255, 71);
+            labelSettings8.Name = "labelSettings8";
+            labelSettings8.Size = new Size(120, 21);
+            labelSettings8.TabIndex = 2;
+            labelSettings8.Text = "TXs on portfolio";
+            // 
             // labelSettings6
             // 
             labelSettings6.AutoSize = true;
@@ -749,6 +772,23 @@ namespace FireWallet
             labelSettings6.Size = new Size(54, 21);
             labelSettings6.TabIndex = 2;
             labelSettings6.Text = "blocks";
+            // 
+            // numericUpDownTXCount
+            // 
+            numericUpDownTXCount.Location = new Point(129, 69);
+            numericUpDownTXCount.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numericUpDownTXCount.Name = "numericUpDownTXCount";
+            numericUpDownTXCount.Size = new Size(120, 29);
+            numericUpDownTXCount.TabIndex = 1;
+            // 
+            // labelSettings7
+            // 
+            labelSettings7.AutoSize = true;
+            labelSettings7.Location = new Point(71, 73);
+            labelSettings7.Name = "labelSettings7";
+            labelSettings7.Size = new Size(52, 21);
+            labelSettings7.TabIndex = 0;
+            labelSettings7.Text = "Show:";
             // 
             // numericUpDownConfirmations
             // 
@@ -871,32 +911,6 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // labelSettings7
-            // 
-            labelSettings7.AutoSize = true;
-            labelSettings7.Location = new Point(71, 73);
-            labelSettings7.Name = "labelSettings7";
-            labelSettings7.Size = new Size(52, 21);
-            labelSettings7.TabIndex = 0;
-            labelSettings7.Text = "Show:";
-            // 
-            // numericUpDownTXCount
-            // 
-            numericUpDownTXCount.Location = new Point(129, 69);
-            numericUpDownTXCount.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
-            numericUpDownTXCount.Name = "numericUpDownTXCount";
-            numericUpDownTXCount.Size = new Size(120, 29);
-            numericUpDownTXCount.TabIndex = 1;
-            // 
-            // labelSettings8
-            // 
-            labelSettings8.AutoSize = true;
-            labelSettings8.Location = new Point(255, 71);
-            labelSettings8.Name = "labelSettings8";
-            labelSettings8.Size = new Size(120, 21);
-            labelSettings8.TabIndex = 2;
-            labelSettings8.Text = "TXs on portfolio";
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -939,10 +953,10 @@ namespace FireWallet
             panelSettings.PerformLayout();
             groupBoxSettingsMisc.ResumeLayout(false);
             groupBoxSettingsMisc.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).EndInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).EndInit();
             groupBoxSettingsExplorer.ResumeLayout(false);
             groupBoxSettingsExplorer.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1022,5 +1036,6 @@ namespace FireWallet
         private Label labelSettings8;
         private NumericUpDown numericUpDownTXCount;
         private Label labelSettings7;
+        private Button buttonSeed;
     }
 }
