@@ -33,6 +33,7 @@
             timerSplashDelay = new System.Windows.Forms.Timer(components);
             label1 = new Label();
             pictureBox1 = new PictureBox();
+            label2 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -46,7 +47,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 20F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(209, 36);
+            label1.Location = new Point(80, 9);
             label1.Name = "label1";
             label1.Size = new Size(284, 37);
             label1.TabIndex = 0;
@@ -54,20 +55,33 @@
             // 
             // pictureBox1
             // 
+            pictureBox1.BackColor = Color.Transparent;
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(142, 76);
+            pictureBox1.Location = new Point(12, 58);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(411, 328);
+            pictureBox1.Size = new Size(420, 330);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            label2.Location = new Point(154, 400);
+            label2.Name = "label2";
+            label2.Size = new Size(136, 20);
+            label2.TabIndex = 2;
+            label2.Text = "Nathan.Woodburn/";
+            label2.Click += label2_Click;
             // 
             // SplashScreen
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(749, 416);
+            ClientSize = new Size(444, 435);
+            Controls.Add(label2);
             Controls.Add(pictureBox1);
             Controls.Add(label1);
             ForeColor = Color.FromArgb(142, 5, 194);
@@ -77,6 +91,7 @@
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "FireWallet";
+            TopMost = true;
             FormClosing += SplashScreen_FormClosing;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
@@ -88,5 +103,6 @@
         private System.Windows.Forms.Timer timerSplashDelay;
         private Label label1;
         private PictureBox pictureBox1;
+        private Label label2;
     }
 }
