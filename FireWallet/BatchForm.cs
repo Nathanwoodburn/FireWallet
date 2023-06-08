@@ -633,6 +633,8 @@ namespace FireWallet
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
+                AddLog(await resp.Content.ReadAsStringAsync());
+                AddLog(content);
                 return "Error";
             }
 
@@ -694,7 +696,7 @@ namespace FireWallet
             else if (method == "UPDATE" && update != null)
             {
 
-                string records = "{records:[" + string.Join(", ", update.Select(record => record.ToString())) + "]}";
+                string records = "{\"records\":[" + string.Join(", ", update.Select(record => record.ToString())) + "]}";
                 return "[\"UPDATE\", \"" + domain + "\", " + records + "]";
 
             }

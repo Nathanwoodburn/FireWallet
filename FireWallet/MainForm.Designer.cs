@@ -115,6 +115,7 @@ namespace FireWallet
             // 
             // toolStripStatusLabelNetwork
             // 
+            toolStripStatusLabelNetwork.DisplayStyle = ToolStripItemDisplayStyle.Text;
             toolStripStatusLabelNetwork.Margin = new Padding(0, 3, 50, 2);
             toolStripStatusLabelNetwork.Name = "toolStripStatusLabelNetwork";
             toolStripStatusLabelNetwork.Size = new Size(58, 17);
@@ -122,6 +123,7 @@ namespace FireWallet
             // 
             // toolStripStatusLabelstatus
             // 
+            toolStripStatusLabelstatus.DisplayStyle = ToolStripItemDisplayStyle.Text;
             toolStripStatusLabelstatus.Margin = new Padding(0, 3, 50, 2);
             toolStripStatusLabelstatus.Name = "toolStripStatusLabelstatus";
             toolStripStatusLabelstatus.Size = new Size(126, 17);
@@ -129,6 +131,7 @@ namespace FireWallet
             // 
             // toolStripStatusLabelaccount
             // 
+            toolStripStatusLabelaccount.DisplayStyle = ToolStripItemDisplayStyle.Text;
             toolStripStatusLabelaccount.Margin = new Padding(0, 3, 50, 2);
             toolStripStatusLabelaccount.Name = "toolStripStatusLabelaccount";
             toolStripStatusLabelaccount.Size = new Size(55, 17);

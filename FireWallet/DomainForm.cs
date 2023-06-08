@@ -877,7 +877,6 @@ namespace FireWallet
                         string records = string.Join(", ", DNSEdit.DNSrecords.Select(record => record.ToString()));
 
                         string content = "{\"method\": \"sendupdate\", \"params\": [\"" + domain + "\", {\"records\": [" + records + "]}]}";
-                        AddLog(content);
                         string response = await APIPost("", true, content);
 
                         if (response == "Error")
@@ -975,6 +974,7 @@ namespace FireWallet
                     if (!dnsEdit.cancel)
                     {
                         mainForm.AddBatch(domain, "UPDATE", dnsEdit.DNSrecords);
+                        this.Close();
                     }
                     dnsEdit.Dispose();
                 }

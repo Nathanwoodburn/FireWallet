@@ -37,6 +37,7 @@ namespace FireWallet
             GetDNS();
 
             comboBoxType.SelectedIndex = 0;
+            textBoxMain.Focus();
         }
 
 
@@ -612,6 +613,11 @@ namespace FireWallet
                 buttonAddRecord.PerformClick();
 
             }
+        }
+
+        private void comboBoxType_DropDownClosed(object sender, EventArgs e)
+        {
+            textBoxMain.Focus();
         }
     }
 }

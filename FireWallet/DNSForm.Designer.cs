@@ -170,6 +170,7 @@
             comboBoxType.Size = new Size(129, 23);
             comboBoxType.TabIndex = 3;
             comboBoxType.SelectedIndexChanged += comboBoxType_SelectedIndexChanged;
+            comboBoxType.DropDownClosed += comboBoxType_DropDownClosed;
             // 
             // DNSForm
             // 
