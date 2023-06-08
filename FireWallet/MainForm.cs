@@ -35,6 +35,7 @@ namespace FireWallet
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
+            account = "";
             timerNodeStatus.Stop();
             LoadSettings();
 
@@ -71,7 +72,7 @@ namespace FireWallet
 
             AddLog("Loaded");
             batchMode = false;
-
+            textBoxaccountpassword.Focus();
             timerNodeStatus.Start();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
@@ -381,6 +382,7 @@ namespace FireWallet
             comboBoxaccount.Items.Clear();
             if (APIresponse != "Error")
             {
+                comboBoxaccount.Enabled = true;
                 JArray jArray = JArray.Parse(APIresponse);
                 foreach (string account in jArray)
                 {
@@ -401,7 +403,6 @@ namespace FireWallet
                 comboBoxaccount.Items.Add("No accounts found");
                 comboBoxaccount.Enabled = false;
             }
-            textBoxaccountpassword.Focus();
         }
         private async Task<bool> Login()
         {
@@ -497,12 +498,15 @@ namespace FireWallet
             if (await APIGet("", false) == "Error")
             {
                 toolStripStatusLabelstatus.Text = "Status: Node Not Connected";
+                return;
             }
             else
             {
+                if (toolStripStatusLabelstatus.Text != "Status: Node Connected") GetAccounts(); // Get accounts if node was not connected before
                 toolStripStatusLabelstatus.Text = "Status: Node Connected";
             }
-
+            if (account == "") return; // Don't update balance if not logged in
+            
             // Try to keep wallet unlocked
             string path = "wallet/" + account + "/unlock";
             string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
