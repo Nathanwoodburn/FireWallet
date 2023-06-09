@@ -229,6 +229,11 @@ namespace FireWallet
             }
             network = Convert.ToInt32(nodeSettings["Network"]);
             GetName();
+
+            if (mainForm.watchOnly)
+            {
+                buttonActionMain.Enabled = false; // Only allow sending in batches for ledger
+            }
         }
         #region API
         private async void GetName()

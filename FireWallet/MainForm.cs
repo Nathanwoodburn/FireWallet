@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Security.Policy;
 using System.Windows.Forms;
+using System.Net;
 
 namespace FireWallet
 {
@@ -1058,7 +1059,40 @@ namespace FireWallet
 
                     if (!Directory.Exists(dir + "hsd-ledger"))
                     {
-                        return; // TODO: Create all the ledger stuff
+                        if (CheckNodeInstalled() == false)
+                        {
+                            AddLog("Node not installed");
+                            NotifyForm notify1 = new NotifyForm("Node not installed\nPlease install it to use Ledger");
+                            notify1.ShowDialog();
+                            notify1.Dispose();
+                            return;
+                        }
+                        AddLog("Installing hsd-ledger");
+
+                        // Try to install hsd-ledger
+                        try
+                        {
+                            NotifyForm Notifyinstall = new NotifyForm("Installing hsd-ledger\nThis may take a few minutes\nDo not close FireWallet",false);
+                            Notifyinstall.Show();
+                            // Wait for the notification to show
+                            await Task.Delay(1000);
+
+                            string repositoryUrl = "https://github.com/handshake-org/hsd-ledger.git";
+                            string destinationPath = dir + "hsd-ledger";
+                            CloneRepository(repositoryUrl,destinationPath);
+
+                            Notifyinstall.CloseNotification();
+                            Notifyinstall.Dispose();
+                        }
+                        catch (Exception ex)
+                        {
+                            NotifyForm notifyError = new NotifyForm("Error installing hsd-ledger\n" + ex.Message);
+                            AddLog(ex.Message);
+                            notifyError.ShowDialog();
+                            notifyError.Dispose();
+                            return;
+                        }
+                        
                     }
 
                     NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device",false);
@@ -1118,6 +1152,89 @@ namespace FireWallet
                 AddLog(ex.Message);
                 labelSendingError.Show();
                 labelSendingError.Text = ex.Message;
+            }
+        }
+        private void CloneRepository(string repositoryUrl, string destinationPath)
+        {
+            try
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo();
+                startInfo.FileName = "git";
+                startInfo.Arguments = $"clone {repositoryUrl} {destinationPath}";
+                startInfo.RedirectStandardOutput = true;
+                startInfo.UseShellExecute = false;
+                startInfo.CreateNoWindow = true;
+
+                Process process = new Process();
+                process.StartInfo = startInfo;
+                process.Start();
+
+                string output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+
+                while (!process.HasExited)
+                {
+                    output += process.StandardOutput.ReadToEnd();
+                }
+                var psiNpmRunDist = new ProcessStartInfo
+                {
+                    FileName = "cmd",
+                    RedirectStandardInput = true,
+                    WorkingDirectory = destinationPath,
+                    CreateNoWindow = true
+                };
+                var pNpmRunDist = Process.Start(psiNpmRunDist);
+                pNpmRunDist.StandardInput.WriteLine("npm install & exit");
+                pNpmRunDist.WaitForExit();
+
+
+                // Replace /bin/hsd-ledger with /bin/hsd-ledger from
+                // https://raw.githubusercontent.com/Nathanwoodburn/FireWallet/master/hsd-ledger
+                // This version of hsd-ledger has the sendraw transaction function added which is needed for batching
+
+                string sourcePath = destinationPath + "\\bin\\hsd-ledger";
+                File.Delete(sourcePath);
+
+                // Download the new hsd-ledger
+                WebClient downloader = new WebClient();
+                downloader.DownloadFile("https://raw.githubusercontent.com/Nathanwoodburn/FireWallet/master/hsd-ledger", sourcePath);
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                AddLog("Git/NPM Install FAILED");
+                AddLog(ex.Message);
+            }
+        }
+        static bool CheckNodeInstalled()
+        {
+            try
+            {
+                // Create a new process to execute the 'node' command
+                Process process = new Process();
+                process.StartInfo.FileName = "node";
+                process.StartInfo.Arguments = "--version";
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.CreateNoWindow = true;
+
+                // Start the process and read the output
+                process.Start();
+                string output = process.StandardOutput.ReadToEnd();
+
+                // Wait for the process to exit
+                process.WaitForExit();
+
+                // Check if the output contains a version number
+                return !string.IsNullOrEmpty(output);
+            }
+            catch (Exception)
+            {
+                // An exception occurred, indicating that 'node' is not installed or accessible
+                return false;
             }
         }
         #endregion
