@@ -52,7 +52,11 @@ namespace FireWallet
 
         private void buttonImport_Click(object sender, EventArgs e)
         {
-            // TODO - Import wallet
+            page = 2;
+            groupBoxNew.Show();
+            buttonNext.Show();
+            buttonNext.Enabled = false;
+            groupBoxNew.Text = "Import Wallet";
         }
 
         private void buttonCold_Click(object sender, EventArgs e)
@@ -76,23 +80,31 @@ namespace FireWallet
 
         private async void buttonNext_Click(object sender, EventArgs e)
         {
+
+            if (textBoxNewPass1 == null)
+            {
+                NotifyForm notify = new NotifyForm("Please enter a password");
+                notify.ShowDialog();
+                notify.Dispose();
+                return;
+            }
+            if (textBoxNewPass1.Text.Length < 8)
+            {
+                NotifyForm notify = new NotifyForm("Password must be at least 8 characters");
+                notify.ShowDialog();
+                notify.Dispose();
+                return;
+            }
+            if (textBoxNewPass1.Text != textBoxNewPass2.Text)
+            {
+                NotifyForm notify = new NotifyForm("Passwords do not match");
+                notify.ShowDialog();
+                notify.Dispose();
+                return;
+            }
+
             if (page == 1)
             {
-                if (textBoxNewPass1 == null)
-                {
-                    NotifyForm notify = new NotifyForm("Please enter a password");
-                    notify.ShowDialog();
-                    notify.Dispose();
-                    return;
-                }
-                if (textBoxNewPass1.Text != textBoxNewPass2.Text)
-                {
-                    NotifyForm notify = new NotifyForm("Passwords do not match");
-                    notify.ShowDialog();
-                    notify.Dispose();
-                    return;
-                }
-
                 // Create new wallet
                 buttonNext.Enabled = false;
                 string path = "wallet/" + textBoxNewName.Text;
@@ -107,8 +119,38 @@ namespace FireWallet
                     return;
                 }
                 mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
+                NotifyForm notify2 = new NotifyForm("Created wallet: " + textBoxNewName.Text);
+                notify2.ShowDialog();
+                notify2.Dispose();
+                this.Close();
+            }
+            else if (page == 2)
+            {
+                groupBoxSeed.Show();
+                buttonNext.Text = "Import";
+                page = 3;
 
-
+            }
+            else if (page == 3)
+            {
+                // Create new wallet
+                buttonNext.Enabled = false;
+                string path = "wallet/" + textBoxNewName.Text;
+                string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\",\"mnemonic\":\"" + textBoxSeedPhrase.Text +"\"}";
+                string response = await APIPut(path, true, content);
+                if (response == "Error")
+                {
+                    NotifyForm notify = new NotifyForm("Error creating wallet");
+                    notify.ShowDialog();
+                    notify.Dispose();
+                    buttonNext.Enabled = true;
+                    return;
+                }
+                mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
+                NotifyForm notify2 = new NotifyForm("Imported wallet: " + textBoxNewName.Text);
+                notify2.ShowDialog();
+                notify2.Dispose();
+                this.Close();
             }
         }
 

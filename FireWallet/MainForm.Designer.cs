@@ -90,6 +90,8 @@ namespace FireWallet
             labelDomainSearch = new Label();
             textBoxDomainSearch = new TextBox();
             panelSettings = new Panel();
+            groupBoxSettingsWallet = new GroupBox();
+            buttonSettingsRescan = new Button();
             buttonSeed = new Button();
             groupBoxSettingsMisc = new GroupBox();
             labelSettings8 = new Label();
@@ -122,6 +124,7 @@ namespace FireWallet
             panelDomains.SuspendLayout();
             groupBoxDomains.SuspendLayout();
             panelSettings.SuspendLayout();
+            groupBoxSettingsWallet.SuspendLayout();
             groupBoxSettingsMisc.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numericUpDownConfirmations).BeginInit();
@@ -400,7 +403,7 @@ namespace FireWallet
             groupBoxinfo.Controls.Add(labelHeight);
             groupBoxinfo.Location = new Point(281, 3);
             groupBoxinfo.Name = "groupBoxinfo";
-            groupBoxinfo.Size = new Size(232, 104);
+            groupBoxinfo.Size = new Size(250, 104);
             groupBoxinfo.TabIndex = 8;
             groupBoxinfo.TabStop = false;
             groupBoxinfo.Text = "Info";
@@ -717,7 +720,7 @@ namespace FireWallet
             // 
             // panelSettings
             // 
-            panelSettings.Controls.Add(buttonSeed);
+            panelSettings.Controls.Add(groupBoxSettingsWallet);
             panelSettings.Controls.Add(groupBoxSettingsMisc);
             panelSettings.Controls.Add(labelSettingsSaved);
             panelSettings.Controls.Add(buttonSettingsSave);
@@ -729,12 +732,34 @@ namespace FireWallet
             panelSettings.TabIndex = 19;
             panelSettings.Visible = false;
             // 
+            // groupBoxSettingsWallet
+            // 
+            groupBoxSettingsWallet.Controls.Add(buttonSettingsRescan);
+            groupBoxSettingsWallet.Controls.Add(buttonSeed);
+            groupBoxSettingsWallet.Location = new Point(507, 16);
+            groupBoxSettingsWallet.Name = "groupBoxSettingsWallet";
+            groupBoxSettingsWallet.Size = new Size(420, 194);
+            groupBoxSettingsWallet.TabIndex = 9;
+            groupBoxSettingsWallet.TabStop = false;
+            groupBoxSettingsWallet.Text = "Wallet Controls";
+            // 
+            // buttonSettingsRescan
+            // 
+            buttonSettingsRescan.FlatStyle = FlatStyle.Flat;
+            buttonSettingsRescan.Location = new Point(6, 20);
+            buttonSettingsRescan.Name = "buttonSettingsRescan";
+            buttonSettingsRescan.Size = new Size(98, 53);
+            buttonSettingsRescan.TabIndex = 8;
+            buttonSettingsRescan.Text = "Rescan";
+            buttonSettingsRescan.UseVisualStyleBackColor = true;
+            buttonSettingsRescan.Click += Rescan_Click;
+            // 
             // buttonSeed
             // 
             buttonSeed.FlatStyle = FlatStyle.Flat;
-            buttonSeed.Location = new Point(507, 7);
+            buttonSeed.Location = new Point(297, 15);
             buttonSeed.Name = "buttonSeed";
-            buttonSeed.Size = new Size(157, 68);
+            buttonSeed.Size = new Size(117, 53);
             buttonSeed.TabIndex = 8;
             buttonSeed.Text = "Seed Phrase";
             buttonSeed.UseVisualStyleBackColor = true;
@@ -951,6 +976,7 @@ namespace FireWallet
             groupBoxDomains.ResumeLayout(false);
             panelSettings.ResumeLayout(false);
             panelSettings.PerformLayout();
+            groupBoxSettingsWallet.ResumeLayout(false);
             groupBoxSettingsMisc.ResumeLayout(false);
             groupBoxSettingsMisc.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numericUpDownTXCount).EndInit();
@@ -1037,5 +1063,7 @@ namespace FireWallet
         private NumericUpDown numericUpDownTXCount;
         private Label labelSettings7;
         private Button buttonSeed;
+        private GroupBox groupBoxSettingsWallet;
+        private Button buttonSettingsRescan;
     }
 }

@@ -415,11 +415,11 @@ namespace FireWallet
         private async Task<bool> Login()
         {
             string path = "wallet/" + account + "/unlock";
-            
+
             string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
             if (password == "")
             {
-                AddLog("No password entered");
+                // For some reason, the API doesn't like an empty password, so we'll just use a default one
                 content = "{\"passphrase\": \"password\" ,\"timeout\": 60}";
             }
 
@@ -1200,6 +1200,8 @@ namespace FireWallet
             textBoxDomainSearch.Text = domainSearch;
         }
 
+
+        #region Settings
         private void buttonSettingsSave_Click(object sender, EventArgs e)
         {
             StreamWriter sw = new StreamWriter(dir + "settings.txt");
@@ -1214,14 +1216,10 @@ namespace FireWallet
             LoadSettings();
             labelSettingsSaved.Show();
         }
-
-
-
         private async void buttonSeed_Click(object sender, EventArgs e)
         {
             string path = "wallet/" + account + "/master";
             string response = await APIGet(path, true);
-            AddLog(response);
             JObject resp = JObject.Parse(response);
             if (resp["encrypted"].ToString() == "False")
             {
@@ -1270,6 +1268,22 @@ namespace FireWallet
 
 
             }
+        }
+
+        #endregion
+
+        private async void Rescan_Click(object sender, EventArgs e)
+        {
+            string content = "{\"height\": 0}";
+            string response = await APIPost("rescan", true, content);
+            if (!response.Contains("true"))
+            {
+                AddLog("Error starting rescan");
+                AddLog(response);
+                return;
+            }
+            AddLog("Starting rescan");
+
         }
     }
 }

@@ -37,15 +37,18 @@
             buttonImport = new Button();
             buttonNew = new Button();
             groupBoxNew = new GroupBox();
+            textBoxNewPass2 = new TextBox();
+            textBoxNewPass1 = new TextBox();
             label4 = new Label();
             textBoxNewName = new TextBox();
+            label5 = new Label();
             label3 = new Label();
             label2 = new Label();
-            textBoxNewPass1 = new TextBox();
-            textBoxNewPass2 = new TextBox();
-            label5 = new Label();
+            groupBoxSeed = new GroupBox();
+            textBoxSeedPhrase = new TextBox();
             groupBoxMode.SuspendLayout();
             groupBoxNew.SuspendLayout();
+            groupBoxSeed.SuspendLayout();
             SuspendLayout();
             // 
             // buttonNext
@@ -157,6 +160,22 @@
             groupBoxNew.Text = "New Wallet";
             groupBoxNew.Visible = false;
             // 
+            // textBoxNewPass2
+            // 
+            textBoxNewPass2.Location = new Point(128, 136);
+            textBoxNewPass2.Name = "textBoxNewPass2";
+            textBoxNewPass2.Size = new Size(316, 29);
+            textBoxNewPass2.TabIndex = 8;
+            textBoxNewPass2.UseSystemPasswordChar = true;
+            // 
+            // textBoxNewPass1
+            // 
+            textBoxNewPass1.Location = new Point(128, 90);
+            textBoxNewPass1.Name = "textBoxNewPass1";
+            textBoxNewPass1.Size = new Size(316, 29);
+            textBoxNewPass1.TabIndex = 7;
+            textBoxNewPass1.UseSystemPasswordChar = true;
+            // 
             // label4
             // 
             label4.AutoSize = true;
@@ -174,6 +193,15 @@
             textBoxNewName.Size = new Size(316, 29);
             textBoxNewName.TabIndex = 5;
             textBoxNewName.TextChanged += textBoxNewName_TextChanged;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(38, 139);
+            label5.Name = "label5";
+            label5.Size = new Size(70, 21);
+            label5.TabIndex = 1;
+            label5.Text = "Confirm:";
             // 
             // label3
             // 
@@ -193,36 +221,33 @@
             label2.TabIndex = 0;
             label2.Text = "Name:";
             // 
-            // textBoxNewPass1
+            // groupBoxSeed
             // 
-            textBoxNewPass1.Location = new Point(128, 90);
-            textBoxNewPass1.Name = "textBoxNewPass1";
-            textBoxNewPass1.Size = new Size(316, 29);
-            textBoxNewPass1.TabIndex = 7;
-            textBoxNewPass1.UseSystemPasswordChar = true;
+            groupBoxSeed.Controls.Add(textBoxSeedPhrase);
+            groupBoxSeed.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            groupBoxSeed.Location = new Point(125, 22);
+            groupBoxSeed.Name = "groupBoxSeed";
+            groupBoxSeed.Size = new Size(450, 319);
+            groupBoxSeed.TabIndex = 5;
+            groupBoxSeed.TabStop = false;
+            groupBoxSeed.Text = "Seed Phrase";
+            groupBoxSeed.Visible = false;
             // 
-            // textBoxNewPass2
+            // textBoxSeedPhrase
             // 
-            textBoxNewPass2.Location = new Point(128, 136);
-            textBoxNewPass2.Name = "textBoxNewPass2";
-            textBoxNewPass2.Size = new Size(316, 29);
-            textBoxNewPass2.TabIndex = 8;
-            textBoxNewPass2.UseSystemPasswordChar = true;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Location = new Point(38, 139);
-            label5.Name = "label5";
-            label5.Size = new Size(70, 21);
-            label5.TabIndex = 1;
-            label5.Text = "Confirm:";
+            textBoxSeedPhrase.Location = new Point(6, 25);
+            textBoxSeedPhrase.Multiline = true;
+            textBoxSeedPhrase.Name = "textBoxSeedPhrase";
+            textBoxSeedPhrase.PlaceholderText = "pistol air cabbage high conduct party powder inject jungle knee spell derive";
+            textBoxSeedPhrase.Size = new Size(438, 288);
+            textBoxSeedPhrase.TabIndex = 0;
             // 
             // NewAccountForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(680, 430);
+            Controls.Add(groupBoxSeed);
             Controls.Add(buttonCancel);
             Controls.Add(buttonNext);
             Controls.Add(groupBoxNew);
@@ -237,6 +262,8 @@
             groupBoxMode.PerformLayout();
             groupBoxNew.ResumeLayout(false);
             groupBoxNew.PerformLayout();
+            groupBoxSeed.ResumeLayout(false);
+            groupBoxSeed.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -257,5 +284,7 @@
         private TextBox textBoxNewPass2;
         private TextBox textBoxNewPass1;
         private Label label5;
+        private GroupBox groupBoxSeed;
+        private TextBox textBoxSeedPhrase;
     }
 }
