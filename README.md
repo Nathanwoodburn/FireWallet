@@ -21,6 +21,10 @@ This password will be used to encrypt your wallet and to login to your wallet.
 ## First time setup
 When you first open the wallet you will be prompted to set your node settings.
 
+You can either connect to an existing HSD (or Bob) node or you can run your own node.  
+If you want to run your own node you should select the `Run HSD` option.  
+This will take a few minutes to download and install HSD.
+
 You can get the API key from the HSD launch command or 
 in Bob wallet under settings > Wallet > API key.  
 If you change this key in HSD or Bob you will need to update it in FireWallet.  
