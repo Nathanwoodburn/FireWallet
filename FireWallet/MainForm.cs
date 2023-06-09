@@ -31,7 +31,9 @@ namespace FireWallet
         public bool batchMode { get; set; }
         public BatchForm batchForm { get; set; }
         public bool watchOnly { get; set; }
+        public bool HSD { get; set; }
 
+        public Process hsdProcess { get; set; }
         #endregion
         #region Application
         public MainForm()
@@ -84,6 +86,22 @@ namespace FireWallet
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
             AddLog("Closing");
+            if (hsdProcess != null)
+            {
+                this.Hide();
+                hsdProcess.Kill();
+                AddLog("HSD Closed");
+                Thread.Sleep(1000);
+
+                try
+                {
+                    hsdProcess.Dispose();
+                }
+                catch
+                {
+                    AddLog("Dispose failed");
+                }
+            }
         }
         #endregion
 
@@ -91,8 +109,9 @@ namespace FireWallet
 
 
         #region Settings
-        private void LoadNode()
+        private async void LoadNode()
         {
+            HSD = false;
             if (!File.Exists(dir + "node.txt"))
             {
                 NodeForm cf = new NodeForm();
@@ -137,6 +156,52 @@ namespace FireWallet
                     toolStripStatusLabelNetwork.Text = "Network: Testnet";
                     break;
             }
+
+            if (nodeSettings.ContainsKey("HSD"))
+            {
+                if (nodeSettings["HSD"].ToLower() == "true")
+                {
+                    HSD = true;
+                    AddLog("Starting HSD");
+                    toolStripStatusLabelstatus.Text = "Status: HSD Starting";
+
+                    if (!Directory.Exists(dir + "hsd"))
+                    {
+                        NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
+                        Notifyinstall.Show();
+                        // Wait for the notification to show
+                        await Task.Delay(1000);
+
+                        string repositoryUrl = "https://github.com/handshake-org/hsd.git";
+                        string destinationPath = dir + "hsd";
+                        CloneRepository(repositoryUrl, destinationPath);
+
+                        Notifyinstall.CloseNotification();
+                        Notifyinstall.Dispose();
+                    }
+                    hsdProcess = new Process();
+                    
+                    hsdProcess.StartInfo.CreateNoWindow = true;
+
+                    hsdProcess.StartInfo.RedirectStandardInput = true;
+                    hsdProcess.StartInfo.RedirectStandardOutput = false;
+                    hsdProcess.StartInfo.UseShellExecute = false;
+                    hsdProcess.StartInfo.RedirectStandardError = false;
+                    hsdProcess.StartInfo.FileName = "node.exe";
+                    hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --index-tx --index-address --api-key" + nodeSettings["Key"];
+
+                    string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                    if (Directory.Exists(bobPath))
+                    {
+                        hsdProcess.StartInfo.Arguments = hsdProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                    }
+                    hsdProcess.Start();
+
+
+
+                }
+            }
+
             NodeStatus();
 
 
@@ -1187,21 +1252,19 @@ namespace FireWallet
                 pNpmRunDist.StandardInput.WriteLine("npm install & exit");
                 pNpmRunDist.WaitForExit();
 
+                if (repositoryUrl == "https://github.com/handshake-org/hsd-ledger.git")
+                {
+                    // Replace /bin/hsd-ledger with /bin/hsd-ledger from
+                    // https://raw.githubusercontent.com/Nathanwoodburn/FireWallet/master/hsd-ledger
+                    // This version of hsd-ledger has the sendraw transaction function added which is needed for batching
 
-                // Replace /bin/hsd-ledger with /bin/hsd-ledger from
-                // https://raw.githubusercontent.com/Nathanwoodburn/FireWallet/master/hsd-ledger
-                // This version of hsd-ledger has the sendraw transaction function added which is needed for batching
+                    string sourcePath = destinationPath + "\\bin\\hsd-ledger";
+                    File.Delete(sourcePath);
 
-                string sourcePath = destinationPath + "\\bin\\hsd-ledger";
-                File.Delete(sourcePath);
-
-                // Download the new hsd-ledger
-                WebClient downloader = new WebClient();
-                downloader.DownloadFile("https://raw.githubusercontent.com/Nathanwoodburn/FireWallet/master/hsd-ledger", sourcePath);
-
-
-
-
+                    // Download the new hsd-ledger
+                    WebClient downloader = new WebClient();
+                    downloader.DownloadFile("https://raw.githubusercontent.com/Nathanwoodburn/FireWallet/master/hsd-ledger", sourcePath);
+                }
             }
             catch (Exception ex)
             {

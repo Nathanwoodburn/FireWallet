@@ -278,18 +278,32 @@ namespace FireWallet
 
         private void SaveSettings(object sender, EventArgs e)
         {
-            buttonNodeTest.PerformClick();
-
-            if (labelNodeStatus.Text != "Node Connected")
+            if (checkBoxRunHSD.Checked)
             {
-                return;
+                StreamWriter sw = new StreamWriter(dir + "node.txt");
+                sw.WriteLine("IP: " + textBoxNodeIP.Text);
+                sw.WriteLine("Network: " + comboBoxNodeNetwork.SelectedIndex);
+                sw.WriteLine("Key: " + textBoxNodeKey.Text);
+                sw.WriteLine("HSD: True");
+                sw.Dispose();
+                this.Close();
             }
-            StreamWriter sw = new StreamWriter(dir + "node.txt");
-            sw.WriteLine("IP: " + textBoxNodeIP.Text);
-            sw.WriteLine("Network: " + comboBoxNodeNetwork.SelectedIndex);
-            sw.WriteLine("Key: " + textBoxNodeKey.Text);
-            sw.Dispose();
-            this.Close();
+            else
+            {
+
+                buttonNodeTest.PerformClick();
+
+                if (labelNodeStatus.Text != "Node Connected")
+                {
+                    return;
+                }
+                StreamWriter sw = new StreamWriter(dir + "node.txt");
+                sw.WriteLine("IP: " + textBoxNodeIP.Text);
+                sw.WriteLine("Network: " + comboBoxNodeNetwork.SelectedIndex);
+                sw.WriteLine("Key: " + textBoxNodeKey.Text);
+                sw.Dispose();
+                this.Close();
+            }
         }
     }
 }

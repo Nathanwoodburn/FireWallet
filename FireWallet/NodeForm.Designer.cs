@@ -36,6 +36,7 @@ namespace FireWallet
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NodeForm));
             labelWelcome = new Label();
             groupBoxNode = new GroupBox();
+            checkBoxRunHSD = new CheckBox();
             labelNodeStatus = new Label();
             comboBoxNodeNetwork = new ComboBox();
             buttonSave = new Button();
@@ -61,6 +62,7 @@ namespace FireWallet
             // 
             // groupBoxNode
             // 
+            groupBoxNode.Controls.Add(checkBoxRunHSD);
             groupBoxNode.Controls.Add(labelNodeStatus);
             groupBoxNode.Controls.Add(comboBoxNodeNetwork);
             groupBoxNode.Controls.Add(buttonSave);
@@ -76,6 +78,16 @@ namespace FireWallet
             groupBoxNode.TabIndex = 1;
             groupBoxNode.TabStop = false;
             groupBoxNode.Text = "Node";
+            // 
+            // checkBoxRunHSD
+            // 
+            checkBoxRunHSD.AutoSize = true;
+            checkBoxRunHSD.Location = new Point(62, 100);
+            checkBoxRunHSD.Name = "checkBoxRunHSD";
+            checkBoxRunHSD.Size = new Size(304, 19);
+            checkBoxRunHSD.TabIndex = 10;
+            checkBoxRunHSD.Text = "Run HSD (use this if you don't want to run Bob/HSD)";
+            checkBoxRunHSD.UseVisualStyleBackColor = true;
             // 
             // labelNodeStatus
             // 
@@ -193,5 +205,6 @@ namespace FireWallet
         private Button buttonSave;
         private ComboBox comboBoxNodeNetwork;
         private Label labelNodeStatus;
+        private CheckBox checkBoxRunHSD;
     }
 }
