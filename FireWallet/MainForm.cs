@@ -46,6 +46,8 @@ namespace FireWallet
             account = "";
             timerNodeStatus.Stop();
             LoadSettings();
+            UpdateTheme();
+            LoadNode();
 
             if (userSettings.ContainsKey("hide-splash"))
             {
@@ -58,8 +60,6 @@ namespace FireWallet
                 }
             }
 
-            UpdateTheme();
-            LoadNode();
 
 
             // Edit the theme of the navigation panel
@@ -180,7 +180,7 @@ namespace FireWallet
                         Notifyinstall.Dispose();
                     }
                     hsdProcess = new Process();
-                    
+
                     hsdProcess.StartInfo.CreateNoWindow = true;
 
                     hsdProcess.StartInfo.RedirectStandardInput = true;
@@ -523,6 +523,15 @@ namespace FireWallet
             if (jObject["watchOnly"].ToString() == "True") watchOnly = true;
             else watchOnly = false;
             toolStripStatusLabelLedger.Text = "Cold Wallet: " + watchOnly.ToString();
+
+            if (watchOnly)
+            {
+                buttonAddressVerify.Visible = true;
+            }
+            else
+            {
+                buttonAddressVerify.Visible = false;
+            }
             return true;
         }
 
@@ -1118,7 +1127,8 @@ namespace FireWallet
                     labelSendingError.Hide();
                     labelSendingError.Text = "";
                     buttonNavPortfolio.PerformClick();
-                } else // Cold wallet signing
+                }
+                else // Cold wallet signing
                 {
                     AddLog("Sending CW " + amount.ToString() + " HNS to " + address);
 
@@ -1137,14 +1147,14 @@ namespace FireWallet
                         // Try to install hsd-ledger
                         try
                         {
-                            NotifyForm Notifyinstall = new NotifyForm("Installing hsd-ledger\nThis may take a few minutes\nDo not close FireWallet",false);
+                            NotifyForm Notifyinstall = new NotifyForm("Installing hsd-ledger\nThis may take a few minutes\nDo not close FireWallet", false);
                             Notifyinstall.Show();
                             // Wait for the notification to show
                             await Task.Delay(1000);
 
                             string repositoryUrl = "https://github.com/handshake-org/hsd-ledger.git";
                             string destinationPath = dir + "hsd-ledger";
-                            CloneRepository(repositoryUrl,destinationPath);
+                            CloneRepository(repositoryUrl, destinationPath);
 
                             Notifyinstall.CloseNotification();
                             Notifyinstall.Dispose();
@@ -1157,10 +1167,10 @@ namespace FireWallet
                             notifyError.Dispose();
                             return;
                         }
-                        
+
                     }
 
-                    NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device",false);
+                    NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device", false);
                     notify.Show();
 
                     var proc = new Process();
@@ -1202,7 +1212,8 @@ namespace FireWallet
                         textBoxSendingTo.Text = "";
                         textBoxSendingAmount.Text = "";
                         buttonNavPortfolio.PerformClick();
-                    } else
+                    }
+                    else
                     {
                         NotifyForm notifyError = new NotifyForm("Error Transaction Failed\nCheck logs for more details");
                         notifyError.ShowDialog();
@@ -1219,7 +1230,7 @@ namespace FireWallet
                 labelSendingError.Text = ex.Message;
             }
         }
-        private void CloneRepository(string repositoryUrl, string destinationPath)
+        public void CloneRepository(string repositoryUrl, string destinationPath)
         {
             try
             {
@@ -1272,7 +1283,7 @@ namespace FireWallet
                 AddLog(ex.Message);
             }
         }
-        static bool CheckNodeInstalled()
+        public bool CheckNodeInstalled()
         {
             try
             {
@@ -1307,6 +1318,52 @@ namespace FireWallet
             Clipboard.SetText(textBoxReceiveAddress.Text);
             labelReceive2.Text = "Copied to clipboard";
             labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
+        }
+        private async void buttonAddressVerify_Click(object sender, EventArgs e)
+        {
+
+            var proc = new Process();
+            proc.StartInfo.CreateNoWindow = true;
+            proc.StartInfo.RedirectStandardInput = true;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.FileName = "node.exe";
+            proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger createaddress --api-key " + nodeSettings["Key"] + " -w " + account;
+            proc.Start();
+
+            // Wait 1 sec
+            await Task.Delay(1000);
+
+            // Get the output into a string
+            string result = proc.StandardOutput.ReadLine();
+            try
+            {
+                result = result.Replace("Verify address on Ledger device: ", "");
+            }
+            catch { }
+            AddLog(result);
+            textBoxReceiveAddress.Text = result;
+            Size size = TextRenderer.MeasureText(textBoxReceiveAddress.Text, textBoxReceiveAddress.Font);
+            textBoxReceiveAddress.Width = size.Width + 10;
+            textBoxReceiveAddress.Left = (panelRecieve.Width - textBoxReceiveAddress.Width) / 2;
+
+
+            NotifyForm notify = new NotifyForm("Please confirm the address on your Ledger device", false);
+            notify.Show();
+
+            // Handle events until process exits
+            while (!proc.HasExited)
+            {
+                // Check for cancellation
+                if (proc.WaitForExit(100))
+                    break;
+                Application.DoEvents();
+            }
+
+            notify.CloseNotification();
+            notify.Dispose();
+
         }
         #endregion
         #region Domains
@@ -1520,8 +1577,10 @@ namespace FireWallet
 
         }
         #endregion
-        
-        
+
+
+
+
 
         
 

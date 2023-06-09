@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -59,9 +61,50 @@ namespace FireWallet
             groupBoxNew.Text = "Import Wallet";
         }
 
-        private void buttonCold_Click(object sender, EventArgs e)
+        private async void buttonCold_Click(object sender, EventArgs e)
         {
-            // TODO - Cold wallet
+            if (!Directory.Exists(mainForm.dir + "hsd-ledger"))
+            {
+                if (mainForm.CheckNodeInstalled() == false)
+                {
+                    mainForm.AddLog("Node not installed");
+                    NotifyForm notify1 = new NotifyForm("Node not installed\nPlease install it to use Ledger");
+                    notify1.ShowDialog();
+                    notify1.Dispose();
+                    return;
+                }
+                mainForm.AddLog("Installing hsd-ledger");
+
+                // Try to install hsd-ledger
+                try
+                {
+                    NotifyForm Notifyinstall = new NotifyForm("Installing hsd-ledger\nThis may take a few minutes\nDo not close FireWallet", false);
+                    Notifyinstall.Show();
+                    // Wait for the notification to show
+                    await Task.Delay(1000);
+
+                    string repositoryUrl = "https://github.com/handshake-org/hsd-ledger.git";
+                    string destinationPath = mainForm.dir + "hsd-ledger";
+                    mainForm.CloneRepository(repositoryUrl, destinationPath);
+
+                    Notifyinstall.CloseNotification();
+                    Notifyinstall.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    NotifyForm notifyError = new NotifyForm("Error installing hsd-ledger\n" + ex.Message);
+                    mainForm.AddLog(ex.Message);
+                    notifyError.ShowDialog();
+                    notifyError.Dispose();
+                    return;
+                }
+            }
+
+            // Import HSD Wallet
+            groupBoxNew.Show();
+            groupBoxNew.Text = "Import Ledger";
+            buttonNext.Show();
+            page = 4;
         }
 
         private void textBoxNewName_TextChanged(object sender, EventArgs e)
@@ -136,7 +179,7 @@ namespace FireWallet
                 // Create new wallet
                 buttonNext.Enabled = false;
                 string path = "wallet/" + textBoxNewName.Text;
-                string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\",\"mnemonic\":\"" + textBoxSeedPhrase.Text +"\"}";
+                string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\",\"mnemonic\":\"" + textBoxSeedPhrase.Text + "\"}";
                 string response = await APIPut(path, true, content);
                 if (response == "Error")
                 {
@@ -152,6 +195,40 @@ namespace FireWallet
                 notify2.Dispose();
                 this.Close();
             }
+            else if (page == 4)
+            {
+                // Import Ledger
+                buttonNext.Enabled = false;
+
+
+                var proc = new Process();
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.RedirectStandardInput = true;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.FileName = "node.exe";
+                proc.StartInfo.Arguments = mainForm.dir + "hsd-ledger/bin/hsd-ledger createwallet " + textBoxNewPass1.Text + " --api-key " + mainForm.nodeSettings["Key"];
+                var outputBuilder = new StringBuilder();
+
+                // Event handler for capturing output data
+                proc.OutputDataReceived += (sender, args) =>
+                {
+                    if (!string.IsNullOrEmpty(args.Data))
+                    {
+                        outputBuilder.AppendLine(args.Data);
+                    }
+                };
+
+                proc.Start();
+                proc.BeginOutputReadLine();
+                proc.WaitForExit();
+
+                mainForm.AddLog(outputBuilder.ToString());
+
+            }
+
+
         }
 
         HttpClient httpClient = new HttpClient();

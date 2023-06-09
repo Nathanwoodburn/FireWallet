@@ -104,7 +104,6 @@
             // 
             // buttonCold
             // 
-            buttonCold.Enabled = false;
             buttonCold.FlatStyle = FlatStyle.Flat;
             buttonCold.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             buttonCold.Location = new Point(147, 239);

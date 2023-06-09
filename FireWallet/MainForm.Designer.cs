@@ -39,6 +39,7 @@ namespace FireWallet
             toolStripStatusLabelNetwork = new ToolStripStatusLabel();
             toolStripStatusLabelstatus = new ToolStripStatusLabel();
             toolStripStatusLabelaccount = new ToolStripStatusLabel();
+            toolStripStatusLabelLedger = new ToolStripStatusLabel();
             toolStripSplitButtonlogout = new ToolStripSplitButton();
             timerNodeStatus = new System.Windows.Forms.Timer(components);
             panelaccount = new Panel();
@@ -80,6 +81,7 @@ namespace FireWallet
             labelSendingTo = new Label();
             labelSendPrompt = new Label();
             panelRecieve = new Panel();
+            buttonAddressVerify = new Button();
             pictureBoxReceiveQR = new PictureBox();
             labelReceive2 = new Label();
             textBoxReceiveAddress = new TextBox();
@@ -111,7 +113,6 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            toolStripStatusLabelLedger = new ToolStripStatusLabel();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -166,6 +167,13 @@ namespace FireWallet
             toolStripStatusLabelaccount.Name = "toolStripStatusLabelaccount";
             toolStripStatusLabelaccount.Size = new Size(55, 17);
             toolStripStatusLabelaccount.Text = "Account:";
+            // 
+            // toolStripStatusLabelLedger
+            // 
+            toolStripStatusLabelLedger.Margin = new Padding(50, 3, 50, 2);
+            toolStripStatusLabelLedger.Name = "toolStripStatusLabelLedger";
+            toolStripStatusLabelLedger.Size = new Size(71, 17);
+            toolStripStatusLabelLedger.Text = "Cold Wallet:";
             // 
             // toolStripSplitButtonlogout
             // 
@@ -619,15 +627,29 @@ namespace FireWallet
             // 
             // panelRecieve
             // 
+            panelRecieve.Controls.Add(buttonAddressVerify);
             panelRecieve.Controls.Add(pictureBoxReceiveQR);
             panelRecieve.Controls.Add(labelReceive2);
             panelRecieve.Controls.Add(textBoxReceiveAddress);
             panelRecieve.Controls.Add(labelReceive1);
-            panelRecieve.Location = new Point(1057, 62);
+            panelRecieve.Location = new Point(117, 34);
             panelRecieve.Name = "panelRecieve";
             panelRecieve.Size = new Size(995, 523);
             panelRecieve.TabIndex = 17;
             panelRecieve.Visible = false;
+            // 
+            // buttonAddressVerify
+            // 
+            buttonAddressVerify.FlatStyle = FlatStyle.Flat;
+            buttonAddressVerify.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonAddressVerify.Location = new Point(769, 110);
+            buttonAddressVerify.Name = "buttonAddressVerify";
+            buttonAddressVerify.Size = new Size(126, 32);
+            buttonAddressVerify.TabIndex = 21;
+            buttonAddressVerify.Text = "Create && Verify";
+            buttonAddressVerify.UseVisualStyleBackColor = true;
+            buttonAddressVerify.Visible = false;
+            buttonAddressVerify.Click += buttonAddressVerify_Click;
             // 
             // pictureBoxReceiveQR
             // 
@@ -937,21 +959,14 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // toolStripStatusLabelLedger
-            // 
-            toolStripStatusLabelLedger.Margin = new Padding(50, 3, 50, 2);
-            toolStripStatusLabelLedger.Name = "toolStripStatusLabelLedger";
-            toolStripStatusLabelLedger.Size = new Size(71, 17);
-            toolStripStatusLabelLedger.Text = "Cold Wallet:";
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelRecieve);
             Controls.Add(panelSettings);
             Controls.Add(panelDomains);
-            Controls.Add(panelRecieve);
             Controls.Add(panelSend);
             Controls.Add(panelPortfolio);
             Controls.Add(panelNav);
@@ -1074,5 +1089,6 @@ namespace FireWallet
         private GroupBox groupBoxSettingsWallet;
         private Button buttonSettingsRescan;
         private ToolStripStatusLabel toolStripStatusLabelLedger;
+        private Button buttonAddressVerify;
     }
 }
