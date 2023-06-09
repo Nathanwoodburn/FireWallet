@@ -10,7 +10,13 @@ You will need Visual Studio (recommend a recent version) and .net desktop develo
 
 ## Setup
 ### Create a new wallet
-Not yet implemented
+You can create or import a wallet by clicking on the `New` button from the login screen.  
+You will need to enter a password to encrypt your wallet.  
+This password will be used to encrypt your wallet and to login to your wallet.  
+**At the moment exporting your Seed Phase does not work**
+
+![Alt text](assets/account_new.png)
+
 
 ## First time setup
 When you first open the wallet you will be prompted to set your node settings.
