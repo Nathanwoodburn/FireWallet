@@ -82,8 +82,10 @@ namespace FireWallet
             Controls.Add(labelmessage);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
             Name = "NotifyForm";
             Text = "FireWallet";
+            FormClosing += NotifyForm_FormClosing;
             Load += NotifyForm_Load;
             ResumeLayout(false);
         }

@@ -19,13 +19,17 @@ namespace FireWallet
         Dictionary<string, string> theme;
         string altLink;
         bool Linkcopy;
+        bool allowClose = true;
         public NotifyForm(string Message)
         {
             InitializeComponent();
             labelmessage.Text = Message;
             altLink = "";
         }
-
+        public void CloseNotification()
+        {
+            this.Close();
+        }
         public NotifyForm(string Message, string altText, string altLink)
         {
             InitializeComponent();
@@ -36,6 +40,16 @@ namespace FireWallet
             buttonOK.Focus();
             Linkcopy = false;
         }
+        public NotifyForm(string Message, bool allowClose)
+        {
+            InitializeComponent();
+            labelmessage.Text = Message;
+            buttonOK.Focus();
+            Linkcopy = false;
+            buttonOK.Visible = allowClose;
+            allowClose = allowClose;
+        }
+
         public NotifyForm(string Message, string altText, string altLink, bool Linkcopy)
         {
             InitializeComponent();
@@ -233,6 +247,7 @@ namespace FireWallet
 
         private void OK_Click(object sender, EventArgs e)
         {
+            allowClose = true;
             this.Close();
         }
 
@@ -251,6 +266,11 @@ namespace FireWallet
                 UseShellExecute = true
             };
             Process.Start(psi);
+        }
+
+        private void NotifyForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!allowClose) e.Cancel = true;
         }
     }
 }

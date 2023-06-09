@@ -111,6 +111,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
+            toolStripStatusLabelLedger = new ToolStripStatusLabel();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -134,7 +135,7 @@ namespace FireWallet
             // statusStripmain
             // 
             statusStripmain.Dock = DockStyle.Top;
-            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripSplitButtonlogout });
+            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripStatusLabelLedger, toolStripSplitButtonlogout });
             statusStripmain.Location = new Point(0, 0);
             statusStripmain.Name = "statusStripmain";
             statusStripmain.Size = new Size(1152, 22);
@@ -748,7 +749,7 @@ namespace FireWallet
             buttonSettingsRescan.FlatStyle = FlatStyle.Flat;
             buttonSettingsRescan.Location = new Point(6, 20);
             buttonSettingsRescan.Name = "buttonSettingsRescan";
-            buttonSettingsRescan.Size = new Size(98, 53);
+            buttonSettingsRescan.Size = new Size(98, 50);
             buttonSettingsRescan.TabIndex = 8;
             buttonSettingsRescan.Text = "Rescan";
             buttonSettingsRescan.UseVisualStyleBackColor = true;
@@ -757,9 +758,9 @@ namespace FireWallet
             // buttonSeed
             // 
             buttonSeed.FlatStyle = FlatStyle.Flat;
-            buttonSeed.Location = new Point(297, 15);
+            buttonSeed.Location = new Point(297, 20);
             buttonSeed.Name = "buttonSeed";
-            buttonSeed.Size = new Size(117, 53);
+            buttonSeed.Size = new Size(117, 50);
             buttonSeed.TabIndex = 8;
             buttonSeed.Text = "Seed Phrase";
             buttonSeed.UseVisualStyleBackColor = true;
@@ -936,6 +937,13 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
+            // toolStripStatusLabelLedger
+            // 
+            toolStripStatusLabelLedger.Margin = new Padding(50, 3, 50, 2);
+            toolStripStatusLabelLedger.Name = "toolStripStatusLabelLedger";
+            toolStripStatusLabelLedger.Size = new Size(71, 17);
+            toolStripStatusLabelLedger.Text = "Cold Wallet:";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1065,5 +1073,6 @@ namespace FireWallet
         private Button buttonSeed;
         private GroupBox groupBoxSettingsWallet;
         private Button buttonSettingsRescan;
+        private ToolStripStatusLabel toolStripStatusLabelLedger;
     }
 }

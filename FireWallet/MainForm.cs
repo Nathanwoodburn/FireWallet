@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Text;
 using System.Security.Policy;
+using System.Windows.Forms;
 
 namespace FireWallet
 {
@@ -27,7 +28,8 @@ namespace FireWallet
         public double syncProgress { get; set; }
         public int pendingTransactions { get; set; }
         public bool batchMode { get; set; }
-        BatchForm batchForm { get; set; }
+        public BatchForm batchForm { get; set; }
+        public bool watchOnly { get; set; }
 
         #endregion
         #region Application
@@ -37,6 +39,7 @@ namespace FireWallet
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
+            watchOnly = false;
             account = "";
             timerNodeStatus.Stop();
             LoadSettings();
@@ -447,6 +450,13 @@ namespace FireWallet
                 return false;
             }
             UpdateBalance();
+
+            path = "wallet/" + account + "";
+            APIresponse = await APIGet(path, true);
+            JObject jObject = JObject.Parse(APIresponse);
+            if (jObject["watchOnly"].ToString() == "True") watchOnly = true;
+            else watchOnly = false;
+            toolStripStatusLabelLedger.Text = "Cold Wallet: " + watchOnly.ToString();
             return true;
         }
 
@@ -940,29 +950,6 @@ namespace FireWallet
                 labelSendingError.Show();
                 labelSendingError.Text = "HIP-02 Not supported yet";
                 return;
-                /*
-                string domain = textBoxSendingTo.Text.Substring(1);
-                try
-                {
-                    string address = "";
-
-                    bool valid = await ValidAddress(address);
-                    if (valid)
-                    {
-                        labelSendingError.Hide();
-                        labelSendingError.Text = "";
-                    }
-                    else
-                    {
-                        labelSendingError.Show();
-                        labelSendingError.Text = "Invalid Address";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    labelSendingError.Show();
-                    labelSendingError.Text = ex.Message;
-                }*/
             }
             else
             {
@@ -987,7 +974,6 @@ namespace FireWallet
                 }
             }
         }
-
         private void textBoxSendingAmount_Leave(object sender, EventArgs e)
         {
             decimal amount = 0;
@@ -1040,29 +1026,91 @@ namespace FireWallet
                     return;
                 }
 
-                AddLog("Sending " + amount.ToString() + " HNS to " + address);
-                string content = "{\"method\": \"sendtoaddress\",\"params\": [ \"" + address + "\", " +
-                    amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
-                string output = await APIPost("", true, content);
-                JObject APIresp = JObject.Parse(output);
-                if (APIresp["error"].ToString() != "")
+                if (!watchOnly)
                 {
-                    AddLog("Failed:");
-                    AddLog(APIresp.ToString());
-                    NotifyForm notify = new NotifyForm("Error Transaction Failed");
-                    notify.ShowDialog();
-                    return;
+
+                    AddLog("Sending " + amount.ToString() + " HNS to " + address);
+                    string content = "{\"method\": \"sendtoaddress\",\"params\": [ \"" + address + "\", " +
+                        amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
+                    string output = await APIPost("", true, content);
+                    JObject APIresp = JObject.Parse(output);
+                    if (APIresp["error"].ToString() != "")
+                    {
+                        AddLog("Failed:");
+                        AddLog(APIresp.ToString());
+                        NotifyForm notify = new NotifyForm("Error Transaction Failed");
+                        notify.ShowDialog();
+                        return;
+                    }
+                    string hash = APIresp["result"].ToString();
+                    string link = userSettings["explorer-tx"] + hash;
+                    NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
+                        "Explorer", link);
+                    notifySuccess.ShowDialog();
+                    textBoxSendingTo.Text = "";
+                    textBoxSendingAmount.Text = "";
+                    labelSendingError.Hide();
+                    labelSendingError.Text = "";
+                    buttonNavPortfolio.PerformClick();
+                } else // Cold wallet signing
+                {
+                    AddLog("Sending CW " + amount.ToString() + " HNS to " + address);
+
+                    if (!Directory.Exists(dir + "hsd-ledger"))
+                    {
+                        return; // TODO: Create all the ledger stuff
+                    }
+
+                    NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device",false);
+                    notify.Show();
+
+                    var proc = new Process();
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.RedirectStandardInput = true;
+                    proc.StartInfo.RedirectStandardOutput = true;
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.RedirectStandardError = true;
+                    proc.StartInfo.FileName = "node.exe";
+                    proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger sendtoaddress " + textBoxSendingTo.Text
+                        + " " + textBoxSendingAmount.Text + " --api-key " + nodeSettings["Key"] + " -w " + account;
+                    var outputBuilder = new StringBuilder();
+
+                    // Event handler for capturing output data
+                    proc.OutputDataReceived += (sender, args) =>
+                    {
+                        if (!string.IsNullOrEmpty(args.Data))
+                        {
+                            outputBuilder.AppendLine(args.Data);
+                        }
+                    };
+
+                    proc.Start();
+                    proc.BeginOutputReadLine();
+                    proc.WaitForExit();
+
+                    notify.CloseNotification();
+                    notify.Dispose();
+
+                    string output = outputBuilder.ToString();
+                    AddLog(output);
+                    if (output.Contains("Submitted TXID"))
+                    {
+                        string hash = output.Substring(output.IndexOf("Submitted TXID") + 16, 64);
+                        string link = userSettings["explorer-tx"] + hash;
+                        NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
+                                                       "Explorer", link);
+                        notifySuccess.ShowDialog();
+                        textBoxSendingTo.Text = "";
+                        textBoxSendingAmount.Text = "";
+                        buttonNavPortfolio.PerformClick();
+                    } else
+                    {
+                        NotifyForm notifyError = new NotifyForm("Error Transaction Failed\nCheck logs for more details");
+                        notifyError.ShowDialog();
+                        notifyError.Dispose();
+                    }
+
                 }
-                string hash = APIresp["result"].ToString();
-                string link = userSettings["explorer-tx"] + hash;
-                NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
-                    "Explorer", link);
-                notifySuccess.ShowDialog();
-                textBoxSendingTo.Text = "";
-                textBoxSendingAmount.Text = "";
-                labelSendingError.Hide();
-                labelSendingError.Text = "";
-                buttonNavPortfolio.PerformClick();
 
             }
             catch (Exception ex)
@@ -1128,6 +1176,25 @@ namespace FireWallet
                 i++;
             }
         }
+        private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue == 13)
+            {
+                textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
+                e.SuppressKeyPress = true;
+                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
+
+                domainForm.Show();
+
+            }
+        }
+        private void textBoxDomainSearch_TextChanged(object sender, EventArgs e)
+        {
+            string domainSearch = textBoxDomainSearch.Text;
+            domainSearch = Regex.Replace(textBoxDomainSearch.Text, "[^a-zA-Z0-9-_]", "");
+            textBoxDomainSearch.Text = domainSearch;
+        }
+
         #endregion
         #region Batching
         public void AddBatch(string domain, string operation)
@@ -1180,28 +1247,7 @@ namespace FireWallet
             else batchForm.Focus();
         }
         #endregion
-
-        private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyValue == 13)
-            {
-                textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
-                e.SuppressKeyPress = true;
-                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
-
-                domainForm.Show();
-
-            }
-        }
-        private void textBoxDomainSearch_TextChanged(object sender, EventArgs e)
-        {
-            string domainSearch = textBoxDomainSearch.Text;
-            domainSearch = Regex.Replace(textBoxDomainSearch.Text, "[^a-zA-Z0-9-_]", "");
-            textBoxDomainSearch.Text = domainSearch;
-        }
-
-
-        #region Settings
+        #region SettingsPage
         private void buttonSettingsSave_Click(object sender, EventArgs e)
         {
             StreamWriter sw = new StreamWriter(dir + "settings.txt");
@@ -1270,8 +1316,6 @@ namespace FireWallet
             }
         }
 
-        #endregion
-
         private async void Rescan_Click(object sender, EventArgs e)
         {
             string content = "{\"height\": 0}";
@@ -1285,5 +1329,11 @@ namespace FireWallet
             AddLog("Starting rescan");
 
         }
+        #endregion
+        
+        
+
+        
+
     }
 }
