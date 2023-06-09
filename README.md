@@ -96,3 +96,12 @@ You can export the batch to a file.
 This file will store the transaction type, name, and any data needed to send the transaction.  
 You can then import this file to send the transactions.  
 An example of this file can be found [here](example-configs/batch.txt).
+
+
+
+
+# Ledger
+You can use a Ledger device to sign transactions.  
+You need to have Node, NPM, and git installed to use Ledger.  
+The Ledger components are not included in the app.  
+These will install when you first send HNS (not domains) from a Ledger.

@@ -571,7 +571,7 @@ namespace FireWallet
                     NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
                                                    "Explorer", link);
                     notifySuccess.ShowDialog();
-                    
+                    this.Close();
                 }
                 else
                 {

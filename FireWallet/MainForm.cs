@@ -563,7 +563,7 @@ namespace FireWallet
         /// <param name="wallet">Whether to use port 12039</param>
         /// <param name="content">Content to post</param>
         /// <returns></returns>
-        private async Task<string> APIPost(string path, bool wallet, string content)
+        public async Task<string> APIPost(string path, bool wallet, string content)
         {
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
@@ -600,7 +600,7 @@ namespace FireWallet
         /// <param name="path">Path to get</param>
         /// <param name="wallet">Whether to use port 12039</param>
         /// <returns></returns>
-        private async Task<string> APIGet(string path, bool wallet)
+        public async Task<string> APIGet(string path, bool wallet)
         {
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
@@ -787,7 +787,7 @@ namespace FireWallet
                 return "1";
             }
         }
-        private async Task<bool> ValidAddress(string address)
+        public async Task<bool> ValidAddress(string address)
         {
             string output = await APIPost("", false, "{\"method\": \"validateaddress\",\"params\": [ \"" + address + "\" ]}");
             JObject APIresp = JObject.Parse(output);
@@ -1347,6 +1347,16 @@ namespace FireWallet
                 batchMode = true;
             }
             batchForm.AddBatch(domain, operation, updateRecords);
+        }
+        public void AddBatch(string domain, string operation, string address)
+        {
+            if (!batchMode)
+            {
+                batchForm = new BatchForm(this);
+                batchForm.Show();
+                batchMode = true;
+            }
+            batchForm.AddBatch(domain, operation, address);
         }
         public void FinishBatch()
         {

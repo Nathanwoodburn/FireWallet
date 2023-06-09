@@ -1014,6 +1014,9 @@ namespace FireWallet
         private void buttonTransfer_Click(object sender, EventArgs e)
         {
             // Transfer
+            TransferForm transferForm = new TransferForm(mainForm, domain);
+            transferForm.Show();
+            this.Close();
         }
     }
 }
