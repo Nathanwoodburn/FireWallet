@@ -39,15 +39,16 @@ namespace FireWallet
         public MainForm()
         {
             InitializeComponent();
+            panelaccount.Visible = true;
         }
-        private void MainForm_Load(object sender, EventArgs e)
+        private async void MainForm_Load(object sender, EventArgs e)
         {
             watchOnly = false;
             account = "";
             timerNodeStatus.Stop();
             LoadSettings();
             UpdateTheme();
-            LoadNode();
+            if (await LoadNode() != true) this.Close();
 
             if (userSettings.ContainsKey("hide-splash"))
             {
@@ -58,6 +59,13 @@ namespace FireWallet
                     ss.ShowDialog();
                     ss.Dispose();
                 }
+            }
+            else
+            {
+                // Show splash screen
+                SplashScreen ss = new SplashScreen();
+                ss.ShowDialog();
+                ss.Dispose();
             }
 
 
@@ -79,16 +87,16 @@ namespace FireWallet
             GetAccounts();
 
             AddLog("Loaded");
+            Opacity = 1;
             batchMode = false;
             textBoxaccountpassword.Focus();
-            timerNodeStatus.Start();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
             AddLog("Closing");
             if (hsdProcess != null)
             {
-                this.Hide();
+                this.Opacity = 0;
                 hsdProcess.Kill();
                 AddLog("HSD Closed");
                 Thread.Sleep(1000);
@@ -109,7 +117,7 @@ namespace FireWallet
 
 
         #region Settings
-        private async void LoadNode()
+        private async Task<bool> LoadNode()
         {
             HSD = false;
             if (!File.Exists(dir + "node.txt"))
@@ -123,7 +131,8 @@ namespace FireWallet
             {
                 AddLog("Node setup failed");
                 this.Close();
-                return;
+                await Task.Delay(1000);
+                AddLog("Close Failed");
             }
 
             StreamReader sr = new StreamReader(dir + "node.txt");
@@ -141,7 +150,8 @@ namespace FireWallet
             {
                 AddLog("Node Settings file is missing key");
                 this.Close();
-                return;
+                await Task.Delay(1000);
+                AddLog("Close Failed");
             }
             network = Convert.ToInt32(nodeSettings["Network"]);
             switch (network)
@@ -181,33 +191,52 @@ namespace FireWallet
                     }
                     hsdProcess = new Process();
 
-                    hsdProcess.StartInfo.CreateNoWindow = true;
-
-                    hsdProcess.StartInfo.RedirectStandardInput = true;
-                    hsdProcess.StartInfo.RedirectStandardOutput = false;
-                    hsdProcess.StartInfo.UseShellExecute = false;
-                    hsdProcess.StartInfo.RedirectStandardError = false;
-                    hsdProcess.StartInfo.FileName = "node.exe";
-                    hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --index-tx --index-address --api-key" + nodeSettings["Key"];
-
-                    string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
-                    if (Directory.Exists(bobPath))
+                    bool hideScreen = true;
+                    if (nodeSettings.ContainsKey("HideScreen"))
                     {
-                        hsdProcess.StartInfo.Arguments = hsdProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                        if (nodeSettings["HideScreen"].ToLower() == "false")
+                        {
+                            hideScreen = false;
+                        }
                     }
-                    hsdProcess.Start();
+                    try
+                    {
+                        hsdProcess.StartInfo.CreateNoWindow = hideScreen;
 
+                        hsdProcess.StartInfo.RedirectStandardInput = true;
+                        hsdProcess.StartInfo.RedirectStandardOutput = false;
+                        hsdProcess.StartInfo.UseShellExecute = false;
+                        hsdProcess.StartInfo.RedirectStandardError = false;
+                        hsdProcess.StartInfo.FileName = "node.exe";
+                        hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --index-tx --index-address --api-key " + nodeSettings["Key"];
 
+                        string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                        if (Directory.Exists(bobPath))
+                        {
+                            hsdProcess.StartInfo.Arguments = hsdProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                        }
+                        hsdProcess.Start();
+                        // Wait for HSD to start
+                        await Task.Delay(2000);
+                    } catch (Exception ex)
+                    {
+                        AddLog("HSD Failed to start");
+                        AddLog(ex.Message);
+                        this.Close();
+                        await Task.Delay(1000);
+                        AddLog("Close Failed");
+                    }
 
                 }
             }
-
+            timerNodeStatus.Start();
             NodeStatus();
-
+            return true;
 
         }
         private void LoadSettings()
         {
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
             if (!File.Exists(dir + "settings.txt"))
             {
                 AddLog("Creating settings file");
@@ -455,19 +484,27 @@ namespace FireWallet
         }
         private async void GetAccounts()
         {
-            string APIresponse = await APIGet("wallet", true);
-            comboBoxaccount.Items.Clear();
-            if (APIresponse != "Error")
+            try
             {
-                comboBoxaccount.Enabled = true;
-                JArray jArray = JArray.Parse(APIresponse);
-                foreach (string account in jArray)
+                string APIresponse = await APIGet("wallet", true);
+                comboBoxaccount.Items.Clear();
+                if (APIresponse != "Error")
                 {
-                    comboBoxaccount.Items.Add(account);
-                }
-                if (comboBoxaccount.Items.Count > 0)
-                {
-                    comboBoxaccount.SelectedIndex = 0;
+                    comboBoxaccount.Enabled = true;
+                    JArray jArray = JArray.Parse(APIresponse);
+                    foreach (string account in jArray)
+                    {
+                        comboBoxaccount.Items.Add(account);
+                    }
+                    if (comboBoxaccount.Items.Count > 0)
+                    {
+                        comboBoxaccount.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        comboBoxaccount.Items.Add("No accounts found");
+                        comboBoxaccount.Enabled = false;
+                    }
                 }
                 else
                 {
@@ -475,10 +512,9 @@ namespace FireWallet
                     comboBoxaccount.Enabled = false;
                 }
             }
-            else
+            catch
             {
-                comboBoxaccount.Items.Add("No accounts found");
-                comboBoxaccount.Enabled = false;
+                AddLog("Error getting accounts");
             }
         }
         private async Task<bool> Login()
@@ -676,6 +712,8 @@ namespace FireWallet
         /// <returns></returns>
         public async Task<string> APIGet(string path, bool wallet)
         {
+            if (nodeSettings == null) return "Error";
+            if (!nodeSettings.ContainsKey("Key") || !nodeSettings.ContainsKey("IP")) return "Error";
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
 
@@ -1234,12 +1272,21 @@ namespace FireWallet
         {
             try
             {
+                bool hideScreen = true;
+                if (nodeSettings.ContainsKey("HideScreen"))
+                {
+                    if (nodeSettings["HideScreen"].ToLower() == "false")
+                    {
+                        hideScreen = false;
+                    }
+                }
+
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.FileName = "git";
                 startInfo.Arguments = $"clone {repositoryUrl} {destinationPath}";
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
-                startInfo.CreateNoWindow = true;
+                startInfo.CreateNoWindow = hideScreen;
 
                 Process process = new Process();
                 process.StartInfo = startInfo;
@@ -1257,7 +1304,7 @@ namespace FireWallet
                     FileName = "cmd",
                     RedirectStandardInput = true,
                     WorkingDirectory = destinationPath,
-                    CreateNoWindow = true
+                    CreateNoWindow = hideScreen
                 };
                 var pNpmRunDist = Process.Start(psiNpmRunDist);
                 pNpmRunDist.StandardInput.WriteLine("npm install & exit");
@@ -1582,7 +1629,7 @@ namespace FireWallet
 
 
 
-        
+
 
     }
 }

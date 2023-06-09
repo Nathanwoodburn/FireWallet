@@ -964,16 +964,17 @@ namespace FireWallet
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelaccount);
             Controls.Add(panelRecieve);
             Controls.Add(panelSettings);
             Controls.Add(panelDomains);
             Controls.Add(panelSend);
             Controls.Add(panelPortfolio);
             Controls.Add(panelNav);
-            Controls.Add(panelaccount);
             Controls.Add(statusStripmain);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
+            Opacity = 0D;
             Text = "FireWallet";
             FormClosing += MainForm_Closing;
             Load += MainForm_Load;

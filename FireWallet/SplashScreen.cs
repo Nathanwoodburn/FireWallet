@@ -27,10 +27,7 @@ namespace FireWallet
 
         private void SplashScreen_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!close)
-            {
-                e.Cancel = true;
-            }
+
         }
 
         private void label2_Click(object sender, EventArgs e)
