@@ -278,6 +278,13 @@ namespace FireWallet
 
         private void SaveSettings(object sender, EventArgs e)
         {
+            if (textBoxNodeKey.Text == "")
+            {
+                NotifyForm notifyForm = new NotifyForm("Please enter a key");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
             if (checkBoxRunHSD.Checked)
             {
                 StreamWriter sw = new StreamWriter(dir + "node.txt");
