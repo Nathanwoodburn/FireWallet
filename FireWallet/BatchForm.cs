@@ -1,6 +1,9 @@
 ﻿using System.Data;
+using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Text;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
 using Point = System.Drawing.Point;
@@ -461,37 +464,122 @@ namespace FireWallet
         HttpClient httpClient = new HttpClient();
         private async void buttonSend_Click(object sender, EventArgs e)
         {
-            string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
-            string content = "{\"method\": \"sendbatch\",\"params\":[ " + batchTX + "]}";
-            string responce = await APIPost("", true, content);
-
-            if (responce == "Error")
+            if (!mainForm.watchOnly)
             {
-                AddLog("Error sending batch");
-                NotifyForm notifyForm = new NotifyForm("Error sending batch");
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                return;
-            }
+                string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
+                string content = "{\"method\": \"sendbatch\",\"params\":[ " + batchTX + "]}";
+                string responce = await APIPost("", true, content);
 
-            JObject jObject = JObject.Parse(responce);
-            if (jObject["error"].ToString() != "")
+                if (responce == "Error")
+                {
+                    AddLog("Error sending batch");
+                    NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+
+                JObject jObject = JObject.Parse(responce);
+                if (jObject["error"].ToString() != "")
+                {
+                    AddLog("Error: ");
+                    AddLog(jObject["error"].ToString());
+                    NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+
+                JObject result = JObject.Parse(jObject["result"].ToString());
+                string hash = result["hash"].ToString();
+                AddLog("Batch sent with hash: " + hash);
+                NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.userSettings["explorer-tx"] + hash);
+                notifyForm2.ShowDialog();
+                notifyForm2.Dispose();
+                this.Close();
+            }
+            else // watch only
             {
-                AddLog("Error: ");
-                AddLog(jObject["error"].ToString());
-                NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                return;
-            }
+                string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
+                string content = "{\"method\": \"createbatch\",\"params\":[ " + batchTX + "]}";
+                string response = await APIPost("", true, content);
 
-            JObject result = JObject.Parse(jObject["result"].ToString());
-            string hash = result["hash"].ToString();
-            AddLog("Batch sent with hash: " + hash);
-            NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.userSettings["explorer-tx"] + hash);
-            notifyForm2.ShowDialog();
-            notifyForm2.Dispose();
-            this.Close();
+                if (response == "Error")
+                {
+                    AddLog("Error creating batch");
+                    NotifyForm notifyForm = new NotifyForm("Error creating batch");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+
+                JObject jObject = JObject.Parse(response);
+                if (jObject["error"].ToString() != "")
+                {
+                    AddLog("Error: ");
+                    AddLog(jObject["error"].ToString());
+                    NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+                
+                StreamWriter sw = new StreamWriter(dir + "hsd-ledger/bin/names.txt");
+                string domainslist = string.Join(",", batches.Select(batch => batch.domain));
+                sw.Write(domainslist);
+                sw.Dispose();
+                StreamWriter sw2 = new StreamWriter(dir + "hsd-ledger/bin/batch.json");
+                sw2.Write(response);
+                sw2.Dispose();
+
+                NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device", false);
+                notify.Show();
+
+                var proc = new Process();
+                proc.StartInfo.CreateNoWindow = true;
+                proc.StartInfo.RedirectStandardInput = true;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.FileName = "node.exe";
+                proc.StartInfo.WorkingDirectory = dir + "hsd-ledger/bin/";
+                proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger sendraw batch.json names.txt --api-key " + mainForm.nodeSettings["Key"] + " -w " + mainForm.account;
+                var outputBuilder = new StringBuilder();
+
+                // Event handler for capturing output data
+                proc.OutputDataReceived += (sender, args) =>
+                {
+                    if (!string.IsNullOrEmpty(args.Data))
+                    {
+                        outputBuilder.AppendLine(args.Data);
+                    }
+                };
+
+                proc.Start();
+                proc.BeginOutputReadLine();
+                proc.WaitForExit();
+
+                notify.CloseNotification();
+                notify.Dispose();
+
+                string output = outputBuilder.ToString();
+                AddLog(output);
+                if (output.Contains("Submitted TXID"))
+                {
+                    string hash = output.Substring(output.IndexOf("Submitted TXID") + 16, 64);
+                    string link = mainForm.userSettings["explorer-tx"] + hash;
+                    NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
+                                                   "Explorer", link);
+                    notifySuccess.ShowDialog();
+                    
+                }
+                else
+                {
+                    NotifyForm notifyError = new NotifyForm("Error Transaction Failed\nCheck logs for more details");
+                    notifyError.ShowDialog();
+                    notifyError.Dispose();
+                }
+            }
         }
 
         private void BatchForm_FormClosing(object sender, FormClosingEventArgs e)
