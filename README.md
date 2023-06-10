@@ -4,6 +4,11 @@ Experimental wallet for Handshake chain
 ## Installation
 ### From Releases
 You can install the latest release from [here](https://github.com/Nathanwoodburn/FireWallet/releases/).
+
+Here are some videos showing how to install and use FireWallet:
+Install with a running Bob wallet: https://cloud.woodburn.au/s/pS8e2oQDidrMJWx
+Install with internal HSD: https://cloud.woodburn.au/s/trwd8TyxbDfqaxF (You NEED to have Node, NPM, and git installed to use internal HSD)
+
 ### Build from source
 You can build from source by cloning this repo.  
 You will need Visual Studio (recommend a recent version) and .net desktop development tools installed.
