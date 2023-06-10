@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FireWallet", "FireWallet\FireWallet.csproj", "{14F28C5A-34CC-4FE0-8C8B-35C9A60704BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FireWallet", "FireWallet\FireWallet.csproj", "{14F28C5A-34CC-4FE0-8C8B-35C9A60704BC}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "FireWalletSetup", "FireWalletSetup\FireWalletSetup.vdproj", "{D1751AFE-92C3-4C7E-B5E1-D1D6420A30EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,8 @@ Global
 		{14F28C5A-34CC-4FE0-8C8B-35C9A60704BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14F28C5A-34CC-4FE0-8C8B-35C9A60704BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14F28C5A-34CC-4FE0-8C8B-35C9A60704BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1751AFE-92C3-4C7E-B5E1-D1D6420A30EA}.Debug|Any CPU.ActiveCfg = Debug
+		{D1751AFE-92C3-4C7E-B5E1-D1D6420A30EA}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
