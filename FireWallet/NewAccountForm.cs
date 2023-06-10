@@ -197,35 +197,44 @@ namespace FireWallet
             }
             else if (page == 4)
             {
-                // Import Ledger
-                buttonNext.Enabled = false;
-
-
-                var proc = new Process();
-                proc.StartInfo.CreateNoWindow = true;
-                proc.StartInfo.RedirectStandardInput = true;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.FileName = "node.exe";
-                proc.StartInfo.Arguments = mainForm.dir + "hsd-ledger/bin/hsd-ledger createwallet " + textBoxNewPass1.Text + " --api-key " + mainForm.nodeSettings["Key"];
-                var outputBuilder = new StringBuilder();
-
-                // Event handler for capturing output data
-                proc.OutputDataReceived += (sender, args) =>
+                try
                 {
-                    if (!string.IsNullOrEmpty(args.Data))
+                    // Import Ledger
+                    buttonNext.Enabled = false;
+                    var proc = new Process();
+                    proc.StartInfo.CreateNoWindow = true;
+                    proc.StartInfo.RedirectStandardInput = true;
+                    proc.StartInfo.RedirectStandardOutput = true;
+                    proc.StartInfo.UseShellExecute = false;
+                    proc.StartInfo.RedirectStandardError = true;
+                    proc.StartInfo.FileName = "node.exe";
+                    proc.StartInfo.Arguments = mainForm.dir + "hsd-ledger/bin/hsd-ledger createwallet " + textBoxNewPass1.Text + " --api-key " + mainForm.nodeSettings["Key"];
+                    var outputBuilder = new StringBuilder();
+
+                    // Event handler for capturing output data
+                    proc.OutputDataReceived += (sender, args) =>
                     {
-                        outputBuilder.AppendLine(args.Data);
-                    }
-                };
+                        if (!string.IsNullOrEmpty(args.Data))
+                        {
+                            outputBuilder.AppendLine(args.Data);
+                        }
+                    };
 
-                proc.Start();
-                proc.BeginOutputReadLine();
-                proc.WaitForExit();
+                    proc.Start();
+                    proc.BeginOutputReadLine();
+                    proc.WaitForExit();
 
-                mainForm.AddLog(outputBuilder.ToString());
-
+                    mainForm.AddLog(outputBuilder.ToString());
+                }
+                catch (Exception ex)
+                {
+                      mainForm.AddLog(ex.Message);
+                    NotifyForm notify = new NotifyForm("Error importing wallet\n" + ex.Message);
+                    notify.ShowDialog();
+                    notify.Dispose();
+                    this.Close();
+                    return;
+                }
             }
 
 
@@ -247,22 +256,28 @@ namespace FireWallet
             HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Put, "http://" + ip + ":" + port + "/" + path);
             req.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
             req.Content = new StringContent(content);
-
-            // Send request
-            HttpResponseMessage resp = await httpClient.SendAsync(req);
-
+            
             try
             {
-                resp.EnsureSuccessStatusCode();
+                // Send request
+                HttpResponseMessage resp = await httpClient.SendAsync(req);
+                
+                if (resp.IsSuccessStatusCode)
+                {
+                    return await resp.Content.ReadAsStringAsync();
+                } else
+                {
+                    mainForm.AddLog("Put Error: " + await resp.Content.ReadAsStringAsync());
+                    return "Error";
+                }
             }
             catch (Exception ex)
             {
                 mainForm.AddLog("Put Error: " + ex.Message);
-                mainForm.AddLog(await resp.Content.ReadAsStringAsync());
                 return "Error";
             }
 
-            return await resp.Content.ReadAsStringAsync();
+            
         }
     }
 }
