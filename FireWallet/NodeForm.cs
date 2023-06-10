@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -287,6 +288,14 @@ namespace FireWallet
             }
             if (checkBoxRunHSD.Checked)
             {
+                if (!Regex.IsMatch(textBoxNodeKey.Text, @"^[a-zA-Z0-9]+$"))
+                {
+                    NotifyForm notifyForm = new NotifyForm("Please enter valid API key\nDo not use spaces or weird stuff");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+
                 StreamWriter sw = new StreamWriter(dir + "node.txt");
                 sw.WriteLine("IP: " + textBoxNodeIP.Text);
                 sw.WriteLine("Network: " + comboBoxNodeNetwork.SelectedIndex);
