@@ -115,3 +115,26 @@ You can use a Ledger device to sign transactions.
 You need to have Node, NPM, and git installed to use Ledger.  
 The Ledger components are not included in the app.  
 These will install when you first send HNS (not domains) from a Ledger.
+
+
+# Settings
+FireWallet uses a few different settings files.  
+They are stored in `%appdata%\FireWallet\` (`C:\Users\{username}\AppData\Roaming\FireWallet\`)
+
+## settings.txt
+This file stores the user settings for the application.  
+
+## node.txt
+This file stores the node (HSD/Bob connection) settings.  
+The Network is the network you want to connect to (default is `0` for Mainnet).  
+If you delete this file, FireWallet will show the node setup screen on next startup.
+
+## theme.txt
+This file stores the theme settings.  
+The theme is the color scheme of the application.  
+The `transparent-mode` key is used to enable or disable transparent modes.  
+There are 4 modes: `off` is disabled, `mica` is windows app style, `key` is to make 1 colour transparent, and `percent` is to set the opacity of the window.
+
+## log.txt
+This file stores the logs for the application.  
+You should check this file if you have any issues with the application.
