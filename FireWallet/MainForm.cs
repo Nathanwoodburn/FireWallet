@@ -160,10 +160,10 @@ namespace FireWallet
                     toolStripStatusLabelNetwork.Text = "Network: Mainnet";
                     break;
                 case 1:
-                    toolStripStatusLabelNetwork.Text = "Network: Regtest";
+                    toolStripStatusLabelNetwork.Text = "Network: Regtest (Not Fully Tested)";
                     break;
                 case 2:
-                    toolStripStatusLabelNetwork.Text = "Network: Testnet";
+                    toolStripStatusLabelNetwork.Text = "Network: Testnet (Not Implemented)";
                     break;
             }
 
@@ -573,17 +573,36 @@ namespace FireWallet
 
         private async void LoginClick(object sender, EventArgs e)
         {
-            account = comboBoxaccount.Text;
-            password = textBoxaccountpassword.Text;
-            bool loggedin = await Login();
-            if (loggedin)
+            // If the node isn't connected show a message
+            try
             {
-                toolStripStatusLabelaccount.Text = "Account: " + account;
-                textBoxaccountpassword.Text = "";
-                panelaccount.Visible = false;
-                toolStripSplitButtonlogout.Visible = true;
-                panelNav.Visible = true;
-                buttonNavPortfolio.PerformClick();
+                if (await APIGet("", false) == "Error")
+                {
+                    NotifyForm notifyForm = new NotifyForm("Node not connected");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+                
+                account = comboBoxaccount.Text;
+                password = textBoxaccountpassword.Text;
+                bool loggedin = await Login();
+                if (loggedin)
+                {
+                    toolStripStatusLabelaccount.Text = "Account: " + account;
+                    textBoxaccountpassword.Text = "";
+                    panelaccount.Visible = false;
+                    toolStripSplitButtonlogout.Visible = true;
+                    panelNav.Visible = true;
+                    buttonNavPortfolio.PerformClick();
+                }
+            }
+            catch (Exception ex)
+            {
+                NotifyForm notifyForm = new NotifyForm("Node not connected\n" + ex.Message);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
             }
         }
 
@@ -767,7 +786,11 @@ namespace FireWallet
             decimal progress = Convert.ToDecimal(chain["progress"].ToString());
             labelSyncPercent.Text = "Sync: " + decimal.Round(progress * 100, 2) + "%";
 
-
+            // Exit if set to 0 TXs
+            if (userSettings.ContainsKey("portfolio-tx"))
+            {
+                if (userSettings["portfolio-tx"] == "0") return;
+            }
 
 
             // Get Unconfirmed TX

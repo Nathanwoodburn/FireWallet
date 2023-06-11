@@ -49,6 +49,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -65,6 +73,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -192,15 +208,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:FireWallet"
-        "ProductCode" = "8:{F0940C69-189F-4613-8D7C-C3C6EA9CDDA4}"
-        "PackageCode" = "8:{B433A157-C12E-41BA-B25E-D42F91F186DC}"
+        "ProductCode" = "8:{5CACF936-F1E6-44FC-AE41-17BD338CD047}"
+        "PackageCode" = "8:{1B11D93A-A6AB-4F8E-A6EA-E9C14E06314B}"
         "UpgradeCode" = "8:{0C86F725-6B01-4173-AA05-3F0EDF481362}"
         "AspNetVersion" = "8:"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:2.0"
+        "ProductVersion" = "8:2.1"
         "Manufacturer" = "8:Nathan.Woodburn/"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://l.woodburn.au/discord"
