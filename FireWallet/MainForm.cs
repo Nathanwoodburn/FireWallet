@@ -1468,17 +1468,23 @@ namespace FireWallet
                 domainName.Left = 5;
                 domainName.AutoSize = true;
 
-                JObject stats = JObject.Parse(name["stats"].ToString());
-
-                Label expiry = new Label();
-                expiry.Text = "Expires: " + stats["daysUntilExpire"].ToString() + " days";
-                expiry.Top = 5;
-                expiry.AutoSize = true;
-                expiry.Left = domainTMP.Width - expiry.Width - 100;
-
-
+                
                 domainTMP.Controls.Add(domainName);
-                domainTMP.Controls.Add(expiry);
+            
+                Label expiry = new Label();
+                JObject stats = JObject.Parse(name["stats"].ToString());
+                if (stats.ContainsKey("daysUntilExpire"))
+                {
+                    expiry.Text = "Expires: " + stats["daysUntilExpire"].ToString() + " days";
+                    expiry.Top = 5;
+                    expiry.AutoSize = true;
+                    expiry.Left = domainTMP.Width - expiry.Width - 100;
+                    domainTMP.Controls.Add(expiry);
+                }
+                
+
+                
+                
                 panelDomainList.Controls.Add(domainTMP);
                 i++;
             }
