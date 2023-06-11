@@ -621,7 +621,7 @@ namespace FireWallet
         private void buttonImport_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "CSV File|*.csv|TXT File|*.txt";
+            openFileDialog.Filter = "All Files|*.*";
             openFileDialog.Title = "Open Batch";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
