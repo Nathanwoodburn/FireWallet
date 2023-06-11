@@ -771,9 +771,6 @@ namespace FireWallet
             }
             else if (state == "REVEAL")
             {
-                decimal bid = Convert.ToDecimal(textBoxBid.Text);
-                decimal blind = Convert.ToDecimal(textBoxBlind.Text);
-                decimal lockup = bid + blind;
                 string content = "{\"method\": \"sendreveal\", \"params\": [\"" + domain + "\"]}";
 
                 string response = await APIPost("", true, content);
