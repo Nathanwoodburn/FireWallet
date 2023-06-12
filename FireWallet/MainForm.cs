@@ -218,7 +218,8 @@ namespace FireWallet
                         hsdProcess.Start();
                         // Wait for HSD to start
                         await Task.Delay(2000);
-                    } catch (Exception ex)
+                    }
+                    catch (Exception ex)
                     {
                         AddLog("HSD Failed to start");
                         AddLog(ex.Message);
@@ -556,9 +557,18 @@ namespace FireWallet
             path = "wallet/" + account + "";
             APIresponse = await APIGet(path, true);
             JObject jObject = JObject.Parse(APIresponse);
-            if (jObject["watchOnly"].ToString() == "True") watchOnly = true;
-            else watchOnly = false;
-            toolStripStatusLabelLedger.Text = "Cold Wallet: " + watchOnly.ToString();
+            if (jObject["watchOnly"].ToString() == "True")
+            {
+                watchOnly = true;
+                toolStripStatusLabelLedger.Text = "Cold Wallet";
+                toolStripStatusLabelLedger.Visible = true;
+            }
+            else
+            {
+                watchOnly = false;
+                toolStripStatusLabelLedger.Visible = false;
+            }
+
 
             if (watchOnly)
             {
@@ -583,7 +593,7 @@ namespace FireWallet
                     notifyForm.Dispose();
                     return;
                 }
-                
+
                 account = comboBoxaccount.Text;
                 password = textBoxaccountpassword.Text;
                 bool loggedin = await Login();
@@ -623,6 +633,7 @@ namespace FireWallet
         {
             password = ""; // Clear password from memory as soon as possible
             toolStripSplitButtonlogout.Visible = false;
+            toolStripStatusLabelLedger.Visible = false;
             string path = "wallet/" + account + "/lock";
             string content = "";
             string APIresponse = await APIPost(path, true, content);
@@ -946,7 +957,7 @@ namespace FireWallet
             await UpdateBalance();
             GetTXHistory();
             labelBalance.Text = "Available: " + balance.ToString() + " HNS";
-            labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS";
+            labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS*";
             labelBalanceTotal.Text = "Total: " + (balance + balanceLocked).ToString() + " HNS";
             if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
             {
@@ -1438,12 +1449,15 @@ namespace FireWallet
         #endregion
         #region Domains
         public string[] Domains { get; set; }
+        public string[] DomainsRenewable { get; set; }
         private async void UpdateDomains()
         {
             string response = await APIGet("wallet/" + account + "/name?own=true", true);
             JArray names = JArray.Parse(response);
             Domains = new string[names.Count];
+            DomainsRenewable = new string[names.Count];
             int i = 0;
+            int renewable = 0;
             panelDomainList.Controls.Clear();
             foreach (JObject name in names)
             {
@@ -1468,9 +1482,9 @@ namespace FireWallet
                 domainName.Left = 5;
                 domainName.AutoSize = true;
 
-                
+
                 domainTMP.Controls.Add(domainName);
-            
+
                 Label expiry = new Label();
                 JObject stats = JObject.Parse(name["stats"].ToString());
                 if (stats.ContainsKey("daysUntilExpire"))
@@ -1480,13 +1494,59 @@ namespace FireWallet
                     expiry.AutoSize = true;
                     expiry.Left = domainTMP.Width - expiry.Width - 100;
                     domainTMP.Controls.Add(expiry);
-                }
-                
 
-                
-                
+                    // Add to domains renewable
+                    DomainsRenewable[renewable] = Domains[i];
+                    renewable++;
+
+                }
+                else
+                {
+                    expiry.Text = "Expires: Not Registered yet";
+                    expiry.Top = 5;
+                    expiry.AutoSize = true;
+                    expiry.Left = domainTMP.Width - expiry.Width - 100;
+                    domainTMP.Controls.Add(expiry);
+                }
+
+
+
+
                 panelDomainList.Controls.Add(domainTMP);
                 i++;
+            }
+        }
+        private async void buttonRevealAll_Click(object sender, EventArgs e)
+        {
+            string content = "{\"method\": \"sendreveal\"}";
+            string response = await APIPost("", true, content);
+            AddLog(response);
+            if (response == "Error")
+            {
+                AddLog("Error sending reveal");
+                NotifyForm notifyForm = new NotifyForm("Error sending reveal");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            JObject resp = JObject.Parse(response);
+            if (resp["error"] != null)
+            {
+                AddLog("Error sending reveal");
+                AddLog(resp["error"].ToString());
+                JObject error = JObject.Parse(resp["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error sending reveal\n" + error["message"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            if (resp.ContainsKey("result"))
+            {
+                JObject result = JObject.Parse(resp["result"].ToString());
+                string hash = result["hash"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Reveal sent\n" + hash, "Explorer", userSettings["explorer-tx"] + hash);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
             }
         }
         private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
@@ -1654,11 +1714,37 @@ namespace FireWallet
         }
         #endregion
 
+        private void export_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "CSV file (*.csv)|*.csv";
+            saveFileDialog.Title = "Export";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
+                foreach (string domain in DomainsRenewable)
+                {
+                    if (domain == null) break;
+                    sw.WriteLine(domain);
+                }
+                sw.Dispose();
+            }
+        }
 
-
-
-
-
-
+        private void buttonRenewAll_Click(object sender, EventArgs e)
+        {
+            if (DomainsRenewable == null)
+            {
+                NotifyForm notifyForm = new NotifyForm("No domains found\nMake sure you have synced your domains by visiting the domain page");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            foreach (string domain in DomainsRenewable)
+            {
+                if (domain == null) break;
+                AddBatch(domain, "RENEW");
+            }
+        }
     }
 }

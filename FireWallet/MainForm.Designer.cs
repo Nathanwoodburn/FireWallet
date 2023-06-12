@@ -59,6 +59,8 @@ namespace FireWallet
             buttonNavSend = new Button();
             buttonNavPortfolio = new Button();
             panelPortfolio = new Panel();
+            buttonRenewAll = new Button();
+            buttonRevealAll = new Button();
             groupBoxTransactions = new GroupBox();
             groupBoxinfo = new GroupBox();
             labelPendingCount = new Label();
@@ -87,6 +89,7 @@ namespace FireWallet
             textBoxReceiveAddress = new TextBox();
             labelReceive1 = new Label();
             panelDomains = new Panel();
+            buttonExportDomains = new Button();
             groupBoxDomains = new GroupBox();
             panelDomainList = new Panel();
             labelDomainSearch = new Label();
@@ -174,6 +177,7 @@ namespace FireWallet
             toolStripStatusLabelLedger.Name = "toolStripStatusLabelLedger";
             toolStripStatusLabelLedger.Size = new Size(71, 17);
             toolStripStatusLabelLedger.Text = "Cold Wallet:";
+            toolStripStatusLabelLedger.Visible = false;
             // 
             // toolStripSplitButtonlogout
             // 
@@ -386,14 +390,39 @@ namespace FireWallet
             // 
             // panelPortfolio
             // 
+            panelPortfolio.Controls.Add(buttonRevealAll);
             panelPortfolio.Controls.Add(groupBoxTransactions);
             panelPortfolio.Controls.Add(groupBoxinfo);
             panelPortfolio.Controls.Add(groupBoxbalance);
-            panelPortfolio.Location = new Point(1085, 47);
+            panelPortfolio.Location = new Point(1065, 80);
             panelPortfolio.Name = "panelPortfolio";
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
             panelPortfolio.Visible = false;
+            // 
+            // buttonRenewAll
+            // 
+            buttonRenewAll.FlatStyle = FlatStyle.Flat;
+            buttonRenewAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonRenewAll.Location = new Point(813, 9);
+            buttonRenewAll.Name = "buttonRenewAll";
+            buttonRenewAll.Size = new Size(89, 32);
+            buttonRenewAll.TabIndex = 10;
+            buttonRenewAll.Text = "Renew All";
+            buttonRenewAll.UseVisualStyleBackColor = true;
+            buttonRenewAll.Click += buttonRenewAll_Click;
+            // 
+            // buttonRevealAll
+            // 
+            buttonRevealAll.FlatStyle = FlatStyle.Flat;
+            buttonRevealAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonRevealAll.Location = new Point(537, 12);
+            buttonRevealAll.Name = "buttonRevealAll";
+            buttonRevealAll.Size = new Size(89, 44);
+            buttonRevealAll.TabIndex = 9;
+            buttonRevealAll.Text = "Reveal All";
+            buttonRevealAll.UseVisualStyleBackColor = true;
+            buttonRevealAll.Click += buttonRevealAll_Click;
             // 
             // groupBoxTransactions
             // 
@@ -632,7 +661,7 @@ namespace FireWallet
             panelRecieve.Controls.Add(labelReceive2);
             panelRecieve.Controls.Add(textBoxReceiveAddress);
             panelRecieve.Controls.Add(labelReceive1);
-            panelRecieve.Location = new Point(117, 34);
+            panelRecieve.Location = new Point(1140, 24);
             panelRecieve.Name = "panelRecieve";
             panelRecieve.Size = new Size(995, 523);
             panelRecieve.TabIndex = 17;
@@ -692,14 +721,28 @@ namespace FireWallet
             // 
             // panelDomains
             // 
+            panelDomains.Controls.Add(buttonRenewAll);
+            panelDomains.Controls.Add(buttonExportDomains);
             panelDomains.Controls.Add(groupBoxDomains);
             panelDomains.Controls.Add(labelDomainSearch);
             panelDomains.Controls.Add(textBoxDomainSearch);
-            panelDomains.Location = new Point(1129, 22);
+            panelDomains.Location = new Point(120, 48);
             panelDomains.Name = "panelDomains";
             panelDomains.Size = new Size(920, 536);
             panelDomains.TabIndex = 18;
             panelDomains.Visible = false;
+            // 
+            // buttonExportDomains
+            // 
+            buttonExportDomains.FlatStyle = FlatStyle.Flat;
+            buttonExportDomains.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonExportDomains.Location = new Point(351, 9);
+            buttonExportDomains.Name = "buttonExportDomains";
+            buttonExportDomains.Size = new Size(102, 32);
+            buttonExportDomains.TabIndex = 3;
+            buttonExportDomains.Text = "Export";
+            buttonExportDomains.UseVisualStyleBackColor = true;
+            buttonExportDomains.Click += export_Click;
             // 
             // groupBoxDomains
             // 
@@ -749,7 +792,7 @@ namespace FireWallet
             panelSettings.Controls.Add(buttonSettingsSave);
             panelSettings.Controls.Add(groupBoxSettingsExplorer);
             panelSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            panelSettings.Location = new Point(121, 21);
+            panelSettings.Location = new Point(1065, 211);
             panelSettings.Name = "panelSettings";
             panelSettings.Size = new Size(930, 550);
             panelSettings.TabIndex = 19;
@@ -965,13 +1008,13 @@ namespace FireWallet
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
             Controls.Add(panelaccount);
+            Controls.Add(panelPortfolio);
             Controls.Add(panelRecieve);
-            Controls.Add(panelSettings);
             Controls.Add(panelDomains);
             Controls.Add(panelSend);
-            Controls.Add(panelPortfolio);
             Controls.Add(panelNav);
             Controls.Add(statusStripmain);
+            Controls.Add(panelSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             Opacity = 0D;
@@ -1091,5 +1134,8 @@ namespace FireWallet
         private Button buttonSettingsRescan;
         private ToolStripStatusLabel toolStripStatusLabelLedger;
         private Button buttonAddressVerify;
+        private Button buttonRevealAll;
+        private Button buttonExportDomains;
+        private Button buttonRenewAll;
     }
 }

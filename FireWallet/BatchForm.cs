@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -487,6 +488,11 @@ namespace FireWallet
                     if (jObject["error"].ToString().Contains("Batch output addresses would exceed lookahead"))
                     {
                         NotifyForm notifyForm = new NotifyForm("Error: \nBatch output addresses would exceed lookahead\nYour batch might have too many TXs.");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    } else if (jObject["error"].ToString().Contains("Name is not registered"))
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error: \nName is not registered\nRemember you can't renew domains in transfer");
                         notifyForm.ShowDialog();
                         notifyForm.Dispose();
                     }
