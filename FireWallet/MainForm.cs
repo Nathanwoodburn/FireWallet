@@ -891,19 +891,134 @@ namespace FireWallet
                 };
                 tmpPanel.Controls.Add(labelHash);
 
-                // Count inputs and outputs
+                // Count inputs
                 JArray inputs = JArray.Parse(tx["inputs"].ToString());
-                JArray outputs = JArray.Parse(tx["outputs"].ToString());
-                int inputCount = inputs.Count;
-                int outputCount = outputs.Count;
 
-                Label labelInputOutput = new Label()
+                int inputCount = inputs.Count;
+
+
+                Label labelInput = new Label()
                 {
-                    Text = "Inputs: " + inputCount + " Outputs: " + outputCount,
+                    Text = "Inputs: " + inputCount,
                     AutoSize = true,
-                    Location = new Point(300, 20)
+                    Location = new Point(200, 5)
                 };
-                tmpPanel.Controls.Add(labelInputOutput);
+                tmpPanel.Controls.Add(labelInput);
+
+
+                AddLog(tx.ToString());
+                // Get types of outputs
+                JArray outputs = JArray.Parse(tx["outputs"].ToString());
+
+                int outputCount = outputs.Count;
+                string outputMessage = "";
+
+                string tmpOutputMessage = "";
+                int SendingCount = 0;
+                decimal SendingAmount = 0;
+
+                int OpenCount = 0;
+                int BidCount = 0;
+                int RevealCount = 0;
+                int RedeemCount = 0;
+                int RegisterCount = 0;
+                int ClaimCount = 0;
+                int UpdateCount = 0;
+                int RenewCount = 0;
+                int TransferCount = 0;
+                int FinalizeCount = 0;
+                int RevokeCount = 0;
+
+                foreach (JObject TXOutput in outputs)
+                {
+                    JObject covenant = JObject.Parse(TXOutput["covenant"].ToString());
+                    string type = covenant["action"].ToString();
+                    if (type == "NONE")
+                    {
+                        if (TXOutput["path"].ToString() != "")
+                        {
+                            if (TXOutput["path"]["change"].ToString().ToLower() == "false")
+                            {
+                                SendingCount++;
+                                SendingAmount += Convert.ToInt64(TXOutput["value"].ToString()) / 1000000;
+
+                            }
+                            else
+                            {
+                                AddLog(TXOutput.ToString());
+                            }
+                        }
+                        else
+                        {
+                            SendingCount++;
+                            SendingAmount += Convert.ToInt64(TXOutput["value"].ToString()) / 1000000;
+                        }
+                    }
+                    if (type == "OPEN") OpenCount++;
+                    if (type == "BID") BidCount++;
+                    if (type == "REVEAL") RevealCount++;
+                    if (type == "REDEEM") RedeemCount++;
+                    if (type == "REGISTER") RegisterCount++;
+                    if (type == "CLAIM") ClaimCount++;
+                    if (type == "UPDATE") UpdateCount++;
+                    if (type == "RENEW") RenewCount++;
+                    if (type == "TRANSFER") TransferCount++;
+                    if (type == "FINALIZE") FinalizeCount++;
+                    if (type == "REVOKE") RevokeCount++;
+
+                }
+
+                if (SendingCount > 0)
+                {
+                    if (SendingCount == 1)
+                    {
+                        tmpOutputMessage += "Sent: " + SendingAmount + " HNS\n";
+                    }
+                    else
+                    {
+                        tmpOutputMessage += "Sent: " + SendingAmount + " HNS (to " + SendingCount + " addresses)\n";
+                    }
+                }
+                if (OpenCount > 0) tmpOutputMessage += "Open: " + OpenCount + "\n";
+                if (BidCount > 0) tmpOutputMessage += "Bid: " + BidCount + "\n";
+                if (RevealCount > 0) tmpOutputMessage += "Reveal: " + RevealCount + "\n";
+                if (RedeemCount > 0) tmpOutputMessage += "Redeem: " + RedeemCount + "\n";
+                if (RegisterCount > 0) tmpOutputMessage += "Register: " + RegisterCount + "\n";
+                if (ClaimCount > 0) tmpOutputMessage += "Claim: " + ClaimCount + "\n";
+                if (UpdateCount > 0) tmpOutputMessage += "Update: " + UpdateCount + "\n";
+                if (RenewCount > 0) tmpOutputMessage += "Renew: " + RenewCount + "\n";
+                if (TransferCount > 0) tmpOutputMessage += "Transfer: " + TransferCount + "\n";
+                if (FinalizeCount > 0) tmpOutputMessage += "Finalize: " + FinalizeCount + "\n";
+                if (RevokeCount > 0) tmpOutputMessage += "Revoke: " + RevokeCount + "\n";
+
+                // Split the string into lines to display like this
+                // Line 1     Line 3     Line 5
+                // Line 2     Line 4     Line 6
+                string[] lines = tmpOutputMessage.Split('\n');
+                int count = lines.Length;
+                for (int x = 0; x < count; x++)
+                {
+                    if (x % 2 == 0)
+                    {
+                        outputMessage += lines[x] + "     ";
+                    }
+                    else
+                    {
+                        outputMessage += lines[x] + "\n";
+                    }
+                }
+
+
+
+
+                Label labelOutputs = new Label()
+                {
+                    Text = outputMessage,
+                    AutoSize = true,
+                    Location = new Point(400, 5)
+                };
+
+                tmpPanel.Controls.Add(labelOutputs);
 
 
                 tmpControls[i] = tmpPanel;
