@@ -660,7 +660,10 @@ namespace FireWallet
 
             if (await APIGet("", false) == "Error")
             {
-                toolStripStatusLabelstatus.Text = "Status: Node Not Connected";
+                if (toolStripStatusLabelstatus.Text != "Status: HSD Starting")
+                {
+                    toolStripStatusLabelstatus.Text = "Status: Node Not Connected";
+                }
                 return;
             }
             else
