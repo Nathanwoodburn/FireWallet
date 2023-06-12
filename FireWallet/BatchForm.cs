@@ -484,9 +484,18 @@ namespace FireWallet
                 {
                     AddLog("Error: ");
                     AddLog(jObject["error"].ToString());
-                    NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
-                    notifyForm.ShowDialog();
-                    notifyForm.Dispose();
+                    if (jObject["error"].ToString().Contains("Batch output addresses would exceed lookahead"))
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error: \nBatch output addresses would exceed lookahead\nYour batch might have too many TXs.");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+                    else
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
                     return;
                 }
 
