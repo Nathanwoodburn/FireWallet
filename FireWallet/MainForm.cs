@@ -875,20 +875,9 @@ namespace FireWallet
                 {
                     Text = "Hash: " + hash.Substring(0, 10) + "..." + hash.Substring(hash.Length - 10),
                     AutoSize = true,
-                    Location = new Point(10, 25),
-                    Font = new Font(this.Font, FontStyle.Underline)
+                    Location = new Point(10, 25)
                 };
-                labelHash.Click += (sender, e) =>
-                {
-                    string url = userSettings["explorer-tx"] + hash;
-                    ProcessStartInfo psi = new ProcessStartInfo
-                    {
-                        FileName = url,
-                        UseShellExecute = true
-                    };
-                    Process.Start(psi);
-
-                };
+                
                 tmpPanel.Controls.Add(labelHash);
 
                 // Count inputs and outputs
@@ -904,8 +893,11 @@ namespace FireWallet
                     Location = new Point(300, 20)
                 };
                 tmpPanel.Controls.Add(labelInputOutput);
-
-
+                tmpPanel.Click += (sender, e) =>
+                {
+                    TXForm txForm = new TXForm(this, tx);
+                    txForm.Show();
+                };
                 tmpControls[i] = tmpPanel;
 
 
