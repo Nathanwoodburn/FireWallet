@@ -705,6 +705,11 @@ namespace FireWallet
         /// <returns></returns>
         public async Task<string> APIPost(string path, bool wallet, string content)
         {
+            if (content == "{\"passphrase\": \"\" ,\"timeout\": 60}")
+            {
+                // For some reason, the API doesn't like an empty password, so we'll just use a default one
+                content = "{\"passphrase\": \"password\" ,\"timeout\": 60}";
+            }
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
             string port = "1203";
@@ -1485,6 +1490,10 @@ namespace FireWallet
 
                 domainTMP.Controls.Add(domainName);
 
+                if (!name.ContainsKey("stats")) {
+                    AddLog("Domain " + Domains[i] + " does not have stats");
+                    continue;
+                }
                 Label expiry = new Label();
                 JObject stats = JObject.Parse(name["stats"].ToString());
                 if (stats.ContainsKey("daysUntilExpire"))
