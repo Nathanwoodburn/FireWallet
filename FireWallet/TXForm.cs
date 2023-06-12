@@ -34,10 +34,10 @@ namespace FireWallet
             this.Text = "TX: " + tx["hash"].ToString();
         }
 
-        private void TXForm_Load(object sender, EventArgs e)
+        private async void TXForm_Load(object sender, EventArgs e)
         {
             labelHash.Text = "Hash: " + tx["hash"].ToString();
-            mainForm.AddLog("Viewing:\n" + tx.ToString());
+            mainForm.AddLog("Viewing TX: " + tx["hash"].ToString());
             
 
             // For each input
@@ -94,11 +94,23 @@ namespace FireWallet
                 JObject covenant = (JObject)output["covenant"];
                 if (covenant.ContainsKey("action"))
                 {
-                    Label covenantLabel = new Label();
-                    covenantLabel.Text = "Type: " + covenant["action"].ToString();
-                    covenantLabel.Location = new Point(5, 25);
-                    covenantLabel.AutoSize = true;
-                    PanelOutput.Controls.Add(covenantLabel);
+                    if (covenant["action"].ToString() != "NONE")
+                    {
+                        JArray items = (JArray)covenant["items"];
+
+
+                        Label covenantLabel = new Label();
+                        string namehash = items[0].ToString();
+
+                        string content = "{\"method\": \"getnamebyhash\", \"params\": [\"" +namehash +"\"]}";
+                        JObject name = JObject.Parse(await mainForm.APIPost("",false,content));
+
+
+                        covenantLabel.Text = covenant["action"].ToString() + ": " +  name["result"].ToString();
+                        covenantLabel.Location = new Point(5, 25);
+                        covenantLabel.AutoSize = true;
+                        PanelOutput.Controls.Add(covenantLabel);
+                    }
                 }
 
                 Label amount = new Label();
