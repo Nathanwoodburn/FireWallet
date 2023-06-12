@@ -1735,7 +1735,7 @@ namespace FireWallet
         {
             if (DomainsRenewable == null)
             {
-                NotifyForm notifyForm = new NotifyForm("No domains found\nMake sure you have synced your domains by visiting the domain page");
+                NotifyForm notifyForm = new NotifyForm("No renewable domains found");
                 notifyForm.ShowDialog();
                 notifyForm.Dispose();
                 return;
