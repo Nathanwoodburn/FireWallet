@@ -210,10 +210,17 @@ namespace FireWallet
                     {
                         hsdProcess.StartInfo.CreateNoWindow = hideScreen;
 
+                        if (hideScreen)
+                        {
+                            hsdProcess.StartInfo.RedirectStandardError = true;
+                        } else
+                        {
+                            hsdProcess.StartInfo.RedirectStandardError = false;
+                        }
+
                         hsdProcess.StartInfo.RedirectStandardInput = true;
                         hsdProcess.StartInfo.RedirectStandardOutput = false;
                         hsdProcess.StartInfo.UseShellExecute = false;
-                        hsdProcess.StartInfo.RedirectStandardError = false;
                         hsdProcess.StartInfo.FileName = "node.exe";
                         hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
 
@@ -225,6 +232,24 @@ namespace FireWallet
                         hsdProcess.Start();
                         // Wait for HSD to start
                         await Task.Delay(2000);
+                        
+                        // Check if HSD is running
+                        if (hsdProcess.HasExited)
+                        {
+                            AddLog("HSD Failed to start");
+                            AddLog(hsdProcess.StandardError.ReadToEnd());
+                            NotifyForm Notifyinstall = new NotifyForm("HSD Failed to start\nPlease check the logs");
+                            Notifyinstall.ShowDialog();
+                            Notifyinstall.Dispose();
+
+                            // Wait for the notification to show
+                            await Task.Delay(1000);
+                            this.Close();
+
+                            await Task.Delay(1000);
+                            return false;
+                        }
+
                     }
                     catch (Exception ex)
                     {
@@ -232,9 +257,7 @@ namespace FireWallet
                         AddLog(ex.Message);
                         this.Close();
                         await Task.Delay(1000);
-                        AddLog("Close Failed");
                     }
-
                 }
             }
             timerNodeStatus.Start();
