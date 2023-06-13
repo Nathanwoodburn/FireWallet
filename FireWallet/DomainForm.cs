@@ -804,9 +804,6 @@ namespace FireWallet
             }
             else if (state == "AVAILABLE")
             {
-                decimal bid = Convert.ToDecimal(textBoxBid.Text);
-                decimal blind = Convert.ToDecimal(textBoxBlind.Text);
-                decimal lockup = bid + blind;
                 string content = "{\"method\": \"sendopen\", \"params\": [\"" + domain + "\"]}";
 
                 string response = await APIPost("", true, content);
