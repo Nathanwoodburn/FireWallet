@@ -215,7 +215,7 @@ namespace FireWallet
                         hsdProcess.StartInfo.UseShellExecute = false;
                         hsdProcess.StartInfo.RedirectStandardError = false;
                         hsdProcess.StartInfo.FileName = "node.exe";
-                        hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --index-tx --index-address --api-key " + nodeSettings["Key"];
+                        hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
 
                         string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
                         if (Directory.Exists(bobPath))
