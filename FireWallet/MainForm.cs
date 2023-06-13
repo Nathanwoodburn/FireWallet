@@ -189,6 +189,13 @@ namespace FireWallet
                         Notifyinstall.CloseNotification();
                         Notifyinstall.Dispose();
                     }
+                    if (!Directory.Exists(dir + "hsd\\node_modules"))
+                    {
+                        AddLog("HSD install failed");
+                        this.Close();
+                        return false;
+                    }
+
                     hsdProcess = new Process();
 
                     bool hideScreen = true;
@@ -1315,6 +1322,72 @@ namespace FireWallet
                     }
                 }
 
+                // Check if git is installed
+                Process testInstalled = new Process();
+                testInstalled.StartInfo.FileName = "git";
+                testInstalled.StartInfo.Arguments = "-v";
+                testInstalled.StartInfo.RedirectStandardOutput = true;
+                testInstalled.StartInfo.UseShellExecute = false;
+                testInstalled.StartInfo.CreateNoWindow = true;
+                testInstalled.Start();
+                string outputInstalled = testInstalled.StandardOutput.ReadToEnd();
+                testInstalled.WaitForExit();
+
+                if (!outputInstalled.Contains("git version"))
+                {
+                    AddLog("Git is not installed");
+                    NotifyForm notifyForm = new NotifyForm("Git is not installed\nPlease install it to install HSD dependencies");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    this.Close();
+                    return;
+                }
+
+                // Check if node installed
+                testInstalled = new Process();
+                testInstalled.StartInfo.FileName = "node";
+                testInstalled.StartInfo.Arguments = "-v";
+                testInstalled.StartInfo.RedirectStandardOutput = true;
+                testInstalled.StartInfo.UseShellExecute = false;
+                testInstalled.StartInfo.CreateNoWindow = true;
+                testInstalled.Start();
+                outputInstalled = testInstalled.StandardOutput.ReadToEnd();
+                testInstalled.WaitForExit();
+
+                if (!outputInstalled.Contains("v"))
+                {
+                    AddLog("Node is not installed");
+                    NotifyForm notifyForm = new NotifyForm("Node is not installed\nPlease install it to install HSD dependencies");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    this.Close();
+                    return;
+                }
+
+
+                // Check if npm installed
+                testInstalled = new Process();
+                testInstalled.StartInfo.FileName = "npm";
+                testInstalled.StartInfo.Arguments = "-v";
+                testInstalled.StartInfo.RedirectStandardOutput = true;
+                testInstalled.StartInfo.UseShellExecute = false;
+                testInstalled.StartInfo.CreateNoWindow = true;
+                testInstalled.Start();
+                outputInstalled = testInstalled.StandardOutput.ReadToEnd();
+                testInstalled.WaitForExit();
+
+                if (outputInstalled.Length < 3)
+                {
+                    AddLog("NPM is not installed");
+                    NotifyForm notifyForm = new NotifyForm("NPM is not installed\nPlease install it to install HSD dependencies");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    this.Close();
+                    return;
+                }
+
+
+
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.FileName = "git";
                 startInfo.Arguments = $"clone {repositoryUrl} {destinationPath}";
@@ -1362,6 +1435,32 @@ namespace FireWallet
             {
                 AddLog("Git/NPM Install FAILED");
                 AddLog(ex.Message);
+                if (ex.Message.Contains("to start process 'git'"))
+                {
+                    NotifyForm notifyForm = new NotifyForm("Git needs to be installed\nCheck logs for more details");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                else if (ex.Message.Contains("to start process 'node'"))
+                {
+                    NotifyForm notifyForm = new NotifyForm("Node needs to be installed\nCheck logs for more details");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                else if (ex.Message.Contains("to start process 'npm'"))
+                {
+                    NotifyForm notifyForm = new NotifyForm("NPM needs to be installed\nCheck logs for more details");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                else
+                {
+
+                    NotifyForm notifyForm = new NotifyForm("Git/NPM Install FAILED\nCheck logs for more details");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                }
+                this.Close();
             }
         }
         public bool CheckNodeInstalled()
