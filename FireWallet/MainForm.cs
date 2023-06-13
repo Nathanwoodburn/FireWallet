@@ -50,6 +50,9 @@ namespace FireWallet
             UpdateTheme();
             if (await LoadNode() != true) this.Close();
 
+
+            if (this.Disposing || this.IsDisposed) return;
+
             if (userSettings.ContainsKey("hide-splash"))
             {
                 if (userSettings["hide-splash"] == "false")
@@ -1363,6 +1366,7 @@ namespace FireWallet
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
+                    Thread.Sleep(1000);
                     return;
                 }
 
@@ -1384,36 +1388,47 @@ namespace FireWallet
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
+                    Thread.Sleep(1000);
                     return;
                 }
 
 
                 // Check if npm installed
                 testInstalled = new Process();
-                testInstalled.StartInfo.FileName = "npm";
-                testInstalled.StartInfo.Arguments = "-v";
+                testInstalled.StartInfo.FileName = "cmd.exe";
+                testInstalled.StartInfo.Arguments = "npm -v";
                 testInstalled.StartInfo.RedirectStandardOutput = true;
                 testInstalled.StartInfo.UseShellExecute = false;
-                testInstalled.StartInfo.CreateNoWindow = true;
+                testInstalled.StartInfo.CreateNoWindow = false;
                 testInstalled.Start();
+                // Wait 3 seconds and then kill
+                Thread.Sleep(3000);
+                testInstalled.Kill();
                 outputInstalled = testInstalled.StandardOutput.ReadToEnd();
                 testInstalled.WaitForExit();
-
-                if (outputInstalled.Length < 3)
+                if (Regex.IsMatch(outputInstalled, @"^\d+\.\d+\.\d+$"))
                 {
                     AddLog("NPM is not installed");
+                    AddLog(outputInstalled);
                     NotifyForm notifyForm = new NotifyForm("NPM is not installed\nPlease install it to install HSD dependencies");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
+                    Thread.Sleep(1000);
                     return;
                 }
 
-
+                AddLog("Prerequisites installed");
 
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.FileName = "git";
                 startInfo.Arguments = $"clone {repositoryUrl} {destinationPath}";
+
+                if (repositoryUrl == "https://github.com/handshake-org/hsd.git")
+                {
+                    startInfo.Arguments = $"clone --depth 1 --branch latest {repositoryUrl} {destinationPath}";
+                }
+
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
                 startInfo.CreateNoWindow = hideScreen;
