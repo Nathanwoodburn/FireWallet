@@ -92,6 +92,10 @@ namespace FireWallet
             AddLog("Loaded");
             Opacity = 1;
             batchMode = false;
+            // Pull form to front
+            this.BringToFront();
+            this.Focus();
+        
             textBoxaccountpassword.Focus();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
@@ -770,6 +774,7 @@ namespace FireWallet
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
+                AddLog(await resp.Content.ReadAsStringAsync());
                 AddLog("Content: " + content);
                 return "Error";
             }
@@ -839,6 +844,7 @@ namespace FireWallet
             decimal progress = Convert.ToDecimal(chain["progress"].ToString());
             labelSyncPercent.Text = "Sync: " + decimal.Round(progress * 100, 2) + "%";
 
+
             // Exit if set to 0 TXs
             if (userSettings.ContainsKey("portfolio-tx"))
             {
@@ -858,27 +864,56 @@ namespace FireWallet
             labelPendingCount.Text = "Unconfirmed TX: " + pendingTxs.Count.ToString();
 
 
-            // Get TX's
-            APIresponse = await APIGet("wallet/" + account + "/tx/history", true);
+            // Check how many TX there are
+            APIresponse = await APIGet("wallet/"+ account,true);
+            JObject wallet = JObject.Parse(APIresponse);
+            if (!wallet.ContainsKey("balance"))
+            {
+                AddLog("GetInfo Error");
+                AddLog(APIresponse);
+                return;
+            }
+            JObject balance = JObject.Parse(wallet["balance"].ToString());
+            int TotalTX = Convert.ToInt32(balance["tx"].ToString());
+            int toGet = 10;
+            if (userSettings.ContainsKey("portfolio-tx")) toGet = Convert.ToInt32(userSettings["portfolio-tx"]);
+
+            if (toGet > TotalTX) toGet = TotalTX;
+            int toSkip = TotalTX - toGet;
+
+            // GET TXs
+            APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," +toGet+","+ toSkip+ "]}");
+
             if (APIresponse == "Error")
             {
                 AddLog("GetInfo Error");
                 return;
             }
-            JArray txs = JArray.Parse(APIresponse);
-            int txCount = txs.Count;
-            if (txCount > groupBoxTransactions.Height / 55) txCount = (int)Math.Floor(groupBoxTransactions.Height / 55.0);
-            if (userSettings.ContainsKey("portfolio-tx")) txCount = Convert.ToInt32(userSettings["portfolio-tx"]);
-            if (txCount > txs.Count) txCount = txs.Count;
-            Control[] tmpControls = new Control[txCount];
-            for (int i = 0; i < txCount; i++)
+            JObject TXGET = JObject.Parse(APIresponse);
+            
+            // Check for error
+            if (TXGET["error"].ToString() != "")
+            {
+                AddLog("GetInfo Error");
+                AddLog(APIresponse);
+                return;
+            }
+
+            JArray txs = JArray.Parse(TXGET["result"].ToString());
+            Control[] tmpControls = new Control[toGet];
+            for (int i = 0; i < toGet; i++)
             {
 
                 // Get last tx
-                JObject tx = JObject.Parse(txs[txs.Count - 1 - i].ToString());
+                JObject tx = JObject.Parse(await APIGet("wallet/" + account + "/tx/" + txs[toGet - i - 1]["txid"].ToString(), true));
 
                 string hash = tx["hash"].ToString();
                 string date = tx["mdate"].ToString();
+
+                date = DateTime.Parse(date).ToShortDateString();
+
+
+
 
                 Panel tmpPanel = new Panel();
                 tmpPanel.Width = groupBoxTransactions.Width - SystemInformation.VerticalScrollBarWidth - 20;
@@ -917,29 +952,45 @@ namespace FireWallet
                 
                 tmpPanel.Controls.Add(labelHash);
 
-                // Count inputs and outputs
                 JArray inputs = JArray.Parse(tx["inputs"].ToString());
                 JArray outputs = JArray.Parse(tx["outputs"].ToString());
                 int inputCount = inputs.Count;
                 int outputCount = outputs.Count;
 
+                int costHNS = int.Parse(txs[toGet - i - 1]["amount"].ToString());
+                string cost = "";
+                if (costHNS < 0)
+                {
+                    cost = "Spent: " + (costHNS * -1).ToString() + " HNS";
+                }
+                else if (costHNS > 0)
+                {
+                    cost = "Received: " + costHNS.ToString() + " HNS";
+                }
+                
+
+                
+                
+
                 Label labelInputOutput = new Label()
                 {
-                    Text = "Inputs: " + inputCount + " Outputs: " + outputCount,
+                    Text = "Inputs: " + inputCount + " Outputs: " + outputCount + "\n" + cost,
                     AutoSize = true,
-                    Location = new Point(300, 20)
+                    Location = new Point(300, 5)
                 };
                 tmpPanel.Controls.Add(labelInputOutput);
+
+
                 tmpPanel.Click += (sender, e) =>
                 {
-                    TXForm txForm = new TXForm(this, tx);
+                    TXForm txForm = new TXForm(this, hash);
                     txForm.Show();
                 };
                 foreach (Control c in tmpPanel.Controls)
                 {
                     c.Click += (sender, e) =>
                     {
-                        TXForm txForm = new TXForm(this, tx);
+                        TXForm txForm = new TXForm(this, hash);
                         txForm.Show();
                     };
                 }
