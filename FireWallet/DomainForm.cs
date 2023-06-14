@@ -264,8 +264,6 @@ namespace FireWallet
                     buttonActionAlt.Hide();
                     buttonActionMain.Hide();
                     groupBoxAction.Text = "Reserved";
-
-
                 }
             }
             catch (Exception ex)

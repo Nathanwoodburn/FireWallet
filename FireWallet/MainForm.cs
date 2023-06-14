@@ -221,7 +221,8 @@ namespace FireWallet
                         if (hideScreen)
                         {
                             hsdProcess.StartInfo.RedirectStandardError = true;
-                        } else
+                        }
+                        else
                         {
                             hsdProcess.StartInfo.RedirectStandardError = false;
                         }
@@ -240,7 +241,7 @@ namespace FireWallet
                         hsdProcess.Start();
                         // Wait for HSD to start
                         await Task.Delay(2000);
-                        
+
                         // Check if HSD is running
                         if (hsdProcess.HasExited)
                         {
@@ -866,7 +867,7 @@ namespace FireWallet
 
 
             // Check how many TX there are
-            APIresponse = await APIGet("wallet/"+ account,true);
+            APIresponse = await APIGet("wallet/" + account, true);
             JObject wallet = JObject.Parse(APIresponse);
             if (!wallet.ContainsKey("balance"))
             {
@@ -883,7 +884,7 @@ namespace FireWallet
             int toSkip = TotalTX - toGet;
 
             // GET TXs
-            APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," +toGet+","+ toSkip+ "]}");
+            APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + "]}");
 
             if (APIresponse == "Error")
             {
@@ -891,7 +892,7 @@ namespace FireWallet
                 return;
             }
             JObject TXGET = JObject.Parse(APIresponse);
-            
+
             // Check for error
             if (TXGET["error"].ToString() != "")
             {
@@ -950,7 +951,7 @@ namespace FireWallet
                     AutoSize = true,
                     Location = new Point(10, 25)
                 };
-                
+
                 tmpPanel.Controls.Add(labelHash);
 
                 JArray inputs = JArray.Parse(tx["inputs"].ToString());
@@ -968,10 +969,10 @@ namespace FireWallet
                 {
                     cost = "Received: " + costHNS.ToString() + " HNS";
                 }
-                
 
-                
-                
+
+
+
 
                 Label labelInputOutput = new Label()
                 {
@@ -1172,6 +1173,7 @@ namespace FireWallet
             }
 
             panelSettings.Show();
+            panelSettings.Dock = DockStyle.Fill;
             buttonSettingsSave.Top = panelSettings.Height - buttonSettingsSave.Height - 10;
             labelSettingsSaved.Top = buttonSettingsSave.Top + 10;
             textBoxExTX.Text = userSettings["explorer-tx"];
@@ -1677,7 +1679,8 @@ namespace FireWallet
 
                 domainTMP.Controls.Add(domainName);
 
-                if (!name.ContainsKey("stats")) {
+                if (!name.ContainsKey("stats"))
+                {
                     AddLog("Domain " + Domains[i] + " does not have stats");
                     continue;
                 }
@@ -1716,8 +1719,8 @@ namespace FireWallet
 
                 foreach (Control c in domainTMP.Controls)
                 {
-                      c.Click += new EventHandler((sender, e) =>
-                      {
+                    c.Click += new EventHandler((sender, e) =>
+                    {
                         DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
                         domainForm.Show();
                     });

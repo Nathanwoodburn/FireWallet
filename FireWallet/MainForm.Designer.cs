@@ -59,7 +59,6 @@ namespace FireWallet
             buttonNavSend = new Button();
             buttonNavPortfolio = new Button();
             panelPortfolio = new Panel();
-            buttonRenewAll = new Button();
             buttonRevealAll = new Button();
             groupBoxTransactions = new GroupBox();
             groupBoxinfo = new GroupBox();
@@ -70,6 +69,7 @@ namespace FireWallet
             labelBalanceTotal = new Label();
             labelLocked = new Label();
             labelBalance = new Label();
+            buttonRenewAll = new Button();
             panelSend = new Panel();
             checkBoxSendSubFee = new CheckBox();
             buttonSendMax = new Button();
@@ -400,18 +400,6 @@ namespace FireWallet
             panelPortfolio.TabIndex = 7;
             panelPortfolio.Visible = false;
             // 
-            // buttonRenewAll
-            // 
-            buttonRenewAll.FlatStyle = FlatStyle.Flat;
-            buttonRenewAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonRenewAll.Location = new Point(813, 9);
-            buttonRenewAll.Name = "buttonRenewAll";
-            buttonRenewAll.Size = new Size(89, 32);
-            buttonRenewAll.TabIndex = 10;
-            buttonRenewAll.Text = "Renew All";
-            buttonRenewAll.UseVisualStyleBackColor = true;
-            buttonRenewAll.Click += buttonRenewAll_Click;
-            // 
             // buttonRevealAll
             // 
             buttonRevealAll.FlatStyle = FlatStyle.Flat;
@@ -517,6 +505,18 @@ namespace FireWallet
             labelBalance.Size = new Size(96, 21);
             labelBalance.TabIndex = 0;
             labelBalance.Text = "labelBalance";
+            // 
+            // buttonRenewAll
+            // 
+            buttonRenewAll.FlatStyle = FlatStyle.Flat;
+            buttonRenewAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonRenewAll.Location = new Point(813, 9);
+            buttonRenewAll.Name = "buttonRenewAll";
+            buttonRenewAll.Size = new Size(89, 32);
+            buttonRenewAll.TabIndex = 10;
+            buttonRenewAll.Text = "Renew All";
+            buttonRenewAll.UseVisualStyleBackColor = true;
+            buttonRenewAll.Click += buttonRenewAll_Click;
             // 
             // panelSend
             // 
@@ -792,7 +792,7 @@ namespace FireWallet
             panelSettings.Controls.Add(buttonSettingsSave);
             panelSettings.Controls.Add(groupBoxSettingsExplorer);
             panelSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            panelSettings.Location = new Point(1065, 211);
+            panelSettings.Location = new Point(1065, 51);
             panelSettings.Name = "panelSettings";
             panelSettings.Size = new Size(930, 550);
             panelSettings.TabIndex = 19;
@@ -1007,6 +1007,7 @@ namespace FireWallet
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelSettings);
             Controls.Add(panelaccount);
             Controls.Add(panelPortfolio);
             Controls.Add(panelRecieve);
@@ -1014,7 +1015,6 @@ namespace FireWallet
             Controls.Add(panelSend);
             Controls.Add(panelNav);
             Controls.Add(statusStripmain);
-            Controls.Add(panelSettings);
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             Opacity = 0D;
