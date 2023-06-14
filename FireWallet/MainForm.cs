@@ -301,6 +301,7 @@ namespace FireWallet
         #region Logging
         public void AddLog(string message)
         {
+            if (message.Contains("Get Error: No connection could be made because the target machine actively refused it")) return;
             StreamWriter sw = new StreamWriter(dir + "log.txt", true);
             sw.WriteLine(DateTime.Now.ToString() + ": " + message);
             sw.Dispose();
@@ -741,10 +742,9 @@ namespace FireWallet
         /// <returns></returns>
         public async Task<string> APIPost(string path, bool wallet, string content)
         {
-            if (content == "{\"passphrase\": \"\" ,\"timeout\": 60}")
+            if (content == "{\"passphrase\": \"\",\"timeout\": 60}")
             {
-                // For some reason, the API doesn't like an empty password, so we'll just use a default one
-                content = "{\"passphrase\": \"password\" ,\"timeout\": 60}";
+                return "";
             }
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
@@ -770,6 +770,7 @@ namespace FireWallet
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
+                AddLog("Content: " + content);
                 return "Error";
             }
 
@@ -934,6 +935,15 @@ namespace FireWallet
                     TXForm txForm = new TXForm(this, tx);
                     txForm.Show();
                 };
+                foreach (Control c in tmpPanel.Controls)
+                {
+                    c.Click += (sender, e) =>
+                    {
+                        TXForm txForm = new TXForm(this, tx);
+                        txForm.Show();
+                    };
+                }
+
                 tmpControls[i] = tmpPanel;
 
 
@@ -1606,13 +1616,6 @@ namespace FireWallet
                 domainTMP.Left = 10;
                 domainTMP.BorderStyle = BorderStyle.FixedSingle;
 
-                // On Click open domain
-                domainTMP.Click += new EventHandler((sender, e) =>
-                {
-                    DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
-                    domainForm.Show();
-                });
-
                 Label domainName = new Label();
                 domainName.Text = Domains[i];
                 domainName.Top = 5;
@@ -1651,7 +1654,22 @@ namespace FireWallet
                 }
 
 
+                // On Click open domain
+                domainTMP.Click += new EventHandler((sender, e) =>
+                {
+                    DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                    domainForm.Show();
+                });
 
+
+                foreach (Control c in domainTMP.Controls)
+                {
+                      c.Click += new EventHandler((sender, e) =>
+                      {
+                        DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                        domainForm.Show();
+                    });
+                }
 
                 panelDomainList.Controls.Add(domainTMP);
                 i++;
