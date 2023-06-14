@@ -540,7 +540,7 @@ namespace FireWallet
                 }
                 
                 StreamWriter sw = new StreamWriter(dir + "hsd-ledger/bin/names.txt");
-                string domainslist = string.Join(",", batches.Select(batch => batch.domain));
+                string domainslist = string.Join(",", batches.Select(batch => "\\\"" + batch.domain + "\\\""));
                 sw.Write(domainslist);
                 sw.Dispose();
                 StreamWriter sw2 = new StreamWriter(dir + "hsd-ledger/bin/batch.json");
@@ -558,7 +558,9 @@ namespace FireWallet
                 proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.FileName = "node.exe";
                 proc.StartInfo.WorkingDirectory = dir + "hsd-ledger/bin/";
-                proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger sendraw batch.json names.txt --api-key " + mainForm.nodeSettings["Key"] + " -w " + mainForm.account;
+                string args = "hsd-ledger/bin/hsd-ledger sendraw \"\"" + response.Replace("\"","\\\"") + "\"\" [" + domainslist + "] --api-key " + mainForm.nodeSettings["Key"] + " -w " + mainForm.account;
+
+                proc.StartInfo.Arguments = dir + args;
                 var outputBuilder = new StringBuilder();
 
                 // Event handler for capturing output data
@@ -590,6 +592,8 @@ namespace FireWallet
                 }
                 else
                 {
+                    AddLog(args);
+                    AddLog(proc.StandardError.ReadToEnd());
                     NotifyForm notifyError = new NotifyForm("Error Transaction Failed\nCheck logs for more details");
                     notifyError.ShowDialog();
                     notifyError.Dispose();
