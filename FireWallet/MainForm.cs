@@ -93,9 +93,10 @@ namespace FireWallet
             Opacity = 1;
             batchMode = false;
             // Pull form to front
-            this.BringToFront();
-            this.Focus();
-        
+            this.WindowState = FormWindowState.Minimized;
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+
             textBoxaccountpassword.Focus();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
