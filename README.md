@@ -134,6 +134,15 @@ This file stores the node (HSD/Bob connection) settings.
 The Network is the network you want to connect to (default is `0` for Mainnet).  
 If you delete this file, FireWallet will show the node setup screen on next startup.
 
+You can set a custom HSD launch command by setting the `hsd-command` key.  
+The default launch is the same as this
+```yaml
+HSD-command: {default-dir} --agent=FireWallet --index-tx --index-address --api-key {key} --prefix {Bob}
+```
+The `{default-dir}` will be replaced with the HSD directory `%appdata%\FireWallet\hsd\`.  
+The `{key}` will be replaced with the API key from the node.txt file.  
+The `{Bob}` will be replaced with the Bob wallet HSD data directory `%appdata%\Bob\hsd_data\` this is used to sync FireWallet with Bob's accounts and also stops you needing to sync the chain twice.
+
 ## theme.txt
 This file stores the theme settings.  
 The theme is the color scheme of the application.  
@@ -143,3 +152,9 @@ There are 4 modes: `off` is disabled, `mica` is windows app style, `key` is to m
 ## log.txt
 This file stores the logs for the application.  
 You should check this file if you have any issues with the application.
+
+
+# Support
+If you have any issues with the application you can open an issue on GitHub or contact me on Discord (NathanWoodburn on most Handshake servers).
+
+If you would like to support this project you can find out how at https://nathan.woodburn.au/#donate or you can help by contributing to the project on GitHub.
