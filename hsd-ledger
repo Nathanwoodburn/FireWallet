@@ -422,6 +422,7 @@ function usage(err) {
   console.log('  $ hsd-ledger createaccount <account-name> <account-index>');
   console.log('  $ hsd-ledger createaddress');
   console.log('  $ hsd-ledger sendtoaddress <address> <amount>');
+  console.log('  $ hsd-ledger sendraw <batch> <names>');
   console.log('  $ hsd-ledger getwallets');
   console.log('  $ hsd-ledger getaccounts');
   console.log('  $ hsd-ledger getaccount <account-name>');
