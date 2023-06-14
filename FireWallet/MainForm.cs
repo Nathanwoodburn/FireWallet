@@ -960,7 +960,7 @@ namespace FireWallet
                 int inputCount = inputs.Count;
                 int outputCount = outputs.Count;
 
-                int costHNS = int.Parse(txs[toGet - i - 1]["amount"].ToString());
+                decimal costHNS = decimal.Parse(txs[toGet - i - 1]["amount"].ToString());
                 string cost = "";
                 if (costHNS < 0)
                 {
