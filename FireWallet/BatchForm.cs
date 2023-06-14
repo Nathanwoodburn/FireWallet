@@ -538,14 +538,8 @@ namespace FireWallet
                     notifyForm.Dispose();
                     return;
                 }
-                
-                StreamWriter sw = new StreamWriter(dir + "hsd-ledger/bin/names.txt");
+
                 string domainslist = string.Join(",", batches.Select(batch => "\\\"" + batch.domain + "\\\""));
-                sw.Write(domainslist);
-                sw.Dispose();
-                StreamWriter sw2 = new StreamWriter(dir + "hsd-ledger/bin/batch.json");
-                sw2.Write(response);
-                sw2.Dispose();
 
                 NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device", false);
                 notify.Show();
