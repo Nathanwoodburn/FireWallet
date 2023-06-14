@@ -239,13 +239,41 @@ namespace FireWallet
                         hsdProcess.StartInfo.RedirectStandardOutput = false;
                         hsdProcess.StartInfo.UseShellExecute = false;
                         hsdProcess.StartInfo.FileName = "node.exe";
-                        hsdProcess.StartInfo.Arguments = dir + "hsd/bin/hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
 
-                        string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
-                        if (Directory.Exists(bobPath))
+                        if (nodeSettings.ContainsKey("HSD-command"))
                         {
-                            hsdProcess.StartInfo.Arguments = hsdProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                            AddLog("Using custom HSD command");
+                            string command = nodeSettings["HSD-command"];
+                            command = command.Replace("{default-dir}", dir + "hsd\\bin\\hsd");
+
+                            string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                            if (Directory.Exists(bobPath))
+                            {
+                                command = command.Replace("{Bob}", bobPath);
+                            }
+                            else if (command.Contains("{Bob}"))
+                            {
+                                AddLog("Bob not found, using default HSD command");
+                                command = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
+                            }
+
+                            command = command.Replace("{key}", nodeSettings["Key"]);
+                            hsdProcess.StartInfo.Arguments = command;
                         }
+                        else
+                        {
+                            AddLog("Using default HSD command");
+                            hsdProcess.StartInfo.Arguments = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
+                            string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                            if (Directory.Exists(bobPath))
+                            {
+                                hsdProcess.StartInfo.Arguments = hsdProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                            }
+                        }
+
+                        
+
+                        
                         hsdProcess.Start();
                         // Wait for HSD to start
                         await Task.Delay(2000);
