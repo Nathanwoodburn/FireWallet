@@ -41,6 +41,10 @@ namespace FireWallet
             toolStripStatusLabelaccount = new ToolStripStatusLabel();
             toolStripStatusLabelLedger = new ToolStripStatusLabel();
             toolStripSplitButtonlogout = new ToolStripSplitButton();
+            toolStripDropDownButtonHelp = new ToolStripDropDownButton();
+            githubToolStripMenuItem = new ToolStripMenuItem();
+            websiteToolStripMenuItem = new ToolStripMenuItem();
+            supportDiscordServerToolStripMenuItem = new ToolStripMenuItem();
             timerNodeStatus = new System.Windows.Forms.Timer(components);
             panelaccount = new Panel();
             groupBoxaccount = new GroupBox();
@@ -139,7 +143,7 @@ namespace FireWallet
             // statusStripmain
             // 
             statusStripmain.Dock = DockStyle.Top;
-            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripStatusLabelLedger, toolStripSplitButtonlogout });
+            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripStatusLabelLedger, toolStripSplitButtonlogout, toolStripDropDownButtonHelp });
             statusStripmain.Location = new Point(0, 0);
             statusStripmain.Name = "statusStripmain";
             statusStripmain.Size = new Size(1152, 22);
@@ -189,6 +193,39 @@ namespace FireWallet
             toolStripSplitButtonlogout.Text = "Log out";
             toolStripSplitButtonlogout.Visible = false;
             toolStripSplitButtonlogout.ButtonClick += Logout;
+            // 
+            // toolStripDropDownButtonHelp
+            // 
+            toolStripDropDownButtonHelp.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            toolStripDropDownButtonHelp.DropDownItems.AddRange(new ToolStripItem[] { githubToolStripMenuItem, websiteToolStripMenuItem, supportDiscordServerToolStripMenuItem });
+            toolStripDropDownButtonHelp.Image = (Image)resources.GetObject("toolStripDropDownButtonHelp.Image");
+            toolStripDropDownButtonHelp.ImageTransparentColor = Color.Magenta;
+            toolStripDropDownButtonHelp.Margin = new Padding(20, 2, 0, 0);
+            toolStripDropDownButtonHelp.Name = "toolStripDropDownButtonHelp";
+            toolStripDropDownButtonHelp.Size = new Size(45, 20);
+            toolStripDropDownButtonHelp.Text = "Help";
+            toolStripDropDownButtonHelp.ToolTipText = "Help";
+            // 
+            // githubToolStripMenuItem
+            // 
+            githubToolStripMenuItem.Name = "githubToolStripMenuItem";
+            githubToolStripMenuItem.Size = new Size(194, 22);
+            githubToolStripMenuItem.Text = "Github";
+            githubToolStripMenuItem.Click += githubToolStripMenuItem_Click;
+            // 
+            // websiteToolStripMenuItem
+            // 
+            websiteToolStripMenuItem.Name = "websiteToolStripMenuItem";
+            websiteToolStripMenuItem.Size = new Size(194, 22);
+            websiteToolStripMenuItem.Text = "Website";
+            websiteToolStripMenuItem.Click += websiteToolStripMenuItem_Click;
+            // 
+            // supportDiscordServerToolStripMenuItem
+            // 
+            supportDiscordServerToolStripMenuItem.Name = "supportDiscordServerToolStripMenuItem";
+            supportDiscordServerToolStripMenuItem.Size = new Size(194, 22);
+            supportDiscordServerToolStripMenuItem.Text = "Support Discord Server";
+            supportDiscordServerToolStripMenuItem.Click += supportDiscordServerToolStripMenuItem_Click;
             // 
             // timerNodeStatus
             // 
@@ -1137,5 +1174,9 @@ namespace FireWallet
         private Button buttonRevealAll;
         private Button buttonExportDomains;
         private Button buttonRenewAll;
+        private ToolStripDropDownButton toolStripDropDownButtonHelp;
+        private ToolStripMenuItem githubToolStripMenuItem;
+        private ToolStripMenuItem websiteToolStripMenuItem;
+        private ToolStripMenuItem supportDiscordServerToolStripMenuItem;
     }
 }

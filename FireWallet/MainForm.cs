@@ -48,6 +48,14 @@ namespace FireWallet
             timerNodeStatus.Stop();
             LoadSettings();
             UpdateTheme();
+            // Theme drop down
+            foreach (ToolStripMenuItem c in toolStripDropDownButtonHelp.DropDownItems)
+            {
+                c.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+                c.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            }
+            toolStripDropDownButtonHelp.DropDown.BackColor = ColorTranslator.FromHtml(theme["background"]);
+
             if (await LoadNode() != true) this.Close();
 
 
@@ -903,7 +911,8 @@ namespace FireWallet
             if (watchOnly)
             {
                 APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + ", true]}");
-            } else
+            }
+            else
             {
                 APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + "]}");
             }
@@ -1982,6 +1991,37 @@ namespace FireWallet
                 if (domain == null) break;
                 AddBatch(domain, "RENEW");
             }
+        }
+
+        private void githubToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Open the GitHub page
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "https://github.com/Nathanwoodburn/FireWallet/",
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
+
+        private void websiteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "https://firewallet",
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
+
+        private void supportDiscordServerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "https://l.woodburn.au/discord",
+                UseShellExecute = true
+            };
+            Process.Start(psi);
         }
     }
 }
