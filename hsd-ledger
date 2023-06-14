@@ -136,20 +136,14 @@ async function sendRaw(wclient, nclient, config, ledger, args) { // Create a fun
   const network = Network.get(config.str('network')); // Get the network
   const id = config.str('wallet-id'); // Get the wallet id
   const acct = config.str('account-name'); // Get the account name
-  const batch = args[0]; // Get the batch file location
-  const nameslocation = args[1]; // Get the names file location
+  // Log the arguments to the console (for debugging)
 
+  const batch = JSON.parse(args[0]); // Get the batch
+  const names = JSON.parse(args[1]); // Get the names
   await wclient.execute('selectwallet', [id]); // Select the wallet
 
-
-  const fs = require('fs'); // Import fs (used to read files)
   try {
-    const data = fs.readFileSync(batch, 'utf8'); // Read the batch file
-    const json = JSON.parse(data); // Parse the batch file as JSON
-    const mtx = MTX.fromJSON(json.result); // Create a new MTX from the JSON
-
-    const namefile = fs.readFileSync(nameslocation, 'utf8'); // Read the names file
-    const names = namefile.split(','); // Split the names file into an array
+    const mtx = MTX.fromJSON(batch.result); // Create a new MTX from the JSON
     const hashes = {}; // Create an empty object to store the hashes
     for (const name of names) { // Loop through the names
       const hash = hashName(name); // Hash the name
