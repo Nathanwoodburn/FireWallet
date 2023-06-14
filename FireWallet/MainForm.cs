@@ -308,6 +308,18 @@ namespace FireWallet
         public void AddLog(string message)
         {
             if (message.Contains("Get Error: No connection could be made because the target machine actively refused it")) return;
+
+            // If file size is over 1MB, rename it to old.log.txt
+            if (File.Exists(dir + "log.txt"))
+            {
+                FileInfo fi = new FileInfo(dir + "log.txt");
+                if (fi.Length > 1000000)
+                {
+                    if (File.Exists(dir + "old.log.txt")) File.Delete(dir + "old.log.txt"); // Delete old log file as it is super old
+                    File.Move(dir + "log.txt", dir + "old.log.txt");
+                }
+            }
+
             StreamWriter sw = new StreamWriter(dir + "log.txt", true);
             sw.WriteLine(DateTime.Now.ToString() + ": " + message);
             sw.Dispose();
@@ -912,10 +924,7 @@ namespace FireWallet
             }
 
             JArray txs = JArray.Parse(TXGET["result"].ToString());
-            if (toGet > txs.Count)
-            {
-                toGet = txs.Count;
-            }
+            if (toGet > txs.Count) toGet = txs.Count; // In case there are less TXs than expected (usually happens when the get TX's fails)
             Control[] tmpControls = new Control[toGet];
             for (int i = 0; i < toGet; i++)
             {
