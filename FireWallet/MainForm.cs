@@ -602,11 +602,15 @@ namespace FireWallet
                 watchOnly = true;
                 toolStripStatusLabelLedger.Text = "Cold Wallet";
                 toolStripStatusLabelLedger.Visible = true;
+                buttonRevealAll.Visible = false;
+
             }
             else
             {
                 watchOnly = false;
                 toolStripStatusLabelLedger.Visible = false;
+                buttonRevealAll.Visible = true;
+
             }
 
 
@@ -884,7 +888,13 @@ namespace FireWallet
             int toSkip = TotalTX - toGet;
 
             // GET TXs
-            APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + ", true]}");
+            if (watchOnly)
+            {
+                APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + ", true]}");
+            } else
+            {
+                APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + "]}");
+            }
 
             if (APIresponse == "Error")
             {
@@ -902,7 +912,10 @@ namespace FireWallet
             }
 
             JArray txs = JArray.Parse(TXGET["result"].ToString());
-            if (toGet > txs.Count) toGet = txs.Count;
+            if (toGet > txs.Count)
+            {
+                toGet = txs.Count;
+            }
             Control[] tmpControls = new Control[toGet];
             for (int i = 0; i < toGet; i++)
             {
