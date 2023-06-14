@@ -1804,7 +1804,7 @@ namespace FireWallet
                 return;
             }
             JObject resp = JObject.Parse(response);
-            if (resp["error"] != null)
+            if (resp["error"].ToString() != "")
             {
                 AddLog("Error sending reveal");
                 AddLog(resp["error"].ToString());
