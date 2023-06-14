@@ -79,7 +79,7 @@ namespace FireWallet
 
                 panelInputs.Controls.Add(PanelInput);
             }
-
+            panelInputs.Visible = true;
             // For each output
             JArray outputs = (JArray)tx["outputs"];
             foreach (JObject output in outputs)
@@ -136,8 +136,6 @@ namespace FireWallet
 
                 panelOutputs.Controls.Add(PanelOutput);
             }
-
-            panelInputs.Visible = true;
             panelOutputs.Visible = true;
         }
 
