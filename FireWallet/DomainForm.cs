@@ -32,36 +32,7 @@ namespace FireWallet
             this.explorerTX = explorerTX;
             this.explorerName = explorerName;
             this.mainForm = mainForm;
-        }
-
-        #region Theming
-        private void UpdateTheme()
-        {
-            // Check if file exists
-            if (!Directory.Exists(dir))
-            {
-                CreateConfig(dir);
-            }
-            if (!File.Exists(dir + "theme.txt"))
-            {
-                CreateConfig(dir);
-            }
-
-            // Read file
-            StreamReader sr = new StreamReader(dir + "theme.txt");
-            theme = new Dictionary<string, string>();
-            while (!sr.EndOfStream)
-            {
-                string line = sr.ReadLine();
-                string[] split = line.Split(':');
-                theme.Add(split[0].Trim(), split[1].Trim());
-            }
-            sr.Dispose();
-
-            if (!theme.ContainsKey("background") || !theme.ContainsKey("background-alt") || !theme.ContainsKey("foreground") || !theme.ContainsKey("foreground-alt"))
-            {
-                return;
-            }
+            this.theme = mainForm.theme;
 
             // Apply theme
             this.BackColor = ColorTranslator.FromHtml(theme["background"]);
@@ -73,35 +44,12 @@ namespace FireWallet
             // Need to specify this for each groupbox to override the black text
             foreach (Control c in Controls)
             {
-                ThemeControl(c);
+                mainForm.ThemeControl(c);
             }
 
-
-
-
-            // Transparancy
-            applyTransparency(theme);
-
-
+            applyTransparency(mainForm.theme);
         }
-        private void ThemeControl(Control c)
-        {
-            if (c.GetType() == typeof(GroupBox) || c.GetType() == typeof(Panel))
-            {
-                c.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-                foreach (Control sub in c.Controls)
-                {
-                    ThemeControl(sub);
-                }
-            }
-            if (c.GetType() == typeof(TextBox) || c.GetType() == typeof(Button)
-                || c.GetType() == typeof(ComboBox) || c.GetType() == typeof(StatusStrip))
-            {
-                c.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
-                c.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
-            }
-        }
-
+        #region Theme
         private void applyTransparency(Dictionary<string, string> theme)
         {
             if (theme.ContainsKey("transparent-mode"))
@@ -148,26 +96,6 @@ namespace FireWallet
                 }
             }
         }
-
-        private void CreateConfig(string dir)
-        {
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-            StreamWriter sw = new StreamWriter(dir + "theme.txt");
-            sw.WriteLine("background: #000000");
-            sw.WriteLine("foreground: #8e05c2");
-            sw.WriteLine("background-alt: #3e065f");
-            sw.WriteLine("foreground-alt: #ffffff");
-            sw.WriteLine("transparent-mode: off");
-            sw.WriteLine("transparency-key: main");
-            sw.WriteLine("transparency-percent: 90");
-
-            sw.Dispose();
-
-        }
-
         // Required for mica effect
         internal enum AccentState
         {
@@ -209,7 +137,6 @@ namespace FireWallet
 
         private void DomainForm_Load(object sender, EventArgs e)
         {
-            UpdateTheme();
             own = false;
             StreamReader sr = new StreamReader(dir + "node.txt");
             nodeSettings = new Dictionary<string, string>();
@@ -329,6 +256,16 @@ namespace FireWallet
                 else
                 {
                     labelStatusMain.Text = "Error";
+                }
+
+
+                if (labelStatusReserved.Text == "True")
+                {
+                    buttonActionAlt.Hide();
+                    buttonActionMain.Hide();
+                    groupBoxAction.Text = "Reserved";
+
+
                 }
             }
             catch (Exception ex)
