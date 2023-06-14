@@ -12,7 +12,7 @@
     <PackageIcon>HSDBatcher.png</PackageIcon>
     <RepositoryUrl>https://github.com/Nathanwoodburn/FireWallet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>2.5</Version>
+    <Version>2.6</Version>
   </PropertyGroup>
 
   <ItemGroup>
