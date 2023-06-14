@@ -17,7 +17,8 @@ namespace FireWallet
     {
         MainForm mainForm;
         JObject tx;
-        public TXForm(MainForm mainForm, JObject tx)
+        string txid;
+        public TXForm(MainForm mainForm, string txid)
         {
             InitializeComponent();
             // Theme
@@ -29,16 +30,20 @@ namespace FireWallet
             }
 
             this.mainForm = mainForm;
-            this.tx = tx;
-
-            this.Text = "TX: " + tx["hash"].ToString();
+            this.txid = txid;
         }
 
         private async void TXForm_Load(object sender, EventArgs e)
         {
+            tx = JObject.Parse(await mainForm.APIGet("wallet/"+mainForm.account+"/tx/" + txid,true));
+
+            this.Text = "TX: " + tx["hash"].ToString();
             labelHash.Text = "Hash: " + tx["hash"].ToString();
             mainForm.AddLog("Viewing TX: " + tx["hash"].ToString());
             
+            // Disable scrolling on the panels until they are populated
+            panelInputs.Visible = false;
+            panelOutputs.Visible = false;
 
             // For each input
             JArray inputs = (JArray)tx["inputs"];
@@ -131,6 +136,9 @@ namespace FireWallet
 
                 panelOutputs.Controls.Add(PanelOutput);
             }
+
+            panelInputs.Visible = true;
+            panelOutputs.Visible = true;
         }
 
         private void Explorer_Click(object sender, EventArgs e)
