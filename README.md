@@ -60,7 +60,9 @@ You can change the number of transactions shown in the `portfolio-tx:` settings.
 <br><br>
 ## Sending HNS
 ![Send](assets/send_hns.png)
-This page lets you send HNS to Handshake addresses or domains using [HIP-02](https://github.com/handshake-org/HIPs/blob/master/HIP-0002.md).
+This page lets you send HNS to Handshake addresses or domains using [HIP-02](https://github.com/handshake-org/HIPs/blob/master/HIP-0002.md).  
+To use HIP-02 you need to have HSD resolver (or any HNS compatible DNS resolver) listening on port 5350 (default HSD port).  
+To enter a domain to use HIP-02 you need to prefix the domain with `@` (eg. `@nathan.woodburn`).
 
 ## Receiving HNS or Domains
 The receive page shows your current HNS address.  
