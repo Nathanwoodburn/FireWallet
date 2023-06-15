@@ -95,6 +95,7 @@ namespace FireWallet
             textBoxReceiveAddress = new TextBox();
             labelReceive1 = new Label();
             panelDomains = new Panel();
+            comboBoxDomainSort = new ComboBox();
             buttonExportDomains = new Button();
             groupBoxDomains = new GroupBox();
             panelDomainList = new Panel();
@@ -122,6 +123,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
+            labelDomainSort = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -783,6 +785,8 @@ namespace FireWallet
             // 
             // panelDomains
             // 
+            panelDomains.Controls.Add(labelDomainSort);
+            panelDomains.Controls.Add(comboBoxDomainSort);
             panelDomains.Controls.Add(buttonRenewAll);
             panelDomains.Controls.Add(buttonExportDomains);
             panelDomains.Controls.Add(groupBoxDomains);
@@ -793,6 +797,19 @@ namespace FireWallet
             panelDomains.Size = new Size(920, 536);
             panelDomains.TabIndex = 18;
             panelDomains.Visible = false;
+            // 
+            // comboBoxDomainSort
+            // 
+            comboBoxDomainSort.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxDomainSort.FlatStyle = FlatStyle.Flat;
+            comboBoxDomainSort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            comboBoxDomainSort.FormattingEnabled = true;
+            comboBoxDomainSort.Items.AddRange(new object[] { "Default", "Alphabetical", "Expiring", "Value" });
+            comboBoxDomainSort.Location = new Point(686, 12);
+            comboBoxDomainSort.Name = "comboBoxDomainSort";
+            comboBoxDomainSort.Size = new Size(121, 29);
+            comboBoxDomainSort.TabIndex = 11;
+            comboBoxDomainSort.DropDownClosed += comboBoxDomainSort_DropDownClosed;
             // 
             // buttonExportDomains
             // 
@@ -1064,17 +1081,27 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
+            // labelDomainSort
+            // 
+            labelDomainSort.AutoSize = true;
+            labelDomainSort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelDomainSort.Location = new Point(638, 15);
+            labelDomainSort.Name = "labelDomainSort";
+            labelDomainSort.Size = new Size(42, 21);
+            labelDomainSort.TabIndex = 12;
+            labelDomainSort.Text = "Sort:";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelDomains);
             Controls.Add(panelSend);
             Controls.Add(panelSettings);
             Controls.Add(panelaccount);
             Controls.Add(panelPortfolio);
             Controls.Add(panelRecieve);
-            Controls.Add(panelDomains);
             Controls.Add(panelNav);
             Controls.Add(statusStripmain);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -1205,5 +1232,7 @@ namespace FireWallet
         private ToolStripMenuItem supportDiscordServerToolStripMenuItem;
         private Label labelHIPArrow;
         private Label labelSendingHIPAddress;
+        private ComboBox comboBoxDomainSort;
+        private Label labelDomainSort;
     }
 }

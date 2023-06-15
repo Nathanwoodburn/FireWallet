@@ -1216,6 +1216,8 @@ namespace FireWallet
             groupBoxDomains.Width = panelDomains.Width - 20;
             groupBoxDomains.Left = 10;
             groupBoxDomains.Height = panelDomains.Height - groupBoxDomains.Top - 10;
+            comboBoxDomainSort.SelectedIndex = 0;
+
             UpdateDomains();
 
         }
@@ -1881,6 +1883,33 @@ namespace FireWallet
             int i = 0;
             int renewable = 0;
             panelDomainList.Controls.Clear();
+
+            // Sort the domains
+            switch (comboBoxDomainSort.Text)
+            {
+                case "Default":
+                    break;
+                case "Alphabetical":
+                    names = new JArray(names.OrderBy(obj => (string)obj["name"]));
+                    break;
+                case "Expiring":
+                    names = new JArray(names.OrderBy(obj =>
+                    {
+                        JToken daysUntilExpireToken = obj["stats"]?["daysUntilExpire"];
+                        return (int)(daysUntilExpireToken ?? int.MaxValue);
+                    }));
+                    break;
+                case "Value":
+                    // Sort by most valuable first
+                    names = new JArray(names.OrderByDescending(obj =>
+                    {
+                        JToken valueToken = obj?["value"];
+                        return (int)(valueToken ?? 0);
+                    }));
+                    break;
+            }
+
+
             foreach (JObject name in names)
             {
                 Domains[i] = name["name"].ToString();
@@ -2211,6 +2240,11 @@ namespace FireWallet
                 UseShellExecute = true
             };
             Process.Start(psi);
+        }
+
+        private void comboBoxDomainSort_DropDownClosed(object sender, EventArgs e)
+        {
+            UpdateDomains();
         }
     }
 }
