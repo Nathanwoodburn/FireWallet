@@ -2285,6 +2285,15 @@ namespace FireWallet
             NotifyForm notifyForm = new NotifyForm("Insert Yubikey\nThis will use your yubikey to encrypt your account password.");
             notifyForm.ShowDialog();
             notifyForm.Dispose();
+            var devices = YubiKeyDevice.FindAll();
+            if (devices.Count() != 1)
+            {
+                NotifyForm notifyForm2 = new NotifyForm("Please insert your yubikey and try again.");
+                notifyForm2.ShowDialog();
+                notifyForm2.Dispose();
+                return;
+            }
+
 
             NotifyForm yubiLoadingForm = new NotifyForm("Encrypting. . .", false);
             yubiLoadingForm.Show();
@@ -2295,7 +2304,7 @@ namespace FireWallet
             {
                 //Assumes there is exactly one yubikey connected and it has a RSA2048 certificate in slot 9d
                 //PIV PIN is assumed to be 123456
-                var devices = YubiKeyDevice.FindAll();
+                
                 var ykDevice = devices.First();
                 PivSession piv = new(ykDevice);
 
@@ -2350,9 +2359,6 @@ namespace FireWallet
         }
         private string YubiUnlock()
         {
-            NotifyForm notifyForm = new NotifyForm("Insert Yubikey to unlock");
-            notifyForm.ShowDialog();
-            notifyForm.Dispose();
             NotifyForm yubiLoadingForm = new NotifyForm("Decrypting. . .", false);
             yubiLoadingForm.Show();
             // Wait for the form to load
