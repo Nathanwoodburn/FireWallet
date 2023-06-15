@@ -638,17 +638,45 @@ namespace FireWallet
             openFileDialog.Title = "Open Batch";
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                StreamReader sr = new StreamReader(openFileDialog.FileName);
-                string line;
-                string[] domains = new string[0];
-                while ((line = sr.ReadLine()) != null)
+                try
                 {
-                    string[] split = line.Split(',');
-                    try
+                    StreamReader sr = new StreamReader(openFileDialog.FileName);
+                    string line;
+                    string[] domains = new string[0];
+                    while ((line = sr.ReadLine()) != null)
                     {
-                        if (split.Length > 2)
+                        string[] split = line.Split(',');
+                        try
                         {
-                            if (split[1] == "UPDATE")
+                            if (split.Length > 2)
+                            {
+                                if (split[1] == "UPDATE")
+                                {
+                                    // Select operation and import domains
+                                    string[] newDomains = new string[domains.Length + 1];
+                                    for (int i = 0; i < domains.Length; i++)
+                                    {
+                                        newDomains[i] = domains[i];
+                                    }
+                                    newDomains[domains.Length] = split[0];
+                                    domains = newDomains;
+                                    continue;
+                                }
+                            }
+
+                            if (split.Length == 2)
+                            {
+                                AddBatch(split[0], split[1]);
+                            }
+                            else if (split.Length == 3)
+                            {
+                                AddBatch(split[0], split[1], split[2]);
+                            }
+                            else if (split.Length == 4)
+                            {
+                                AddBatch(split[0], split[1], Convert.ToDecimal(split[2]), Convert.ToDecimal(split[3]));
+                            }
+                            else
                             {
                                 // Select operation and import domains
                                 string[] newDomains = new string[domains.Length + 1];
@@ -656,68 +684,49 @@ namespace FireWallet
                                 {
                                     newDomains[i] = domains[i];
                                 }
-                                newDomains[domains.Length] = split[0];
+                                newDomains[domains.Length] = line.Trim();
                                 domains = newDomains;
-                                continue;
                             }
                         }
-
-                        if (split.Length == 2)
+                        catch (Exception ex)
                         {
-                            AddBatch(split[0], split[1]);
-                        }
-                        else if (split.Length == 3)
-                        {
-                            AddBatch(split[0], split[1], split[2]);
-                        }
-                        else if (split.Length == 4)
-                        {
-                            AddBatch(split[0], split[1], Convert.ToDecimal(split[2]), Convert.ToDecimal(split[3]));
-                        }
-                        else
-                        {
-                            // Select operation and import domains
-                            string[] newDomains = new string[domains.Length + 1];
-                            for (int i = 0; i < domains.Length; i++)
-                            {
-                                newDomains[i] = domains[i];
-                            }
-                            newDomains[domains.Length] = line.Trim();
-                            domains = newDomains;
+                            AddLog("Error importing batch: " + ex.Message);
+                            NotifyForm notifyForm = new NotifyForm("Error importing batch");
+                            notifyForm.ShowDialog();
+                            notifyForm.Dispose();
                         }
                     }
-                    catch (Exception ex)
+                    if (domains.Length > 0)
                     {
-                        AddLog("Error importing batch: " + ex.Message);
-                        NotifyForm notifyForm = new NotifyForm("Error importing batch");
-                        notifyForm.ShowDialog();
-                        notifyForm.Dispose();
+                        BatchImportForm batchImportForm = new BatchImportForm(domains);
+                        batchImportForm.ShowDialog();
+                        if (batchImportForm.batches != null)
+                        {
+                            foreach (Batch b in batchImportForm.batches)
+                            {
+                                if (b.method == "BID")
+                                {
+                                    AddBatch(b.domain, b.method, b.bid, b.lockup);
+                                }
+                                else if (b.method == "TRANSFER")
+                                {
+                                    AddBatch(b.domain, b.method, b.toAddress);
+                                }
+                                else
+                                {
+                                    AddBatch(b.domain, b.method);
+                                }
+                            }
+                        }
                     }
-                }
-                if (domains.Length > 0)
+                    sr.Dispose();
+                } catch (Exception ex)
                 {
-                    BatchImportForm batchImportForm = new BatchImportForm(domains);
-                    batchImportForm.ShowDialog();
-                    if (batchImportForm.batches != null)
-                    {
-                        foreach (Batch b in batchImportForm.batches)
-                        {
-                            if (b.method == "BID")
-                            {
-                                AddBatch(b.domain, b.method, b.bid, b.lockup);
-                            }
-                            else if (b.method == "TRANSFER")
-                            {
-                                AddBatch(b.domain, b.method, b.toAddress);
-                            }
-                            else
-                            {
-                                AddBatch(b.domain, b.method);
-                            }
-                        }
-                    }
+                    AddLog("Error importing batch: " + ex.Message);
+                    NotifyForm notifyForm = new NotifyForm("Error importing batch\nMake sure the file is in not in use");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
                 }
-                sr.Dispose();
             }
         }
 
