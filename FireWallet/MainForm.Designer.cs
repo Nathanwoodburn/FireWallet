@@ -95,6 +95,7 @@ namespace FireWallet
             textBoxReceiveAddress = new TextBox();
             labelReceive1 = new Label();
             panelDomains = new Panel();
+            labelDomainSort = new Label();
             comboBoxDomainSort = new ComboBox();
             buttonExportDomains = new Button();
             groupBoxDomains = new GroupBox();
@@ -103,6 +104,7 @@ namespace FireWallet
             textBoxDomainSearch = new TextBox();
             panelSettings = new Panel();
             groupBoxSettingsWallet = new GroupBox();
+            buttonSettingsYubikey = new Button();
             buttonSettingsRescan = new Button();
             buttonSeed = new Button();
             groupBoxSettingsMisc = new GroupBox();
@@ -123,7 +125,6 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            labelDomainSort = new Label();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -241,7 +242,7 @@ namespace FireWallet
             // 
             panelaccount.BackColor = Color.Transparent;
             panelaccount.Controls.Add(groupBoxaccount);
-            panelaccount.Location = new Point(1082, 211);
+            panelaccount.Location = new Point(132, 30);
             panelaccount.Name = "panelaccount";
             panelaccount.Size = new Size(1074, 642);
             panelaccount.TabIndex = 1;
@@ -574,7 +575,7 @@ namespace FireWallet
             panelSend.Controls.Add(labelSendingTo);
             panelSend.Controls.Add(labelSendPrompt);
             panelSend.Controls.Add(labelHIPArrow);
-            panelSend.Location = new Point(138, 33);
+            panelSend.Location = new Point(880, 441);
             panelSend.Name = "panelSend";
             panelSend.Size = new Size(974, 521);
             panelSend.TabIndex = 2;
@@ -792,11 +793,21 @@ namespace FireWallet
             panelDomains.Controls.Add(groupBoxDomains);
             panelDomains.Controls.Add(labelDomainSearch);
             panelDomains.Controls.Add(textBoxDomainSearch);
-            panelDomains.Location = new Point(120, 48);
+            panelDomains.Location = new Point(861, 364);
             panelDomains.Name = "panelDomains";
             panelDomains.Size = new Size(920, 536);
             panelDomains.TabIndex = 18;
             panelDomains.Visible = false;
+            // 
+            // labelDomainSort
+            // 
+            labelDomainSort.AutoSize = true;
+            labelDomainSort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelDomainSort.Location = new Point(638, 15);
+            labelDomainSort.Name = "labelDomainSort";
+            labelDomainSort.Size = new Size(42, 21);
+            labelDomainSort.TabIndex = 12;
+            labelDomainSort.Text = "Sort:";
             // 
             // comboBoxDomainSort
             // 
@@ -871,7 +882,7 @@ namespace FireWallet
             panelSettings.Controls.Add(buttonSettingsSave);
             panelSettings.Controls.Add(groupBoxSettingsExplorer);
             panelSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            panelSettings.Location = new Point(1065, 51);
+            panelSettings.Location = new Point(848, 306);
             panelSettings.Name = "panelSettings";
             panelSettings.Size = new Size(930, 550);
             panelSettings.TabIndex = 19;
@@ -879,6 +890,7 @@ namespace FireWallet
             // 
             // groupBoxSettingsWallet
             // 
+            groupBoxSettingsWallet.Controls.Add(buttonSettingsYubikey);
             groupBoxSettingsWallet.Controls.Add(buttonSettingsRescan);
             groupBoxSettingsWallet.Controls.Add(buttonSeed);
             groupBoxSettingsWallet.Location = new Point(507, 16);
@@ -887,6 +899,17 @@ namespace FireWallet
             groupBoxSettingsWallet.TabIndex = 9;
             groupBoxSettingsWallet.TabStop = false;
             groupBoxSettingsWallet.Text = "Wallet Controls";
+            // 
+            // buttonSettingsYubikey
+            // 
+            buttonSettingsYubikey.FlatStyle = FlatStyle.Flat;
+            buttonSettingsYubikey.Location = new Point(6, 133);
+            buttonSettingsYubikey.Name = "buttonSettingsYubikey";
+            buttonSettingsYubikey.Size = new Size(98, 50);
+            buttonSettingsYubikey.TabIndex = 9;
+            buttonSettingsYubikey.Text = "YubiKey";
+            buttonSettingsYubikey.UseVisualStyleBackColor = true;
+            buttonSettingsYubikey.Click += buttonSettingsYubikey_Click;
             // 
             // buttonSettingsRescan
             // 
@@ -1081,25 +1104,15 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // labelDomainSort
-            // 
-            labelDomainSort.AutoSize = true;
-            labelDomainSort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDomainSort.Location = new Point(638, 15);
-            labelDomainSort.Name = "labelDomainSort";
-            labelDomainSort.Size = new Size(42, 21);
-            labelDomainSort.TabIndex = 12;
-            labelDomainSort.Text = "Sort:";
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelaccount);
+            Controls.Add(panelSettings);
             Controls.Add(panelDomains);
             Controls.Add(panelSend);
-            Controls.Add(panelSettings);
-            Controls.Add(panelaccount);
             Controls.Add(panelPortfolio);
             Controls.Add(panelRecieve);
             Controls.Add(panelNav);
@@ -1234,5 +1247,6 @@ namespace FireWallet
         private Label labelSendingHIPAddress;
         private ComboBox comboBoxDomainSort;
         private Label labelDomainSort;
+        private Button buttonSettingsYubikey;
     }
 }

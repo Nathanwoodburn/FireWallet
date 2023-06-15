@@ -7,13 +7,14 @@ using QRCoder;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Text;
-using System.Security.Policy;
-using System.Windows.Forms;
 using System.Net;
 using DnsClient;
 using DnsClient.Protocol;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+// Used to use Yubikey to login
+using Yubico.YubiKey;
+using Yubico.YubiKey.Piv;
 
 namespace FireWallet
 {
@@ -700,7 +701,27 @@ namespace FireWallet
                 }
 
                 account = comboBoxaccount.Text;
-                password = textBoxaccountpassword.Text;
+
+                if (textBoxaccountpassword.Text == "")
+                {
+                    if (File.Exists(dir + account + ".yubikey"))
+                    {
+                        // Check if yubikey is plugged in
+                        var devices = YubiKeyDevice.FindAll();
+                        if (devices.Count() > 0)
+                        {
+                            // Get key from yubikey
+                            password = YubiUnlock();
+                        }
+
+                    }
+
+                } else password = textBoxaccountpassword.Text;
+
+
+
+                
+                
                 bool loggedin = await Login();
                 if (loggedin)
                 {
@@ -2246,5 +2267,155 @@ namespace FireWallet
         {
             UpdateDomains();
         }
+        #region yubikey
+        static bool PinSubmitter(KeyEntryData pin)
+        {
+            string s = "123456";
+            var s_b = Encoding.UTF8.GetBytes(s);
+            pin.SubmitValue(s_b);
+            return true;
+        }
+        private void buttonSettingsYubikey_Click(object sender, EventArgs e)
+        {
+            if (password.Length < 0)
+            {
+                return;
+            }
+
+            NotifyForm notifyForm = new NotifyForm("Insert Yubikey\nThis will use your yubikey to encrypt your account password.");
+            notifyForm.ShowDialog();
+            notifyForm.Dispose();
+
+            NotifyForm yubiLoadingForm = new NotifyForm("Encrypting. . .", false);
+            yubiLoadingForm.Show();
+            // Wait for the form to load
+            Application.DoEvents();
+
+            try
+            {
+                //Assumes there is exactly one yubikey connected and it has a RSA2048 certificate in slot 9d
+                //PIV PIN is assumed to be 123456
+                var devices = YubiKeyDevice.FindAll();
+                var ykDevice = devices.First();
+                PivSession piv = new(ykDevice);
+
+                piv.KeyCollector += PinSubmitter;
+                piv.VerifyPin();
+
+                var slot = PivSlot.KeyManagement;
+
+                X509Certificate2 cert = piv.GetCertificate(slot);
+                if (cert.SignatureAlgorithm.FriendlyName != "sha256RSA")
+                    throw new CryptographicException("Certificate must be RSA with SHA256");
+
+                var publicKey = cert.GetRSAPublicKey() ?? throw new CryptographicException("Couldn't get public key from certificate.");
+
+                Aes aesFirst = Aes.Create();
+
+                var encryptedKey = publicKey.Encrypt(aesFirst.Key, RSAEncryptionPadding.Pkcs1);
+                var decryptedKey = piv.Decrypt(slot, encryptedKey);
+
+                //MessageBox.Show($"aesFirst.Key.Length: {aesFirst.Key.Length}");
+                //MessageBox.Show($"encryptedKey.Length: {encryptedKey.Length}");
+                //MessageBox.Show($"decryptedKey.Length: {decryptedKey.Length}");
+
+                // split the message into blocks of 128 bytes
+
+                string message = password;
+                int blockSize = 128;
+                int blockCount = (int)Math.Ceiling((double)message.Length / blockSize);
+
+                string[] strings = new string[blockCount];
+                FileStream sw = new FileStream(dir + account + ".yubikey", FileMode.Create, FileAccess.Write);
+
+                for (int i = 0; i < blockCount; i++)
+                {
+                    int size = Math.Min(blockSize, message.Length - i * blockSize);
+                    strings[i] = message.Substring(i * blockSize, size);
+
+                    byte[] bytes = Encoding.ASCII.GetBytes(strings[i]);
+                    var encryptedBytes = publicKey.Encrypt(bytes, RSAEncryptionPadding.Pkcs1);
+                    sw.Write(encryptedBytes, 0, encryptedBytes.Length);
+                }
+                sw.Close();
+                sw.Dispose();
+
+            }
+            catch (Exception ex)
+            {
+                AddLog(ex.Message);
+            }
+
+            yubiLoadingForm.CloseNotification();
+        }
+        private string YubiUnlock()
+        {
+            NotifyForm notifyForm = new NotifyForm("Insert Yubikey to unlock");
+            notifyForm.ShowDialog();
+            notifyForm.Dispose();
+            NotifyForm yubiLoadingForm = new NotifyForm("Decrypting. . .", false);
+            yubiLoadingForm.Show();
+            // Wait for the form to load
+            Application.DoEvents();
+            try
+            {
+
+                //Assumes there is exactly one yubikey connected and it has a RSA2048 certificate in slot 9d
+                //PIV PIN is assumed to be 123456
+                var devices = YubiKeyDevice.FindAll();
+                var ykDevice = devices.First();
+                PivSession piv = new(ykDevice);
+
+                piv.KeyCollector += PinSubmitter;
+                piv.VerifyPin();
+
+                var slot = PivSlot.KeyManagement;
+
+                X509Certificate2 cert = piv.GetCertificate(slot);
+                if (cert.SignatureAlgorithm.FriendlyName != "sha256RSA")
+                    throw new CryptographicException("Certificate must be RSA with SHA256");
+
+                var publicKey = cert.GetRSAPublicKey() ?? throw new CryptographicException("Couldn't get public key from certificate.");
+
+                Aes aesFirst = Aes.Create();
+
+                var encryptedKey = publicKey.Encrypt(aesFirst.Key, RSAEncryptionPadding.Pkcs1);
+                var decryptedKey = piv.Decrypt(slot, encryptedKey);
+
+                byte[] input = File.ReadAllBytes(dir + account + ".yubikey");
+
+                // decrypt the input
+
+                int blockSize = 256;
+                int blockCount = (int)Math.Ceiling((double)input.Length / blockSize);
+
+                byte[][] blocks = new byte[blockCount][];
+                byte[] decripted = new byte[blockCount * blockSize];
+                string output = "";
+                for (int i = 0; i < blockCount; i++)
+                {
+                    int size = Math.Min(blockSize, input.Length - i * blockSize);
+                    blocks[i] = new byte[size];
+                    Array.Copy(input, i * blockSize, blocks[i], 0, size);
+                    var paddedDecryptedBytes = piv.Decrypt(slot, blocks[i]);
+                    byte[] decryptedBytes;
+                    bool couldParse = Yubico.YubiKey.Cryptography.RsaFormat.TryParsePkcs1Decrypt(paddedDecryptedBytes, out decryptedBytes);
+                    Array.Copy(decryptedBytes, 0, decripted, i * blockSize, decryptedBytes.Length);
+
+                    output += Encoding.ASCII.GetString(decryptedBytes);
+                }
+                yubiLoadingForm.CloseNotification();
+                return output;
+            }
+            catch (Exception ex)
+            {
+                AddLog(ex.Message);
+                yubiLoadingForm.CloseNotification();
+                return "";
+            }
+
+        }
+
+        #endregion
     }
 }

@@ -30,6 +30,7 @@
     <PackageReference Include="DnsClient" Version="1.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="QRCoder" Version="1.4.3" />
+    <PackageReference Include="Yubico.YubiKey" Version="1.7.0" />
   </ItemGroup>
 
   <ItemGroup>
