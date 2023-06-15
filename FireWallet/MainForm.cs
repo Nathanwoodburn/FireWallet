@@ -1262,7 +1262,7 @@ namespace FireWallet
         #region Send
 
         // Store TLSA hash
-        private string TLSA = "";
+        public string TLSA { get; set; }
         private async void textBoxSendingTo_Leave(object sender, EventArgs e)
         {
             labelSendingError.Hide();
@@ -1462,6 +1462,10 @@ namespace FireWallet
             try
             {
                 string address = textBoxSendingTo.Text;
+                if (labelHIPArrow.Visible)
+                {
+                    address = labelSendingHIPAddress.Text;
+                }
                 bool valid = await ValidAddress(address);
                 if (!valid)
                 {
