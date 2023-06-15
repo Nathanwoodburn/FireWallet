@@ -191,9 +191,14 @@ namespace FireWallet
                     AddLog("Starting HSD");
                     toolStripStatusLabelstatus.Text = "Status: HSD Starting";
 
-                    if (!Directory.Exists(dir + "hsd"))
+                    string hsdPath = dir + "hsd\\bin\\hsd.exe";
+                    if (nodeSettings.ContainsKey("HSD-command"))
                     {
-                        NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
+                        if (nodeSettings["HSD-command"].Contains("{default-dir}"))
+                        {
+                            if (!Directory.Exists(dir + "hsd"))
+                            {
+                                NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
                         Notifyinstall.Show();
                         // Wait for the notification to show
                         await Task.Delay(1000);
@@ -208,9 +213,13 @@ namespace FireWallet
                     if (!Directory.Exists(dir + "hsd\\node_modules"))
                     {
                         AddLog("HSD install failed");
-                        this.Close();
-                        return false;
+                                this.Close();
+                                return false;
+                            }
+                        }
                     }
+
+                    
 
                     hsdProcess = new Process();
 
