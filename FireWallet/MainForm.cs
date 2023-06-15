@@ -10,6 +10,10 @@ using System.Text;
 using System.Security.Policy;
 using System.Windows.Forms;
 using System.Net;
+using DnsClient;
+using DnsClient.Protocol;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace FireWallet
 {
@@ -199,27 +203,27 @@ namespace FireWallet
                             if (!Directory.Exists(dir + "hsd"))
                             {
                                 NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
-                        Notifyinstall.Show();
-                        // Wait for the notification to show
-                        await Task.Delay(1000);
+                                Notifyinstall.Show();
+                                // Wait for the notification to show
+                                await Task.Delay(1000);
 
-                        string repositoryUrl = "https://github.com/handshake-org/hsd.git";
-                        string destinationPath = dir + "hsd";
-                        CloneRepository(repositoryUrl, destinationPath);
+                                string repositoryUrl = "https://github.com/handshake-org/hsd.git";
+                                string destinationPath = dir + "hsd";
+                                CloneRepository(repositoryUrl, destinationPath);
 
-                        Notifyinstall.CloseNotification();
-                        Notifyinstall.Dispose();
-                    }
-                    if (!Directory.Exists(dir + "hsd\\node_modules"))
-                    {
-                        AddLog("HSD install failed");
+                                Notifyinstall.CloseNotification();
+                                Notifyinstall.Dispose();
+                            }
+                            if (!Directory.Exists(dir + "hsd\\node_modules"))
+                            {
+                                AddLog("HSD install failed");
                                 this.Close();
                                 return false;
                             }
                         }
                     }
 
-                    
+
 
                     hsdProcess = new Process();
 
@@ -280,9 +284,9 @@ namespace FireWallet
                             }
                         }
 
-                        
 
-                        
+
+
                         hsdProcess.Start();
                         // Wait for HSD to start
                         await Task.Delay(2000);
@@ -1084,17 +1088,17 @@ namespace FireWallet
         {
             try
             {
-                string response = await APIGet("fee", false);
+                string response = await APIPost("", false, "{\"method\": \"estimatefee\",\"params\": [ 3 ]}");
                 JObject resp = JObject.Parse(response);
-                decimal fee = Convert.ToDecimal(resp["rate"].ToString());
-                fee = fee / 1000000;
-                if (fee < 0.0001m) fee = 1;
+                string result = resp["result"].ToString();
+                decimal fee = decimal.Parse(result);
+                if (fee < 0.001m) fee = 1;
 
                 return fee.ToString();
-                //return resp["rate"].ToString();
             }
             catch
             {
+                AddLog("GetFee Error");
                 return "1";
             }
         }
@@ -1160,6 +1164,7 @@ namespace FireWallet
             labelSendingMax.Text = "Max: " + balance.ToString() + " HNS";
             textBoxSendingTo.Focus();
             string fee = await GetFee();
+
             labelSendingFee.Text = "Est. Fee: " + fee + " HNS";
             labelSendingError.Hide();
 
@@ -1255,14 +1260,96 @@ namespace FireWallet
         }
         #endregion
         #region Send
+
+        // Store TLSA hash
+        private string TLSA = "";
         private async void textBoxSendingTo_Leave(object sender, EventArgs e)
         {
+            labelSendingError.Hide();
+            labelHIPArrow.Hide();
+            labelSendingHIPAddress.Hide();
             if (textBoxSendingTo.Text == "") return;
             if (textBoxSendingTo.Text.Substring(0, 1) == "@")
             {
-                labelSendingError.Show();
-                labelSendingError.Text = "HIP-02 Not supported yet";
-                return;
+                string domain = textBoxSendingTo.Text.Substring(1);
+
+                try
+                {
+                    IPAddress iPAddress = null;
+                    TLSA = "";
+
+
+                    // Create an instance of LookupClient using the custom options
+                    NameServer nameServer = new NameServer(IPAddress.Parse("127.0.0.1"), 5350);
+                    var options = new LookupClientOptions(nameServer);
+                    options.EnableAuditTrail = true;
+                    options.UseTcpOnly = true;
+                    options.Recursion = true;
+                    options.UseCache = false;
+                    options.RequestDnsSecRecords = true;
+                    options.Timeout = TimeSpan.FromSeconds(5);
+
+
+                    var client = new LookupClient(options);
+
+
+                    // Perform the DNS lookup for the specified domain using DNSSec
+
+                    var result = client.Query(domain, QueryType.A);
+
+
+
+
+
+                    // Display the DNS lookup results
+                    foreach (var record in result.Answers.OfType<ARecord>())
+                    {
+                        iPAddress = record.Address;
+                    }
+
+                    if (iPAddress == null)
+                    {
+                        labelSendingError.Show();
+                        labelSendingError.Text = "HIP-02 lookup failed";
+                        return;
+                    }
+
+                    // Get TLSA record
+                    var resultTLSA = client.Query("_443._tcp." + domain, QueryType.TLSA);
+                    foreach (var record in resultTLSA.Answers.OfType<TlsaRecord>())
+                    {
+                        TLSA = record.CertificateAssociationDataAsString;
+                    }
+
+
+
+                    string url = "https://" + iPAddress.ToString() + "/.well-known/wallets/HNS";
+                    var handler = new HttpClientHandler();
+
+                    handler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
+
+                    // Create an instance of HttpClient with the custom handler
+                    using (var httpclient = new HttpClient(handler))
+                    {
+                        httpclient.DefaultRequestHeaders.Add("Host", domain);
+                        // Send a GET request to the specified URL
+                        HttpResponseMessage response = httpclient.GetAsync(url).Result;
+
+                        // Response
+                        string address = response.Content.ReadAsStringAsync().Result;
+
+                        labelSendingHIPAddress.Text = address;
+                        labelSendingHIPAddress.Show();
+                        labelHIPArrow.Show();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    AddLog(ex.Message);
+                    labelSendingError.Show();
+                    labelSendingError.Text = "HIP-02 lookup failed";
+                }
             }
             else
             {
@@ -1287,6 +1374,67 @@ namespace FireWallet
                 }
             }
         }
+        public bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // Customize the certificate validation logic here if needed
+
+            // Return true to accept the certificate or false to reject it
+            X509Certificate2 cert2 = new X509Certificate2(certificate);
+
+
+            var rsaPublicKey = (RSA)cert2.PublicKey.Key;
+
+            // Calculate the SHA-256 hash of the public key
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] publicKeyBytes = rsaPublicKey.ExportSubjectPublicKeyInfo();
+                byte[] publicKeyHash = sha256.ComputeHash(publicKeyBytes);
+
+                // Convert the hash value to hexadecimal format
+                string hexFingerprint = ByteArrayToHexString(publicKeyHash);
+
+                if (hexFingerprint == TLSA)
+                {
+                    return true;
+                }
+                else
+                {
+                    AddLog("TLSA mismatch");
+                    return false;
+                }
+            }
+        }
+        static string ByteArrayToHexString(byte[] bytes)
+        {
+            StringBuilder hex = new StringBuilder(bytes.Length * 2);
+            foreach (byte b in bytes)
+            {
+                hex.AppendFormat("{0:X2}", b);
+            }
+            return hex.ToString();
+        }
+
+        private static string GetHash(HashAlgorithm hashAlgorithm, byte[] input)
+        {
+
+            // Convert the input string to a byte array and compute the hash.
+            byte[] data = hashAlgorithm.ComputeHash(input);
+
+            // Create a new Stringbuilder to collect the bytes
+            // and create a string.
+            var sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data
+            // and format each one as a hexadecimal string.
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+            // Return the hexadecimal string.
+            return sBuilder.ToString();
+        }
+
         private void textBoxSendingAmount_Leave(object sender, EventArgs e)
         {
             decimal amount = 0;

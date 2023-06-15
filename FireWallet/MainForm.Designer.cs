@@ -75,6 +75,7 @@ namespace FireWallet
             labelBalance = new Label();
             buttonRenewAll = new Button();
             panelSend = new Panel();
+            labelSendingHIPAddress = new Label();
             checkBoxSendSubFee = new CheckBox();
             buttonSendMax = new Button();
             buttonSendHNS = new Button();
@@ -86,6 +87,7 @@ namespace FireWallet
             labelSendingAmount = new Label();
             labelSendingTo = new Label();
             labelSendPrompt = new Label();
+            labelHIPArrow = new Label();
             panelRecieve = new Panel();
             buttonAddressVerify = new Button();
             pictureBoxReceiveQR = new PictureBox();
@@ -557,6 +559,7 @@ namespace FireWallet
             // 
             // panelSend
             // 
+            panelSend.Controls.Add(labelSendingHIPAddress);
             panelSend.Controls.Add(checkBoxSendSubFee);
             panelSend.Controls.Add(buttonSendMax);
             panelSend.Controls.Add(buttonSendHNS);
@@ -568,11 +571,22 @@ namespace FireWallet
             panelSend.Controls.Add(labelSendingAmount);
             panelSend.Controls.Add(labelSendingTo);
             panelSend.Controls.Add(labelSendPrompt);
-            panelSend.Location = new Point(1113, 42);
+            panelSend.Controls.Add(labelHIPArrow);
+            panelSend.Location = new Point(138, 33);
             panelSend.Name = "panelSend";
             panelSend.Size = new Size(974, 521);
             panelSend.TabIndex = 2;
             panelSend.Visible = false;
+            // 
+            // labelSendingHIPAddress
+            // 
+            labelSendingHIPAddress.AutoSize = true;
+            labelSendingHIPAddress.Location = new Point(375, 130);
+            labelSendingHIPAddress.Name = "labelSendingHIPAddress";
+            labelSendingHIPAddress.Size = new Size(64, 15);
+            labelSendingHIPAddress.TabIndex = 17;
+            labelSendingHIPAddress.Text = "To Address";
+            labelSendingHIPAddress.Visible = false;
             // 
             // checkBoxSendSubFee
             // 
@@ -616,11 +630,11 @@ namespace FireWallet
             // 
             labelSendingError.AutoSize = true;
             labelSendingError.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelSendingError.Location = new Point(615, 131);
+            labelSendingError.Location = new Point(679, 130);
             labelSendingError.Name = "labelSendingError";
-            labelSendingError.Size = new Size(52, 21);
+            labelSendingError.Size = new Size(78, 21);
             labelSendingError.TabIndex = 13;
-            labelSendingError.Text = "label1";
+            labelSendingError.Text = "labelError";
             labelSendingError.Visible = false;
             // 
             // labelSendingFee
@@ -690,6 +704,17 @@ namespace FireWallet
             labelSendPrompt.Size = new Size(101, 28);
             labelSendPrompt.TabIndex = 0;
             labelSendPrompt.Text = "Send HNS";
+            // 
+            // labelHIPArrow
+            // 
+            labelHIPArrow.AutoSize = true;
+            labelHIPArrow.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point);
+            labelHIPArrow.Location = new Point(346, 119);
+            labelHIPArrow.Name = "labelHIPArrow";
+            labelHIPArrow.Size = new Size(32, 32);
+            labelHIPArrow.TabIndex = 18;
+            labelHIPArrow.Text = "⮡ ";
+            labelHIPArrow.Visible = false;
             // 
             // panelRecieve
             // 
@@ -1044,12 +1069,12 @@ namespace FireWallet
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelSend);
             Controls.Add(panelSettings);
             Controls.Add(panelaccount);
             Controls.Add(panelPortfolio);
             Controls.Add(panelRecieve);
             Controls.Add(panelDomains);
-            Controls.Add(panelSend);
             Controls.Add(panelNav);
             Controls.Add(statusStripmain);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -1178,5 +1203,7 @@ namespace FireWallet
         private ToolStripMenuItem githubToolStripMenuItem;
         private ToolStripMenuItem websiteToolStripMenuItem;
         private ToolStripMenuItem supportDiscordServerToolStripMenuItem;
+        private Label labelHIPArrow;
+        private Label labelSendingHIPAddress;
     }
 }
