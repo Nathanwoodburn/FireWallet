@@ -1416,27 +1416,6 @@ namespace FireWallet
             return hex.ToString();
         }
 
-        private static string GetHash(HashAlgorithm hashAlgorithm, byte[] input)
-        {
-
-            // Convert the input string to a byte array and compute the hash.
-            byte[] data = hashAlgorithm.ComputeHash(input);
-
-            // Create a new Stringbuilder to collect the bytes
-            // and create a string.
-            var sBuilder = new StringBuilder();
-
-            // Loop through each byte of the hashed data
-            // and format each one as a hexadecimal string.
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
-
-            // Return the hexadecimal string.
-            return sBuilder.ToString();
-        }
-
         private void textBoxSendingAmount_Leave(object sender, EventArgs e)
         {
             decimal amount = 0;
@@ -2031,6 +2010,43 @@ namespace FireWallet
             domainSearch = Regex.Replace(textBoxDomainSearch.Text, "[^a-zA-Z0-9-_]", "");
             textBoxDomainSearch.Text = domainSearch;
         }
+        private void export_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "CSV file (*.csv)|*.csv";
+            saveFileDialog.Title = "Export";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
+                foreach (string domain in DomainsRenewable)
+                {
+                    if (domain == null) break;
+                    sw.WriteLine(domain);
+                }
+                sw.Dispose();
+            }
+        }
+
+        private void buttonRenewAll_Click(object sender, EventArgs e)
+        {
+            if (DomainsRenewable == null)
+            {
+                NotifyForm notifyForm = new NotifyForm("No renewable domains found");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            foreach (string domain in DomainsRenewable)
+            {
+                if (domain == null) break;
+                AddBatch(domain, "RENEW");
+            }
+        }
+        private void comboBoxDomainSort_DropDownClosed(object sender, EventArgs e)
+        {
+            UpdateDomains();
+        }
+
 
         #endregion
         #region Batching
@@ -2178,39 +2194,7 @@ namespace FireWallet
         }
         #endregion
 
-        private void export_Click(object sender, EventArgs e)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "CSV file (*.csv)|*.csv";
-            saveFileDialog.Title = "Export";
-            if (saveFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
-                foreach (string domain in DomainsRenewable)
-                {
-                    if (domain == null) break;
-                    sw.WriteLine(domain);
-                }
-                sw.Dispose();
-            }
-        }
-
-        private void buttonRenewAll_Click(object sender, EventArgs e)
-        {
-            if (DomainsRenewable == null)
-            {
-                NotifyForm notifyForm = new NotifyForm("No renewable domains found");
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                return;
-            }
-            foreach (string domain in DomainsRenewable)
-            {
-                if (domain == null) break;
-                AddBatch(domain, "RENEW");
-            }
-        }
-
+        #region Help Menu
         private void githubToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Open the GitHub page
@@ -2241,10 +2225,6 @@ namespace FireWallet
             };
             Process.Start(psi);
         }
-
-        private void comboBoxDomainSort_DropDownClosed(object sender, EventArgs e)
-        {
-            UpdateDomains();
-        }
+        #endregion
     }
 }
