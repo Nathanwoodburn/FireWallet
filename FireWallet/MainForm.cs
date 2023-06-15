@@ -224,25 +224,25 @@ namespace FireWallet
                     } else
                     {
                         if (!Directory.Exists(dir + "hsd"))
-                        {
-                            NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
-                            Notifyinstall.Show();
-                            // Wait for the notification to show
-                            await Task.Delay(1000);
+                            {
+                                NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
+                                Notifyinstall.Show();
+                                // Wait for the notification to show
+                                await Task.Delay(1000);
 
-                            string repositoryUrl = "https://github.com/handshake-org/hsd.git";
-                            string destinationPath = dir + "hsd";
-                            CloneRepository(repositoryUrl, destinationPath);
+                                string repositoryUrl = "https://github.com/handshake-org/hsd.git";
+                                string destinationPath = dir + "hsd";
+                                CloneRepository(repositoryUrl, destinationPath);
 
-                            Notifyinstall.CloseNotification();
-                            Notifyinstall.Dispose();
-                        }
-                        if (!Directory.Exists(dir + "hsd\\node_modules"))
-                        {
-                            AddLog("HSD install failed");
-                            this.Close();
-                            return false;
-                        }
+                                Notifyinstall.CloseNotification();
+                                Notifyinstall.Dispose();
+                            }
+                            if (!Directory.Exists(dir + "hsd\\node_modules"))
+                            {
+                                AddLog("HSD install failed");
+                                this.Close();
+                                return false;
+                            }
                     }
 
 
