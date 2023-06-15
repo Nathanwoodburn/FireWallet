@@ -8,6 +8,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DnsClient.Protocol;
+using DnsClient;
 using Newtonsoft.Json.Linq;
 
 namespace FireWallet
@@ -46,16 +48,19 @@ namespace FireWallet
             this.Close();
         }
 
+        string address = "";
         private async void buttonTransfer_Click(object sender, EventArgs e)
         {
-            if (!await MainForm.ValidAddress(textBoxAddress.Text))
+            updateAddress();
+
+            if (!await MainForm.ValidAddress(address))
             {
                 labelError.Show();
                 return;
             }
 
             string content = "{\"method\": \"sendtransfer\",\"params\": [ \"" + Domain + "\", \"" +
-    textBoxAddress.Text + "\"]}";
+    address + "\"]}";
             string output = await MainForm.APIPost("", true, content);
             JObject APIresp = JObject.Parse(output);
             if (APIresp["error"].ToString() != "")
@@ -78,14 +83,113 @@ namespace FireWallet
 
         private async void buttonBatch_Click(object sender, EventArgs e)
         {
-            if (!await MainForm.ValidAddress(textBoxAddress.Text))
+            updateAddress();
+
+            if (!await MainForm.ValidAddress(address))
             {
                 labelError.Show();
                 return;
             }
 
-            MainForm.AddBatch(Domain, "TRANSFER", textBoxAddress.Text);
+            MainForm.AddBatch(Domain, "TRANSFER", address);
             this.Close();
+        }
+
+        private void updateAddress()
+        {
+            labelError.Hide();
+
+            if (textBoxAddress.Text.Length < 1)
+            {
+                address = "";
+                return;
+            }
+            if (textBoxAddress.Text.Substring(0, 1) == "@")
+            {
+                string domain = textBoxAddress.Text.Substring(1);
+
+                try
+                {
+                    IPAddress iPAddress = null;
+
+
+                    // Create an instance of LookupClient using the custom options
+                    NameServer nameServer = new NameServer(IPAddress.Parse("127.0.0.1"), 5350);
+                    var options = new LookupClientOptions(nameServer);
+                    options.EnableAuditTrail = true;
+                    options.UseTcpOnly = true;
+                    options.Recursion = true;
+                    options.UseCache = false;
+                    options.RequestDnsSecRecords = true;
+                    options.Timeout = TimeSpan.FromSeconds(5);
+
+
+                    var client = new LookupClient(options);
+
+
+                    // Perform the DNS lookup for the specified domain using DNSSec
+
+                    var result = client.Query(domain, QueryType.A);
+
+
+
+
+
+                    // Display the DNS lookup results
+                    foreach (var record in result.Answers.OfType<ARecord>())
+                    {
+                        iPAddress = record.Address;
+                    }
+
+                    if (iPAddress == null)
+                    {
+                        labelError.Show();
+                        labelError.Text = "HIP-02 lookup failed";
+                        return;
+                    }
+
+                    // Get TLSA record
+                    var resultTLSA = client.Query("_443._tcp." + domain, QueryType.TLSA);
+                    foreach (var record in resultTLSA.Answers.OfType<TlsaRecord>())
+                    {
+                        MainForm.TLSA = record.CertificateAssociationDataAsString;
+                    }
+
+
+
+                    string url = "https://" + iPAddress.ToString() + "/.well-known/wallets/HNS";
+                    var handler = new HttpClientHandler();
+
+                    handler.ServerCertificateCustomValidationCallback = MainForm.ValidateServerCertificate;
+
+                    // Create an instance of HttpClient with the custom handler
+                    using (var httpclient = new HttpClient(handler))
+                    {
+                        httpclient.DefaultRequestHeaders.Add("Host", domain);
+                        // Send a GET request to the specified URL
+                        HttpResponseMessage response = httpclient.GetAsync(url).Result;
+
+                        // Response
+                        string address = response.Content.ReadAsStringAsync().Result;
+
+                        labelSendingHIPAddress.Text = address;
+                        this.address = address;
+                        labelSendingHIPAddress.Show();
+                        labelHIPArrow.Show();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    MainForm.AddLog(ex.Message);
+                    labelError.Show();
+                    labelError.Text = "HIP-02 lookup failed";
+                }
+            } else
+            {
+                address = textBoxAddress.Text;
+            }
+
         }
     }
 }

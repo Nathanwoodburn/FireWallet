@@ -36,6 +36,8 @@
             label2 = new Label();
             textBoxAddress = new TextBox();
             labelError = new Label();
+            labelSendingHIPAddress = new Label();
+            labelHIPArrow = new Label();
             SuspendLayout();
             // 
             // buttonTransfer
@@ -105,18 +107,41 @@
             // labelError
             // 
             labelError.AutoSize = true;
-            labelError.Location = new Point(46, 139);
+            labelError.Location = new Point(492, 139);
             labelError.Name = "labelError";
             labelError.Size = new Size(98, 15);
             labelError.TabIndex = 6;
             labelError.Text = "Address not valid";
             labelError.Visible = false;
             // 
+            // labelSendingHIPAddress
+            // 
+            labelSendingHIPAddress.AutoSize = true;
+            labelSendingHIPAddress.Location = new Point(75, 150);
+            labelSendingHIPAddress.Name = "labelSendingHIPAddress";
+            labelSendingHIPAddress.Size = new Size(64, 15);
+            labelSendingHIPAddress.TabIndex = 19;
+            labelSendingHIPAddress.Text = "To Address";
+            labelSendingHIPAddress.Visible = false;
+            // 
+            // labelHIPArrow
+            // 
+            labelHIPArrow.AutoSize = true;
+            labelHIPArrow.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point);
+            labelHIPArrow.Location = new Point(46, 139);
+            labelHIPArrow.Name = "labelHIPArrow";
+            labelHIPArrow.Size = new Size(32, 32);
+            labelHIPArrow.TabIndex = 20;
+            labelHIPArrow.Text = "⮡ ";
+            labelHIPArrow.Visible = false;
+            // 
             // TransferForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(602, 340);
+            Controls.Add(labelSendingHIPAddress);
+            Controls.Add(labelHIPArrow);
             Controls.Add(labelError);
             Controls.Add(textBoxAddress);
             Controls.Add(label2);
@@ -143,5 +168,7 @@
         private Label label2;
         private TextBox textBoxAddress;
         private Label labelError;
+        private Label labelSendingHIPAddress;
+        private Label labelHIPArrow;
     }
 }
