@@ -1650,7 +1650,7 @@ namespace FireWallet
                 if (!outputInstalled.Contains("git version"))
                 {
                     AddLog("Git is not installed");
-                    NotifyForm notifyForm = new NotifyForm("Git is not installed\nPlease install it to install HSD dependencies");
+                    NotifyForm notifyForm = new NotifyForm("Git is not installed\nPlease install it to install HSD dependencies","Install", "https://git-scm.com/download/win");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
@@ -1672,7 +1672,7 @@ namespace FireWallet
                 if (!outputInstalled.Contains("v"))
                 {
                     AddLog("Node is not installed");
-                    NotifyForm notifyForm = new NotifyForm("Node is not installed\nPlease install it to install HSD dependencies");
+                    NotifyForm notifyForm = new NotifyForm("Node is not installed\nPlease install it to install HSD dependencies","Install", "https://nodejs.org/en/download");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
@@ -1698,7 +1698,7 @@ namespace FireWallet
                 {
                     AddLog("NPM is not installed");
                     AddLog(outputInstalled);
-                    NotifyForm notifyForm = new NotifyForm("NPM is not installed\nPlease install it to install HSD dependencies");
+                    NotifyForm notifyForm = new NotifyForm("NPM is not installed\nPlease install it to install HSD dependencies","Install", "https://docs.npmjs.com/downloading-and-installing-node-js-and-npm");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
