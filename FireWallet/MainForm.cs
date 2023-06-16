@@ -14,6 +14,7 @@ using DnsClient;
 using DnsClient.Protocol;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using System.Numerics;
 
 namespace FireWallet
 {
@@ -686,6 +687,7 @@ namespace FireWallet
                 toolStripStatusLabelLedger.Text = "Cold Wallet";
                 toolStripStatusLabelLedger.Visible = true;
                 buttonRevealAll.Visible = false;
+                buttonSeed.Enabled = false;
 
             }
             else
@@ -693,6 +695,7 @@ namespace FireWallet
                 watchOnly = false;
                 toolStripStatusLabelLedger.Visible = false;
                 buttonRevealAll.Visible = true;
+                buttonSeed.Enabled = true;
 
             }
 
@@ -864,7 +867,6 @@ namespace FireWallet
             {
                 AddLog("Post Error: " + ex.Message);
                 AddLog(await resp.Content.ReadAsStringAsync());
-                AddLog("Content: " + content);
                 return "Error";
             }
 
@@ -2175,6 +2177,8 @@ namespace FireWallet
 
                 try
                 {
+                    AddLog("Decrypting seed...");
+                    AddLog(resp.ToString());
                     string iv = resp["iv"].ToString();
                     string ciphertext = resp["ciphertext"].ToString();
                     string tmpn = resp["n"].ToString();
@@ -2183,8 +2187,25 @@ namespace FireWallet
 
                     int n = int.Parse(tmpn);
                     int p = int.Parse(tmpp);
+                    int r = int.Parse(tmpr);
 
                     int iterations = n;
+
+                    byte[] decripted = await Decrypt_Seed(algorithm, ciphertext, iv, n,r,p);
+
+
+                    // This is returning garbled text
+                    AddLog("Seed decrypted");
+                    string phrase = Encoding.UTF8.GetString(decripted);
+                    AddLog("Your seed phrase is:\n" + phrase);
+
+                    phrase = Encoding.ASCII.GetString(decripted);
+                    AddLog("Your seed phrase is:\n" + phrase);
+
+                    phrase = Encoding.Unicode.GetString(decripted);
+                    AddLog("Your seed phrase is:\n" + phrase);
+
+
 
 
                 }
@@ -2200,7 +2221,71 @@ namespace FireWallet
 
             }
         }
+        private async Task<byte[]> Decrypt_Seed(string algorithm, string ciphertext, string iv, int n,int r, int p)
+        {
+            byte[] salt = Encoding.ASCII.GetBytes("hsd");
+            using (AesManaged aes = new AesManaged())
+            {
+                aes.Key = DeriveKey(algorithm, password, salt, n, r, p);
+                aes.IV = HexStringToByteArray(iv);
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.None;
+                byte[] cipher = HexStringToByteArray(ciphertext);
 
+                if (cipher.Length % 16 != 0)
+                {
+                    AddLog("Invalid cipher length");
+                    return null;
+                }
+
+
+                using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                {
+                    byte[] decrypted = decryptor.TransformFinalBlock(cipher, 0, cipher.Length);
+                    return decrypted;
+                }
+            }
+
+        }
+        static byte[] HexStringToByteArray(string hex)
+        {
+            int numberChars = hex.Length / 2;
+            byte[] bytes = new byte[numberChars];
+            for (int i = 0; i < numberChars; i++)
+            {
+                bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16);
+            }
+            return bytes;
+        }
+
+        byte[] DeriveKey(string algorithm, string passphrase, byte[] salt, int n, int r, int p)
+        {
+            byte[] passwordBytes = Encoding.UTF8.GetBytes(passphrase);
+
+            switch (algorithm)
+            {
+                case "pbkdf2":
+                    return Pbkdf2DeriveKey(passwordBytes, salt, n, 32);
+                case "scrypt":
+                    return ScryptDeriveKey(passwordBytes, salt, n, r, p, 32);
+                default:
+                    throw new Exception($"Unknown algorithm: {algorithm}.");
+            }
+        }
+        static byte[] Pbkdf2DeriveKey(byte[] password, byte[] salt, int iterations, int derivedKeyLength)
+        {
+            using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
+            {
+                return pbkdf2.GetBytes(derivedKeyLength);
+            }
+        }
+        static byte[] ScryptDeriveKey(byte[] password, byte[] salt, int costParameterN, int costParameterR, int costParameterP, int derivedKeyLength)
+        {
+            using (var rfc2898 = new Rfc2898DeriveBytes(password, salt, costParameterN, HashAlgorithmName.SHA256))
+            {
+                return rfc2898.GetBytes(derivedKeyLength);
+            }
+        }
         private async void Rescan_Click(object sender, EventArgs e)
         {
             string content = "{\"height\": 0}";
