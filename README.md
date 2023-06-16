@@ -2,6 +2,14 @@
 Experimental wallet for Handshake chain
 
 ## Installation
+### Dependencies
+You will need .net desktop installed. You can download it from [here](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-6.0.18-windows-x64-installer).  
+
+You will also need Node, NPM, and git installed if you want to use the internal HSD or Ledger wallets.  
+[Git](https://git-scm.com/downloads)  
+[Node](https://nodejs.org/en/download/)  
+[NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+
 ### From Releases
 You can install the latest release from [here](https://github.com/Nathanwoodburn/FireWallet/releases/).
 
