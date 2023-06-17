@@ -25,18 +25,18 @@ namespace FireWallet
             Domain = domain;
             this.Text = "Transfer " + Domain + " | FireWallet";
             label1.Text = "Transfer " + Domain;
-            if (MainForm.theme.ContainsKey("error"))
+            if (MainForm.Theme.ContainsKey("error"))
             {
-                labelError.ForeColor = ColorTranslator.FromHtml(MainForm.theme["error"]);
+                labelError.ForeColor = ColorTranslator.FromHtml(MainForm.Theme["error"]);
             }
-            if (MainForm.watchOnly)
+            if (MainForm.WatchOnly)
             {
                 buttonTransfer.Enabled = false; // watch only wallet only batch
             }
 
             // Theme
-            this.BackColor = ColorTranslator.FromHtml(MainForm.theme["background"]);
-            this.ForeColor = ColorTranslator.FromHtml(MainForm.theme["foreground"]);
+            this.BackColor = ColorTranslator.FromHtml(MainForm.Theme["background"]);
+            this.ForeColor = ColorTranslator.FromHtml(MainForm.Theme["foreground"]);
             foreach (Control c in Controls)
             {
                 MainForm.ThemeControl(c);
@@ -73,7 +73,7 @@ namespace FireWallet
             }
             JObject result = JObject.Parse(APIresp["result"].ToString());
             string hash = result["hash"].ToString();
-            string link = MainForm.userSettings["explorer-tx"] + hash;
+            string link = MainForm.UserSettings["explorer-tx"] + hash;
             NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
                 "Explorer", link);
             notifySuccess.ShowDialog();

@@ -22,8 +22,8 @@ namespace FireWallet
         {
             InitializeComponent();
             // Theme
-            this.BackColor = ColorTranslator.FromHtml(mainForm.theme["background"]);
-            this.ForeColor = ColorTranslator.FromHtml(mainForm.theme["foreground"]);
+            this.BackColor = ColorTranslator.FromHtml(mainForm.Theme["background"]);
+            this.ForeColor = ColorTranslator.FromHtml(mainForm.Theme["foreground"]);
             foreach (Control c in Controls)
             {
                 mainForm.ThemeControl(c);
@@ -35,7 +35,7 @@ namespace FireWallet
 
         private async void TXForm_Load(object sender, EventArgs e)
         {
-            tx = JObject.Parse(await mainForm.APIGet("wallet/"+mainForm.account+"/tx/" + txid,true));
+            tx = JObject.Parse(await mainForm.APIGet("wallet/"+mainForm.Account+"/tx/" + txid,true));
 
             this.Text = "TX: " + tx["hash"].ToString();
             labelHash.Text = "Hash: " + tx["hash"].ToString();
@@ -142,7 +142,7 @@ namespace FireWallet
         private void Explorer_Click(object sender, EventArgs e)
         {
             // Open the transaction in a browser
-            string url = mainForm.userSettings["explorer-tx"] + tx["hash"].ToString();
+            string url = mainForm.UserSettings["explorer-tx"] + tx["hash"].ToString();
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = url,

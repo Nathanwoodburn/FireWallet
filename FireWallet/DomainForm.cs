@@ -32,7 +32,7 @@ namespace FireWallet
             this.explorerTX = explorerTX;
             this.explorerName = explorerName;
             this.mainForm = mainForm;
-            this.theme = mainForm.theme;
+            this.theme = mainForm.Theme;
 
             // Apply theme
             this.BackColor = ColorTranslator.FromHtml(theme["background"]);
@@ -47,7 +47,7 @@ namespace FireWallet
                 mainForm.ThemeControl(c);
             }
 
-            applyTransparency(mainForm.theme);
+            applyTransparency(mainForm.Theme);
         }
         #region Theme
         private void applyTransparency(Dictionary<string, string> theme)
@@ -157,7 +157,7 @@ namespace FireWallet
             network = Convert.ToInt32(nodeSettings["Network"]);
             GetName();
 
-            if (mainForm.watchOnly)
+            if (mainForm.WatchOnly)
             {
                 buttonActionMain.Enabled = false; // Only allow sending in batches for ledger
             }

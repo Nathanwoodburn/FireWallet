@@ -28,20 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashScreen));
-            timerSplashDelay = new System.Windows.Forms.Timer(components);
             label1 = new Label();
             pictureBox1 = new PictureBox();
             label2 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
-            // 
-            // timerSplashDelay
-            // 
-            timerSplashDelay.Enabled = true;
-            timerSplashDelay.Interval = 3000;
-            timerSplashDelay.Tick += timerSplashDelay_Tick;
             // 
             // label1
             // 
@@ -99,8 +91,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Timer timerSplashDelay;
         private Label label1;
         private PictureBox pictureBox1;
         private Label label2;

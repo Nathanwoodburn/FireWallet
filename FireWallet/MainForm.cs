@@ -20,24 +20,25 @@ namespace FireWallet
     public partial class MainForm : Form
     {
         #region Variables
+        // Main directory for the application files
         public string dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\FireWallet\\";
-        public Dictionary<string, string> nodeSettings { get; set; }
-        public Dictionary<string, string> userSettings { get; set; }
-        public Dictionary<string, string> theme { get; set; }
-        public int network { get; set; }
-        public string account { get; set; }
-        public string password { get; set; }
-        public decimal balance { get; set; }
-        public decimal balanceLocked { get; set; }
-        public int height { get; set; }
-        public double syncProgress { get; set; }
-        public int pendingTransactions { get; set; }
-        public bool batchMode { get; set; }
-        public BatchForm batchForm { get; set; }
-        public bool watchOnly { get; set; }
+        // Settings and theme key value pairs
+        public Dictionary<string, string> NodeSettings { get; set; }
+        public Dictionary<string, string> UserSettings { get; set; }
+        public Dictionary<string, string> Theme { get; set; }
+        // HSD & Wallet settings
+        public bool WatchOnly { get; set; }
         public bool HSD { get; set; }
-
-        public Process hsdProcess { get; set; }
+        public Process HSDProcess { get; set; }
+        public int HSDNetwork { get; set; }
+        public string Account { get; set; }
+        public string Password { get; set; }
+        // Wallet information
+        public decimal Balance { get; set; }
+        public decimal Balance_Locked { get; set; }
+        // Batching variables
+        public bool BatchMode { get; set; }
+        public BatchForm BatchForm { get; set; }
         #endregion
         #region Application
         public MainForm()
@@ -47,54 +48,63 @@ namespace FireWallet
         }
         private async void MainForm_Load(object sender, EventArgs e)
         {
-            watchOnly = false;
-            account = "";
+            // Set initial values
+            WatchOnly = false;
+            Account = "";
+
+            // Stop timers and load settings
             timerNodeStatus.Stop();
             LoadSettings();
+
+            // Show splash
+            SplashScreen ss = new SplashScreen(false);
+            bool splash = false;
+            if (UserSettings.ContainsKey("hide-splash"))
+            {
+                if (UserSettings["hide-splash"] == "false")
+                {
+                    // Show splash screen
+                    ss.Show();
+                    splash = true;
+                }
+            }
+            else
+            {
+                // Show splash screen
+                ss.Show();           
+                splash = true;
+            }
+            // Record time
+            DateTime start = DateTime.Now;
+            // Do form events
+            Application.DoEvents();
+
+            // Load theme
             UpdateTheme();
             // Theme drop down
             foreach (ToolStripItem item in toolStripDropDownButtonHelp.DropDownItems)
             {
                 if (item is ToolStripDropDownItem dropDownItem)
                 {
-                    dropDownItem.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-                    dropDownItem.BackColor = ColorTranslator.FromHtml(theme["background"]);
+                    dropDownItem.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
+                    dropDownItem.BackColor = ColorTranslator.FromHtml(Theme["background"]);
                 }
             }
-            toolStripDropDownButtonHelp.DropDown.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            toolStripDropDownButtonHelp.DropDown.BackColor = ColorTranslator.FromHtml(Theme["background"]);
 
+            // Load node
             if (await LoadNode() != true) this.Close();
 
-
+            // If node load caused app to close, exit load function
             if (this.Disposing || this.IsDisposed) return;
 
-            if (userSettings.ContainsKey("hide-splash"))
-            {
-                if (userSettings["hide-splash"] == "false")
-                {
-                    // Show splash screen
-                    SplashScreen ss = new SplashScreen();
-                    ss.ShowDialog();
-                    ss.Dispose();
-                }
-            }
-            else
-            {
-                // Show splash screen
-                SplashScreen ss = new SplashScreen();
-                ss.ShowDialog();
-                ss.Dispose();
-            }
-
-
-
             // Edit the theme of the navigation panel
-            panelNav.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
-            panelNav.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
+            panelNav.BackColor = ColorTranslator.FromHtml(Theme["background-alt"]);
+            panelNav.ForeColor = ColorTranslator.FromHtml(Theme["foreground-alt"]);
             foreach (Control c in panelNav.Controls)
             {
-                c.BackColor = ColorTranslator.FromHtml(theme["background"]);
-                c.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+                c.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+                c.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
             }
             panelNav.Dock = DockStyle.Left;
 
@@ -103,11 +113,45 @@ namespace FireWallet
 
             // Prompt for login
             GetAccounts();
+            BatchMode = false;
 
+            if (splash)
+            {
+                // If not internal node
+                if (!HSD)
+                {
+                    // Wait until the splash has been visible for 4 seconds
+                    if ((DateTime.Now - start).TotalSeconds > 4) ss.CloseSplash();
+                    else Thread.Sleep(4000 - (int)(DateTime.Now - start).TotalMilliseconds);
+                    ss.CloseSplash();
+                }
+                else
+                {
+                    // Wait until the Node is connected
+                    while (true)
+                    {
+                        string status = await APIGet("",false);
+                        if (status != "Error")
+                        {
+                            ss.CloseSplash();
+                            GetAccounts();
+                            break;
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
+                        }
+
+                    }
+                }
+
+
+                Application.DoEvents();
+            }
             AddLog("Loaded");
-            Opacity = 1;
-            batchMode = false;
+
             // Pull form to front
+            Opacity = 1;
             this.WindowState = FormWindowState.Minimized;
             this.Show();
             this.WindowState = FormWindowState.Normal;
@@ -117,16 +161,16 @@ namespace FireWallet
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
             AddLog("Closing");
-            if (hsdProcess != null)
+            if (HSDProcess != null)
             {
                 this.Opacity = 0;
-                hsdProcess.Kill();
+                HSDProcess.Kill();
                 AddLog("HSD Closed");
                 Thread.Sleep(1000);
 
                 try
                 {
-                    hsdProcess.Dispose();
+                    HSDProcess.Dispose();
                 }
                 catch
                 {
@@ -159,25 +203,25 @@ namespace FireWallet
             }
 
             StreamReader sr = new StreamReader(dir + "node.txt");
-            nodeSettings = new Dictionary<string, string>();
+            NodeSettings = new Dictionary<string, string>();
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
                 string[] split = line.Split(':');
-                nodeSettings.Add(split[0].Trim(), split[1].Trim());
+                NodeSettings.Add(split[0].Trim(), split[1].Trim());
 
             }
             sr.Dispose();
 
-            if (!nodeSettings.ContainsKey("Network") || !nodeSettings.ContainsKey("Key") || !nodeSettings.ContainsKey("IP"))
+            if (!NodeSettings.ContainsKey("Network") || !NodeSettings.ContainsKey("Key") || !NodeSettings.ContainsKey("IP"))
             {
                 AddLog("Node Settings file is missing key");
                 this.Close();
                 await Task.Delay(1000);
                 AddLog("Close Failed");
             }
-            network = Convert.ToInt32(nodeSettings["Network"]);
-            switch (network)
+            HSDNetwork = Convert.ToInt32(NodeSettings["Network"]);
+            switch (HSDNetwork)
             {
                 case 0:
                     toolStripStatusLabelNetwork.Text = "Network: Mainnet";
@@ -190,18 +234,18 @@ namespace FireWallet
                     break;
             }
 
-            if (nodeSettings.ContainsKey("HSD"))
+            if (NodeSettings.ContainsKey("HSD"))
             {
-                if (nodeSettings["HSD"].ToLower() == "true")
+                if (NodeSettings["HSD"].ToLower() == "true")
                 {
                     HSD = true;
                     AddLog("Starting HSD");
                     toolStripStatusLabelstatus.Text = "Status: HSD Starting";
 
                     string hsdPath = dir + "hsd\\bin\\hsd.exe";
-                    if (nodeSettings.ContainsKey("HSD-command"))
+                    if (NodeSettings.ContainsKey("HSD-command"))
                     {
-                        if (nodeSettings["HSD-command"].Contains("{default-dir}"))
+                        if (NodeSettings["HSD-command"].Contains("{default-dir}"))
                         {
                             if (!Directory.Exists(dir + "hsd"))
                             {
@@ -251,38 +295,38 @@ namespace FireWallet
 
 
 
-                    hsdProcess = new Process();
+                    HSDProcess = new Process();
 
                     bool hideScreen = true;
-                    if (nodeSettings.ContainsKey("HideScreen"))
+                    if (NodeSettings.ContainsKey("HideScreen"))
                     {
-                        if (nodeSettings["HideScreen"].ToLower() == "false")
+                        if (NodeSettings["HideScreen"].ToLower() == "false")
                         {
                             hideScreen = false;
                         }
                     }
                     try
                     {
-                        hsdProcess.StartInfo.CreateNoWindow = hideScreen;
+                        HSDProcess.StartInfo.CreateNoWindow = hideScreen;
 
                         if (hideScreen)
                         {
-                            hsdProcess.StartInfo.RedirectStandardError = true;
+                            HSDProcess.StartInfo.RedirectStandardError = true;
                         }
                         else
                         {
-                            hsdProcess.StartInfo.RedirectStandardError = false;
+                            HSDProcess.StartInfo.RedirectStandardError = false;
                         }
 
-                        hsdProcess.StartInfo.RedirectStandardInput = true;
-                        hsdProcess.StartInfo.RedirectStandardOutput = false;
-                        hsdProcess.StartInfo.UseShellExecute = false;
-                        hsdProcess.StartInfo.FileName = "node.exe";
+                        HSDProcess.StartInfo.RedirectStandardInput = true;
+                        HSDProcess.StartInfo.RedirectStandardOutput = false;
+                        HSDProcess.StartInfo.UseShellExecute = false;
+                        HSDProcess.StartInfo.FileName = "node.exe";
 
-                        if (nodeSettings.ContainsKey("HSD-command"))
+                        if (NodeSettings.ContainsKey("HSD-command"))
                         {
                             AddLog("Using custom HSD command");
-                            string command = nodeSettings["HSD-command"];
+                            string command = NodeSettings["HSD-command"];
                             command = command.Replace("{default-dir}", dir + "hsd\\bin\\hsd");
 
                             string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
@@ -293,35 +337,35 @@ namespace FireWallet
                             else if (command.Contains("{Bob}"))
                             {
                                 AddLog("Bob not found, using default HSD command");
-                                command = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
+                                command = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + NodeSettings["Key"];
                             }
 
-                            command = command.Replace("{key}", nodeSettings["Key"]);
-                            hsdProcess.StartInfo.Arguments = command;
+                            command = command.Replace("{key}", NodeSettings["Key"]);
+                            HSDProcess.StartInfo.Arguments = command;
                         }
                         else
                         {
                             AddLog("Using default HSD command");
-                            hsdProcess.StartInfo.Arguments = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + nodeSettings["Key"];
+                            HSDProcess.StartInfo.Arguments = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + NodeSettings["Key"];
                             string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
                             if (Directory.Exists(bobPath))
                             {
-                                hsdProcess.StartInfo.Arguments = hsdProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                                HSDProcess.StartInfo.Arguments = HSDProcess.StartInfo.Arguments + " --prefix " + bobPath;
                             }
                         }
 
 
 
 
-                        hsdProcess.Start();
+                        HSDProcess.Start();
                         // Wait for HSD to start
                         await Task.Delay(2000);
 
                         // Check if HSD is running
-                        if (hsdProcess.HasExited)
+                        if (HSDProcess.HasExited)
                         {
                             AddLog("HSD Failed to start");
-                            AddLog(hsdProcess.StandardError.ReadToEnd());
+                            AddLog(HSDProcess.StandardError.ReadToEnd());
                             NotifyForm Notifyinstall = new NotifyForm("HSD Failed to start\nPlease check the logs");
                             Notifyinstall.ShowDialog();
                             Notifyinstall.Dispose();
@@ -368,11 +412,11 @@ namespace FireWallet
 
 
             StreamReader sr = new StreamReader(dir + "settings.txt");
-            userSettings = new Dictionary<string, string>();
+            UserSettings = new Dictionary<string, string>();
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
-                userSettings.Add(line.Substring(0, line.IndexOf(":")).Trim(), line.Substring(line.IndexOf(":") + 1).Trim());
+                UserSettings.Add(line.Substring(0, line.IndexOf(":")).Trim(), line.Substring(line.IndexOf(":") + 1).Trim());
             }
             sr.Dispose();
         }
@@ -415,26 +459,26 @@ namespace FireWallet
 
             // Read file
             StreamReader sr = new StreamReader(dir + "theme.txt");
-            theme = new Dictionary<string, string>();
+            Theme = new Dictionary<string, string>();
             while (!sr.EndOfStream)
             {
                 string line = sr.ReadLine();
                 string[] split = line.Split(':');
-                theme.Add(split[0].Trim(), split[1].Trim());
+                Theme.Add(split[0].Trim(), split[1].Trim());
             }
             sr.Dispose();
 
-            if (!theme.ContainsKey("background") || !theme.ContainsKey("background-alt") || !theme.ContainsKey("foreground") || !theme.ContainsKey("foreground-alt"))
+            if (!Theme.ContainsKey("background") || !Theme.ContainsKey("background-alt") || !Theme.ContainsKey("foreground") || !Theme.ContainsKey("foreground-alt"))
             {
                 AddLog("Theme file is missing key");
                 return;
             }
 
             // Apply theme
-            this.BackColor = ColorTranslator.FromHtml(theme["background"]);
+            this.BackColor = ColorTranslator.FromHtml(Theme["background"]);
 
             // Foreground
-            this.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            this.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
 
 
             // Need to specify this for each groupbox to override the black text
@@ -448,7 +492,7 @@ namespace FireWallet
 
             this.Width = Screen.PrimaryScreen.Bounds.Width / 5 * 3;
             this.Height = Screen.PrimaryScreen.Bounds.Height / 5 * 3;
-            applyTransparency(theme);
+            applyTransparency(Theme);
 
             ResizeForm();
         }
@@ -456,7 +500,7 @@ namespace FireWallet
         {
             if (c.GetType() == typeof(GroupBox) || c.GetType() == typeof(Panel))
             {
-                c.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+                c.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
                 foreach (Control sub in c.Controls)
                 {
                     ThemeControl(sub);
@@ -466,8 +510,8 @@ namespace FireWallet
                 || c.GetType() == typeof(ComboBox) || c.GetType() == typeof(StatusStrip) || c.GetType() == typeof(ToolStrip)
                 || c.GetType() == typeof(NumericUpDown))
             {
-                c.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
-                c.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
+                c.ForeColor = ColorTranslator.FromHtml(Theme["foreground-alt"]);
+                c.BackColor = ColorTranslator.FromHtml(Theme["background-alt"]);
             }
             if (c.GetType() == typeof(Panel)) c.Dock = DockStyle.Fill;
         }
@@ -647,10 +691,10 @@ namespace FireWallet
         }
         private async Task<bool> Login()
         {
-            string path = "wallet/" + account + "/unlock";
+            string path = "wallet/" + Account + "/unlock";
 
-            string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
-            if (password == "")
+            string content = "{\"passphrase\": \"" + Password + "\",\"timeout\": 60}";
+            if (Password == "")
             {
                 // For some reason, the API doesn't like an empty password, so we'll just use a default one
                 content = "{\"passphrase\": \"password\" ,\"timeout\": 60}";
@@ -668,7 +712,7 @@ namespace FireWallet
             }
 
             path = "";
-            content = "{\"method\": \"selectwallet\",\"params\":[ \"" + account + "\"]}";
+            content = "{\"method\": \"selectwallet\",\"params\":[ \"" + Account + "\"]}";
 
             APIresponse = await APIPost(path, true, content);
             if (!APIresponse.Contains("\"error\":null"))
@@ -681,12 +725,12 @@ namespace FireWallet
             }
             UpdateBalance();
 
-            path = "wallet/" + account + "";
+            path = "wallet/" + Account + "";
             APIresponse = await APIGet(path, true);
             JObject jObject = JObject.Parse(APIresponse);
             if (jObject["watchOnly"].ToString() == "True")
             {
-                watchOnly = true;
+                WatchOnly = true;
                 toolStripStatusLabelLedger.Text = "Cold Wallet";
                 toolStripStatusLabelLedger.Visible = true;
                 buttonRevealAll.Visible = false;
@@ -694,14 +738,14 @@ namespace FireWallet
             }
             else
             {
-                watchOnly = false;
+                WatchOnly = false;
                 toolStripStatusLabelLedger.Visible = false;
                 buttonRevealAll.Visible = true;
 
             }
 
 
-            if (watchOnly)
+            if (WatchOnly)
             {
                 buttonAddressVerify.Visible = true;
             }
@@ -725,12 +769,12 @@ namespace FireWallet
                     return;
                 }
 
-                account = comboBoxaccount.Text;
-                password = textBoxaccountpassword.Text;
+                Account = comboBoxaccount.Text;
+                Password = textBoxaccountpassword.Text;
                 bool loggedin = await Login();
                 if (loggedin)
                 {
-                    toolStripStatusLabelaccount.Text = "Account: " + account;
+                    toolStripStatusLabelaccount.Text = "Account: " + Account;
                     textBoxaccountpassword.Text = "";
                     panelaccount.Visible = false;
                     toolStripSplitButtonlogout.Visible = true;
@@ -762,10 +806,10 @@ namespace FireWallet
 
         private async void Logout(object sender, EventArgs e)
         {
-            password = ""; // Clear password from memory as soon as possible
+            Password = ""; // Clear password from memory as soon as possible
             toolStripSplitButtonlogout.Visible = false;
             toolStripStatusLabelLedger.Visible = false;
-            string path = "wallet/" + account + "/lock";
+            string path = "wallet/" + Account + "/lock";
             string content = "";
             string APIresponse = await APIPost(path, true, content);
             if (!APIresponse.Contains("true"))
@@ -802,23 +846,23 @@ namespace FireWallet
                 if (toolStripStatusLabelstatus.Text != "Status: Node Connected") GetAccounts(); // Get accounts if node was not connected before
                 toolStripStatusLabelstatus.Text = "Status: Node Connected";
             }
-            if (account == "") return; // Don't update balance if not logged in
+            if (Account == "") return; // Don't update balance if not logged in
 
             // Try to keep wallet unlocked
-            string path = "wallet/" + account + "/unlock";
-            string content = "{\"passphrase\": \"" + password + "\",\"timeout\": 60}";
+            string path = "wallet/" + Account + "/unlock";
+            string content = "{\"passphrase\": \"" + Password + "\",\"timeout\": 60}";
 
             await APIPost(path, true, content);
 
             path = "";
-            content = "{\"method\": \"selectwallet\",\"params\":[ \"" + account + "\"]}";
+            content = "{\"method\": \"selectwallet\",\"params\":[ \"" + Account + "\"]}";
 
             await APIPost(path, true, content);
 
         }
         private async Task UpdateBalance()
         {
-            string response = await APIGet("wallet/" + account + "/balance?account=default", true);
+            string response = await APIGet("wallet/" + Account + "/balance?account=default", true);
             if (response == "Error") return;
 
             JObject resp = JObject.Parse(response);
@@ -827,8 +871,8 @@ namespace FireWallet
             decimal locked = Convert.ToDecimal(resp["lockedUnconfirmed"].ToString()) / 1000000;
             available = decimal.Round(available, 2);
             locked = decimal.Round(locked, 2);
-            balance = available;
-            balanceLocked = locked;
+            Balance = available;
+            Balance_Locked = locked;
         }
         /// <summary>
         /// Post to HSD API
@@ -843,10 +887,10 @@ namespace FireWallet
             {
                 return "";
             }
-            string key = nodeSettings["Key"];
-            string ip = nodeSettings["IP"];
+            string key = NodeSettings["Key"];
+            string ip = NodeSettings["IP"];
             string port = "1203";
-            if (network == 1)
+            if (HSDNetwork == 1)
             {
                 port = "1303";
             }
@@ -882,13 +926,13 @@ namespace FireWallet
         /// <returns></returns>
         public async Task<string> APIGet(string path, bool wallet)
         {
-            if (nodeSettings == null) return "Error";
-            if (!nodeSettings.ContainsKey("Key") || !nodeSettings.ContainsKey("IP")) return "Error";
-            string key = nodeSettings["Key"];
-            string ip = nodeSettings["IP"];
+            if (NodeSettings == null) return "Error";
+            if (!NodeSettings.ContainsKey("Key") || !NodeSettings.ContainsKey("IP")) return "Error";
+            string key = NodeSettings["Key"];
+            string ip = NodeSettings["IP"];
 
             string port = "1203";
-            if (network == 1)
+            if (HSDNetwork == 1)
             {
                 port = "1303";
             }
@@ -916,7 +960,7 @@ namespace FireWallet
         private async Task<string> GetAddress()
         {
             string content = "{\"account\":\"default\"}";
-            string path = "wallet/" + account + "/address";
+            string path = "wallet/" + Account + "/address";
             string APIresponse = await APIPost(path, true, content);
             if (APIresponse == "Error")
             {
@@ -939,14 +983,14 @@ namespace FireWallet
 
 
             // Exit if set to 0 TXs
-            if (userSettings.ContainsKey("portfolio-tx"))
+            if (UserSettings.ContainsKey("portfolio-tx"))
             {
-                if (userSettings["portfolio-tx"] == "0") return;
+                if (UserSettings["portfolio-tx"] == "0") return;
             }
 
 
             // Get Unconfirmed TX
-            string path = "wallet/" + account + "/tx/unconfirmed";
+            string path = "wallet/" + Account + "/tx/unconfirmed";
             APIresponse = await APIGet(path, true);
             if (APIresponse == "Error")
             {
@@ -958,7 +1002,7 @@ namespace FireWallet
 
 
             // Check how many TX there are
-            APIresponse = await APIGet("wallet/" + account, true);
+            APIresponse = await APIGet("wallet/" + Account, true);
             JObject wallet = JObject.Parse(APIresponse);
             if (!wallet.ContainsKey("balance"))
             {
@@ -969,13 +1013,13 @@ namespace FireWallet
             JObject balance = JObject.Parse(wallet["balance"].ToString());
             int TotalTX = Convert.ToInt32(balance["tx"].ToString());
             int toGet = 10;
-            if (userSettings.ContainsKey("portfolio-tx")) toGet = Convert.ToInt32(userSettings["portfolio-tx"]);
+            if (UserSettings.ContainsKey("portfolio-tx")) toGet = Convert.ToInt32(UserSettings["portfolio-tx"]);
 
             if (toGet > TotalTX) toGet = TotalTX;
             int toSkip = TotalTX - toGet;
 
             // GET TXs
-            if (watchOnly)
+            if (WatchOnly)
             {
                 APIresponse = await APIPost("", true, "{\"method\": \"listtransactions\",\"params\": [\"default\"," + toGet + "," + toSkip + ", true]}");
             }
@@ -1006,7 +1050,7 @@ namespace FireWallet
             {
 
                 // Get last tx
-                JObject tx = JObject.Parse(await APIGet("wallet/" + account + "/tx/" + txs[toGet - i - 1]["txid"].ToString(), true));
+                JObject tx = JObject.Parse(await APIGet("wallet/" + Account + "/tx/" + txs[toGet - i - 1]["txid"].ToString(), true));
 
                 string hash = tx["hash"].ToString();
                 string date = tx["mdate"].ToString();
@@ -1021,8 +1065,8 @@ namespace FireWallet
                 tmpPanel.Height = 50;
                 tmpPanel.Location = new Point(5, (i * 55));
                 tmpPanel.BorderStyle = BorderStyle.FixedSingle;
-                tmpPanel.BackColor = ColorTranslator.FromHtml(theme["background-alt"]);
-                tmpPanel.ForeColor = ColorTranslator.FromHtml(theme["foreground-alt"]);
+                tmpPanel.BackColor = ColorTranslator.FromHtml(Theme["background-alt"]);
+                tmpPanel.ForeColor = ColorTranslator.FromHtml(Theme["foreground-alt"]);
                 tmpPanel.Controls.Add(
                     new Label()
                     {
@@ -1031,9 +1075,9 @@ namespace FireWallet
                     }
                     );
                 int confirmations = Convert.ToInt32(tx["confirmations"].ToString());
-                if (userSettings.ContainsKey("confirmations"))
+                if (UserSettings.ContainsKey("confirmations"))
                 {
-                    if (confirmations < Convert.ToInt32(userSettings["confirmations"]))
+                    if (confirmations < Convert.ToInt32(UserSettings["confirmations"]))
                     {
                         Label txPending = new Label()
                         {
@@ -1151,13 +1195,13 @@ namespace FireWallet
             panelPortfolio.Show();
             await UpdateBalance();
             GetTXHistory();
-            labelBalance.Text = "Available: " + balance.ToString() + " HNS";
-            labelLocked.Text = "Locked: " + balanceLocked.ToString() + " HNS*";
-            labelBalanceTotal.Text = "Total: " + (balance + balanceLocked).ToString() + " HNS";
-            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            labelBalance.Text = "Available: " + Balance.ToString() + " HNS";
+            labelLocked.Text = "Locked: " + Balance_Locked.ToString() + " HNS*";
+            labelBalanceTotal.Text = "Total: " + (Balance + Balance_Locked).ToString() + " HNS";
+            if (Theme.ContainsKey("selected-bg") && Theme.ContainsKey("selected-fg"))
             {
-                buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+                buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
+                buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
             }
         }
 
@@ -1165,14 +1209,14 @@ namespace FireWallet
         {
             hidePages();
             panelSend.Show();
-            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            if (Theme.ContainsKey("selected-bg") && Theme.ContainsKey("selected-fg"))
             {
-                buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+                buttonNavSend.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
+                buttonNavSend.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
             }
-            if (theme.ContainsKey("error"))
+            if (Theme.ContainsKey("error"))
             {
-                labelSendingError.ForeColor = ColorTranslator.FromHtml(theme["error"]);
+                labelSendingError.ForeColor = ColorTranslator.FromHtml(Theme["error"]);
             }
 
             labelSendPrompt.Left = (panelSend.Width - labelSendPrompt.Width) / 2;
@@ -1187,7 +1231,7 @@ namespace FireWallet
             buttonSendMax.Left = textBoxSendingAmount.Left + textBoxSendingAmount.Width - buttonSendMax.Width;
             checkBoxSendSubFee.Left = labelSendingTo.Left;
 
-            labelSendingMax.Text = "Max: " + balance.ToString() + " HNS";
+            labelSendingMax.Text = "Max: " + Balance.ToString() + " HNS";
             textBoxSendingTo.Focus();
             string fee = await GetFee();
 
@@ -1200,10 +1244,10 @@ namespace FireWallet
             hidePages();
             panelRecieve.Show();
 
-            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            if (Theme.ContainsKey("selected-bg") && Theme.ContainsKey("selected-fg"))
             {
-                buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+                buttonNavReceive.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
+                buttonNavReceive.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
             }
             labelReceive1.Left = (panelRecieve.Width - labelReceive1.Width) / 2;
             labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
@@ -1220,7 +1264,7 @@ namespace FireWallet
             QRCodeGenerator qrcode = new QRCodeGenerator();
             QRCodeData qrData = qrcode.CreateQrCode(textBoxReceiveAddress.Text, QRCodeGenerator.ECCLevel.Q);
             QRCode qrCode = new QRCode(qrData);
-            pictureBoxReceiveQR.Image = qrCode.GetGraphic(20, theme["foreground"], theme["background"]);
+            pictureBoxReceiveQR.Image = qrCode.GetGraphic(20, Theme["foreground"], Theme["background"]);
             pictureBoxReceiveQR.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxReceiveQR.Width = panelRecieve.Width / 3;
             pictureBoxReceiveQR.Left = (panelRecieve.Width - pictureBoxReceiveQR.Width) / 2;
@@ -1233,10 +1277,10 @@ namespace FireWallet
             hidePages();
             panelDomains.Show();
 
-            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            if (Theme.ContainsKey("selected-bg") && Theme.ContainsKey("selected-fg"))
             {
-                buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+                buttonNavDomains.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
+                buttonNavDomains.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
             }
             textBoxDomainSearch.Focus();
             groupBoxDomains.Width = panelDomains.Width - 20;
@@ -1254,36 +1298,36 @@ namespace FireWallet
             panelRecieve.Hide();
             panelDomains.Hide();
             panelSettings.Hide();
-            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavSend.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavSend.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavReceive.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavDomains.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-            buttonNavSettings.BackColor = ColorTranslator.FromHtml(theme["background"]);
-            buttonNavSettings.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+            buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+            buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
+            buttonNavSend.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+            buttonNavSend.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
+            buttonNavReceive.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+            buttonNavReceive.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
+            buttonNavDomains.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+            buttonNavDomains.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
+            buttonNavSettings.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+            buttonNavSettings.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
         }
         private void buttonNavSettings_Click(object sender, EventArgs e)
         {
             hidePages();
-            if (theme.ContainsKey("selected-bg") && theme.ContainsKey("selected-fg"))
+            if (Theme.ContainsKey("selected-bg") && Theme.ContainsKey("selected-fg"))
             {
-                buttonNavSettings.BackColor = ColorTranslator.FromHtml(theme["selected-bg"]);
-                buttonNavSettings.ForeColor = ColorTranslator.FromHtml(theme["selected-fg"]);
+                buttonNavSettings.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
+                buttonNavSettings.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
             }
 
             panelSettings.Show();
             panelSettings.Dock = DockStyle.Fill;
             buttonSettingsSave.Top = panelSettings.Height - buttonSettingsSave.Height - 10;
             labelSettingsSaved.Top = buttonSettingsSave.Top + 10;
-            textBoxExTX.Text = userSettings["explorer-tx"];
-            textBoxExAddr.Text = userSettings["explorer-addr"];
-            textBoxExBlock.Text = userSettings["explorer-block"];
-            textBoxExName.Text = userSettings["explorer-domain"];
-            numericUpDownConfirmations.Value = int.Parse(userSettings["confirmations"]);
-            numericUpDownTXCount.Value = int.Parse(userSettings["portfolio-tx"]);
+            textBoxExTX.Text = UserSettings["explorer-tx"];
+            textBoxExAddr.Text = UserSettings["explorer-addr"];
+            textBoxExBlock.Text = UserSettings["explorer-block"];
+            textBoxExName.Text = UserSettings["explorer-domain"];
+            numericUpDownConfirmations.Value = int.Parse(UserSettings["confirmations"]);
+            numericUpDownTXCount.Value = int.Parse(UserSettings["portfolio-tx"]);
             labelSettingsSaved.Hide();
         }
         #endregion
@@ -1293,6 +1337,7 @@ namespace FireWallet
         public string TLSA { get; set; }
         private async void textBoxSendingTo_Leave(object sender, EventArgs e)
         {
+            
             labelSendingError.Hide();
             labelHIPArrow.Hide();
             labelSendingHIPAddress.Hide();
@@ -1402,29 +1447,21 @@ namespace FireWallet
                 }
             }
         }
+        /// <summary>
+        /// DANE validation. Used verifying Handshake domains
+        /// </summary>
+        /// <param name="certificate">certificate to check</param>
+        /// <returns>True if DANE passes, Else False</returns>
         public bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            // Customize the certificate validation logic here if needed
-
-            // Return true to accept the certificate or false to reject it
             X509Certificate2 cert2 = new X509Certificate2(certificate);
-
-
             var rsaPublicKey = (RSA)cert2.PublicKey.Key;
-
-            // Calculate the SHA-256 hash of the public key
             using (var sha256 = SHA256.Create())
             {
                 byte[] publicKeyBytes = rsaPublicKey.ExportSubjectPublicKeyInfo();
                 byte[] publicKeyHash = sha256.ComputeHash(publicKeyBytes);
-
-                // Convert the hash value to hexadecimal format
                 string hexFingerprint = ByteArrayToHexString(publicKeyHash);
-
-                if (hexFingerprint == TLSA)
-                {
-                    return true;
-                }
+                if (hexFingerprint == TLSA) return true;
                 else
                 {
                     AddLog("TLSA mismatch");
@@ -1432,6 +1469,11 @@ namespace FireWallet
                 }
             }
         }
+        /// <summary>
+        /// Convert byte array to hex string
+        /// </summary>
+        /// <param name="bytes">Byte array to convert</param>
+        /// <returns>String of converted byte array</returns>
         static string ByteArrayToHexString(byte[] bytes)
         {
             StringBuilder hex = new StringBuilder(bytes.Length * 2);
@@ -1461,7 +1503,7 @@ namespace FireWallet
         {
             string fee = await GetFee();
             decimal feeDecimal = decimal.Parse(fee);
-            textBoxSendingAmount.Text = (balance - feeDecimal).ToString();
+            textBoxSendingAmount.Text = (Balance - feeDecimal).ToString();
         }
 
         private async void buttonSendHNS_Click(object sender, EventArgs e)
@@ -1491,14 +1533,14 @@ namespace FireWallet
                 decimal fee = decimal.Parse(feeString);
                 string subtractFee = "false";
                 if (checkBoxSendSubFee.Checked) subtractFee = "true";
-                else if (amount > (balance - fee))
+                else if (amount > (Balance - fee))
                 {
                     labelSendingError.Show();
                     labelSendingError.Text += " Insufficient Funds";
                     return;
                 }
 
-                if (!watchOnly)
+                if (!WatchOnly)
                 {
 
                     AddLog("Sending " + amount.ToString() + " HNS to " + address);
@@ -1515,7 +1557,7 @@ namespace FireWallet
                         return;
                     }
                     string hash = APIresp["result"].ToString();
-                    string link = userSettings["explorer-tx"] + hash;
+                    string link = UserSettings["explorer-tx"] + hash;
                     NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
                         "Explorer", link);
                     notifySuccess.ShowDialog();
@@ -1578,7 +1620,7 @@ namespace FireWallet
                     proc.StartInfo.RedirectStandardError = true;
                     proc.StartInfo.FileName = "node.exe";
                     proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger sendtoaddress " + textBoxSendingTo.Text
-                        + " " + textBoxSendingAmount.Text + " --api-key " + nodeSettings["Key"] + " -w " + account;
+                        + " " + textBoxSendingAmount.Text + " --api-key " + NodeSettings["Key"] + " -w " + Account;
                     var outputBuilder = new StringBuilder();
 
                     // Event handler for capturing output data
@@ -1602,7 +1644,7 @@ namespace FireWallet
                     if (output.Contains("Submitted TXID"))
                     {
                         string hash = output.Substring(output.IndexOf("Submitted TXID") + 16, 64);
-                        string link = userSettings["explorer-tx"] + hash;
+                        string link = UserSettings["explorer-tx"] + hash;
                         NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
                                                        "Explorer", link);
                         notifySuccess.ShowDialog();
@@ -1632,9 +1674,9 @@ namespace FireWallet
             try
             {
                 bool hideScreen = true;
-                if (nodeSettings.ContainsKey("HideScreen"))
+                if (NodeSettings.ContainsKey("HideScreen"))
                 {
-                    if (nodeSettings["HideScreen"].ToLower() == "false")
+                    if (NodeSettings["HideScreen"].ToLower() == "false")
                     {
                         hideScreen = false;
                     }
@@ -1839,7 +1881,7 @@ namespace FireWallet
             proc.StartInfo.UseShellExecute = false;
             proc.StartInfo.RedirectStandardError = true;
             proc.StartInfo.FileName = "node.exe";
-            proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger createaddress --api-key " + nodeSettings["Key"] + " -w " + account;
+            proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger createaddress --api-key " + NodeSettings["Key"] + " -w " + Account;
             proc.Start();
 
             // Wait 1 sec
@@ -1881,7 +1923,7 @@ namespace FireWallet
         public string[] DomainsRenewable { get; set; }
         private async void UpdateDomains()
         {
-            string response = await APIGet("wallet/" + account + "/name?own=true", true);
+            string response = await APIGet("wallet/" + Account + "/name?own=true", true);
             JArray names = JArray.Parse(response);
             Domains = new string[names.Count];
             DomainsRenewable = new string[names.Count];
@@ -1967,7 +2009,7 @@ namespace FireWallet
                 // On Click open domain
                 domainTMP.Click += new EventHandler((sender, e) =>
                 {
-                    DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                    DomainForm domainForm = new DomainForm(this, name["name"].ToString(), UserSettings["explorer-tx"], UserSettings["explorer-domain"]);
                     domainForm.Show();
                 });
 
@@ -1976,7 +2018,7 @@ namespace FireWallet
                 {
                     c.Click += new EventHandler((sender, e) =>
                     {
-                        DomainForm domainForm = new DomainForm(this, name["name"].ToString(), userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                        DomainForm domainForm = new DomainForm(this, name["name"].ToString(), UserSettings["explorer-tx"], UserSettings["explorer-domain"]);
                         domainForm.Show();
                     });
                 }
@@ -2013,7 +2055,7 @@ namespace FireWallet
             {
                 JObject result = JObject.Parse(resp["result"].ToString());
                 string hash = result["hash"].ToString();
-                NotifyForm notifyForm = new NotifyForm("Reveal sent\n" + hash, "Explorer", userSettings["explorer-tx"] + hash);
+                NotifyForm notifyForm = new NotifyForm("Reveal sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
                 notifyForm.ShowDialog();
                 notifyForm.Dispose();
             }
@@ -2024,7 +2066,7 @@ namespace FireWallet
             {
                 textBoxDomainSearch.Text = textBoxDomainSearch.Text.Trim().ToLower();
                 e.SuppressKeyPress = true;
-                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, userSettings["explorer-tx"], userSettings["explorer-domain"]);
+                DomainForm domainForm = new DomainForm(this, textBoxDomainSearch.Text, UserSettings["explorer-tx"], UserSettings["explorer-domain"]);
 
                 domainForm.Show();
 
@@ -2079,61 +2121,61 @@ namespace FireWallet
         public void AddBatch(string domain, string operation)
         {
             if (operation == "BID") return;
-            if (!batchMode)
+            if (!BatchMode)
             {
-                batchForm = new BatchForm(this);
-                batchForm.Show();
-                batchMode = true;
+                BatchForm = new BatchForm(this);
+                BatchForm.Show();
+                BatchMode = true;
             }
-            batchForm.AddBatch(domain, operation);
+            BatchForm.AddBatch(domain, operation);
 
         }
         public void AddBatch(string domain, string operation, decimal bid, decimal lockup)
         {
             if (operation != "BID") return;
-            if (!batchMode)
+            if (!BatchMode)
             {
-                batchForm = new BatchForm(this);
-                batchForm.Show();
-                batchMode = true;
+                BatchForm = new BatchForm(this);
+                BatchForm.Show();
+                BatchMode = true;
             }
-            batchForm.AddBatch(domain, operation, bid, lockup);
+            BatchForm.AddBatch(domain, operation, bid, lockup);
 
         }
         public void AddBatch(string domain, string operation, DNS[] updateRecords)
         {
-            if (!batchMode)
+            if (!BatchMode)
             {
-                batchForm = new BatchForm(this);
-                batchForm.Show();
-                batchMode = true;
+                BatchForm = new BatchForm(this);
+                BatchForm.Show();
+                BatchMode = true;
             }
-            batchForm.AddBatch(domain, operation, updateRecords);
+            BatchForm.AddBatch(domain, operation, updateRecords);
         }
         public void AddBatch(string domain, string operation, string address)
         {
-            if (!batchMode)
+            if (!BatchMode)
             {
-                batchForm = new BatchForm(this);
-                batchForm.Show();
-                batchMode = true;
+                BatchForm = new BatchForm(this);
+                BatchForm.Show();
+                BatchMode = true;
             }
-            batchForm.AddBatch(domain, operation, address);
+            BatchForm.AddBatch(domain, operation, address);
         }
         public void FinishBatch()
         {
-            batchMode = false;
-            batchForm.Dispose();
+            BatchMode = false;
+            BatchForm.Dispose();
         }
         private void buttonBatch_Click(object sender, EventArgs e)
         {
-            if (!batchMode)
+            if (!BatchMode)
             {
-                batchForm = new BatchForm(this);
-                batchForm.Show();
-                batchMode = true;
+                BatchForm = new BatchForm(this);
+                BatchForm.Show();
+                BatchMode = true;
             }
-            else batchForm.Focus();
+            else BatchForm.Focus();
         }
         #endregion
         #region SettingsPage
@@ -2146,14 +2188,14 @@ namespace FireWallet
             sw.WriteLine("explorer-domain: " + textBoxExName.Text);
             sw.WriteLine("confirmations: " + numericUpDownConfirmations.Value);
             sw.WriteLine("portfolio-tx: " + numericUpDownTXCount.Value);
-            sw.WriteLine("hide-splash: " + userSettings["hide-splash"]);
+            sw.WriteLine("hide-splash: " + UserSettings["hide-splash"]);
             sw.Dispose();
             LoadSettings();
             labelSettingsSaved.Show();
         }
         private async void buttonSeed_Click(object sender, EventArgs e)
         {
-            string path = "wallet/" + account + "/master";
+            string path = "wallet/" + Account + "/master";
             string response = await APIGet(path, true);
             JObject resp = JObject.Parse(response);
             if (resp["encrypted"].ToString() == "False")

@@ -27,7 +27,7 @@ namespace FireWallet
             InitializeComponent();
             this.domain = domain;
             this.mainForm = mainForm;
-            nodeSettings = mainForm.nodeSettings;
+            nodeSettings = mainForm.NodeSettings;
 
             cancel = true;
             this.Text = domain + "/ DNS | FireWallet";
@@ -439,7 +439,7 @@ namespace FireWallet
             string key = nodeSettings["Key"];
             string ip = nodeSettings["IP"];
             string port = "1203";
-            if (mainForm.network == 1)
+            if (mainForm.HSDNetwork == 1)
             {
                 port = "1303";
             }
@@ -478,7 +478,7 @@ namespace FireWallet
             string ip = nodeSettings["IP"];
 
             string port = "1203";
-            if (mainForm.network == 1)
+            if (mainForm.HSDNetwork == 1)
             {
                 port = "1303";
             }

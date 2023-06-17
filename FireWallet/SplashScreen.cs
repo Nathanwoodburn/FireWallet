@@ -13,21 +13,23 @@ namespace FireWallet
 {
     public partial class SplashScreen : Form
     {
-        public SplashScreen()
+        public SplashScreen(bool timer)
         {
             InitializeComponent();
             close = false;
         }
         bool close;
-        private void timerSplashDelay_Tick(object sender, EventArgs e)
+        private void SplashScreen_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!close)
+            {
+                e.Cancel = true;
+            }
+        }
+        public void CloseSplash()
         {
             close = true;
             this.Close();
-        }
-
-        private void SplashScreen_FormClosing(object sender, FormClosingEventArgs e)
-        {
-
         }
 
         private void label2_Click(object sender, EventArgs e)

@@ -465,7 +465,7 @@ namespace FireWallet
         HttpClient httpClient = new HttpClient();
         private async void buttonSend_Click(object sender, EventArgs e)
         {
-            if (!mainForm.watchOnly)
+            if (!mainForm.WatchOnly)
             {
                 string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
                 string content = "{\"method\": \"sendbatch\",\"params\":[ " + batchTX + "]}";
@@ -508,7 +508,7 @@ namespace FireWallet
                 JObject result = JObject.Parse(jObject["result"].ToString());
                 string hash = result["hash"].ToString();
                 AddLog("Batch sent with hash: " + hash);
-                NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.userSettings["explorer-tx"] + hash);
+                NotifyForm notifyForm2 = new NotifyForm("Batch sent\nThis might take a while to mine.", "Explorer", mainForm.UserSettings["explorer-tx"] + hash);
                 notifyForm2.ShowDialog();
                 notifyForm2.Dispose();
                 this.Close();
@@ -552,7 +552,7 @@ namespace FireWallet
                 proc.StartInfo.RedirectStandardError = true;
                 proc.StartInfo.FileName = "node.exe";
                 proc.StartInfo.WorkingDirectory = dir + "hsd-ledger/bin/";
-                string args = "hsd-ledger/bin/hsd-ledger sendraw \"\"" + response.Replace("\"","\\\"") + "\"\" [" + domainslist + "] --api-key " + mainForm.nodeSettings["Key"] + " -w " + mainForm.account;
+                string args = "hsd-ledger/bin/hsd-ledger sendraw \"\"" + response.Replace("\"","\\\"") + "\"\" [" + domainslist + "] --api-key " + mainForm.NodeSettings["Key"] + " -w " + mainForm.Account;
 
                 proc.StartInfo.Arguments = dir + args;
                 var outputBuilder = new StringBuilder();
@@ -578,7 +578,7 @@ namespace FireWallet
                 if (output.Contains("Submitted TXID"))
                 {
                     string hash = output.Substring(output.IndexOf("Submitted TXID") + 16, 64);
-                    string link = mainForm.userSettings["explorer-tx"] + hash;
+                    string link = mainForm.UserSettings["explorer-tx"] + hash;
                     NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
                                                    "Explorer", link);
                     notifySuccess.ShowDialog();
@@ -739,10 +739,10 @@ namespace FireWallet
         /// <returns></returns>
         private async Task<string> APIPost(string path, bool wallet, string content)
         {
-            string key = mainForm.nodeSettings["Key"];
-            string ip = mainForm.nodeSettings["IP"];
+            string key = mainForm.NodeSettings["Key"];
+            string ip = mainForm.NodeSettings["IP"];
             string port = "1203";
-            if (mainForm.network == 1)
+            if (mainForm.HSDNetwork == 1)
             {
                 port = "1303";
             }

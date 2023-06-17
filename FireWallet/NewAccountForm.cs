@@ -27,7 +27,7 @@ namespace FireWallet
         private void NewAccountForm_Load(object sender, EventArgs e)
         {
             page = 0;
-            Dictionary<string, string> theme = mainForm.theme;
+            Dictionary<string, string> theme = mainForm.Theme;
             this.BackColor = ColorTranslator.FromHtml(theme["background"]);
             this.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
             foreach (Control c in Controls)
@@ -208,7 +208,7 @@ namespace FireWallet
                     proc.StartInfo.UseShellExecute = false;
                     proc.StartInfo.RedirectStandardError = true;
                     proc.StartInfo.FileName = "node.exe";
-                    proc.StartInfo.Arguments = mainForm.dir + "hsd-ledger/bin/hsd-ledger createwallet " + textBoxNewPass1.Text + " --api-key " + mainForm.nodeSettings["Key"];
+                    proc.StartInfo.Arguments = mainForm.dir + "hsd-ledger/bin/hsd-ledger createwallet " + textBoxNewPass1.Text + " --api-key " + mainForm.NodeSettings["Key"];
                     var outputBuilder = new StringBuilder();
 
                     // Event handler for capturing output data
@@ -243,10 +243,10 @@ namespace FireWallet
         HttpClient httpClient = new HttpClient();
         private async Task<string> APIPut(string path, bool wallet, string content)
         {
-            string key = mainForm.nodeSettings["Key"];
-            string ip = mainForm.nodeSettings["IP"];
+            string key = mainForm.NodeSettings["Key"];
+            string ip = mainForm.NodeSettings["IP"];
             string port = "1203";
-            if (mainForm.network == 1)
+            if (mainForm.HSDNetwork == 1)
             {
                 port = "1303";
             }
