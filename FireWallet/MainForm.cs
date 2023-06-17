@@ -53,10 +53,13 @@ namespace FireWallet
             LoadSettings();
             UpdateTheme();
             // Theme drop down
-            foreach (ToolStripMenuItem c in toolStripDropDownButtonHelp.DropDownItems)
+            foreach (ToolStripItem item in toolStripDropDownButtonHelp.DropDownItems)
             {
-                c.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
-                c.BackColor = ColorTranslator.FromHtml(theme["background"]);
+                if (item is ToolStripDropDownItem dropDownItem)
+                {
+                    dropDownItem.ForeColor = ColorTranslator.FromHtml(theme["foreground"]);
+                    dropDownItem.BackColor = ColorTranslator.FromHtml(theme["background"]);
+                }
             }
             toolStripDropDownButtonHelp.DropDown.BackColor = ColorTranslator.FromHtml(theme["background"]);
 
@@ -221,28 +224,29 @@ namespace FireWallet
                                 return false;
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         if (!Directory.Exists(dir + "hsd"))
-                            {
-                                NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
-                                Notifyinstall.Show();
-                                // Wait for the notification to show
-                                await Task.Delay(1000);
+                        {
+                            NotifyForm Notifyinstall = new NotifyForm("Installing hsd\nThis may take a few minutes\nDo not close FireWallet", false);
+                            Notifyinstall.Show();
+                            // Wait for the notification to show
+                            await Task.Delay(1000);
 
-                                string repositoryUrl = "https://github.com/handshake-org/hsd.git";
-                                string destinationPath = dir + "hsd";
-                                CloneRepository(repositoryUrl, destinationPath);
+                            string repositoryUrl = "https://github.com/handshake-org/hsd.git";
+                            string destinationPath = dir + "hsd";
+                            CloneRepository(repositoryUrl, destinationPath);
 
-                                Notifyinstall.CloseNotification();
-                                Notifyinstall.Dispose();
-                            }
-                            if (!Directory.Exists(dir + "hsd\\node_modules"))
-                            {
-                                AddLog("HSD install failed");
-                                this.Close();
-                                return false;
-                            }
+                            Notifyinstall.CloseNotification();
+                            Notifyinstall.Dispose();
+                        }
+                        if (!Directory.Exists(dir + "hsd\\node_modules"))
+                        {
+                            AddLog("HSD install failed");
+                            this.Close();
+                            return false;
+                        }
                     }
 
 
@@ -1650,7 +1654,7 @@ namespace FireWallet
                 if (!outputInstalled.Contains("git version"))
                 {
                     AddLog("Git is not installed");
-                    NotifyForm notifyForm = new NotifyForm("Git is not installed\nPlease install it to install HSD dependencies","Install", "https://git-scm.com/download/win");
+                    NotifyForm notifyForm = new NotifyForm("Git is not installed\nPlease install it to install HSD dependencies", "Install", "https://git-scm.com/download/win");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
@@ -1672,7 +1676,7 @@ namespace FireWallet
                 if (!outputInstalled.Contains("v"))
                 {
                     AddLog("Node is not installed");
-                    NotifyForm notifyForm = new NotifyForm("Node is not installed\nPlease install it to install HSD dependencies","Install", "https://nodejs.org/en/download");
+                    NotifyForm notifyForm = new NotifyForm("Node is not installed\nPlease install it to install HSD dependencies", "Install", "https://nodejs.org/en/download");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
@@ -1698,7 +1702,7 @@ namespace FireWallet
                 {
                     AddLog("NPM is not installed");
                     AddLog(outputInstalled);
-                    NotifyForm notifyForm = new NotifyForm("NPM is not installed\nPlease install it to install HSD dependencies","Install", "https://docs.npmjs.com/downloading-and-installing-node-js-and-npm");
+                    NotifyForm notifyForm = new NotifyForm("NPM is not installed\nPlease install it to install HSD dependencies", "Install", "https://docs.npmjs.com/downloading-and-installing-node-js-and-npm");
                     notifyForm.ShowDialog();
                     notifyForm.Dispose();
                     this.Close();
@@ -2243,6 +2247,15 @@ namespace FireWallet
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "https://l.woodburn.au/discord",
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
+        private void otherProjectsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo
+            {
+                FileName = "https://nathan.woodburn.au/projects",
                 UseShellExecute = true
             };
             Process.Start(psi);

@@ -95,6 +95,7 @@ namespace FireWallet
             textBoxReceiveAddress = new TextBox();
             labelReceive1 = new Label();
             panelDomains = new Panel();
+            labelDomainSort = new Label();
             comboBoxDomainSort = new ComboBox();
             buttonExportDomains = new Button();
             groupBoxDomains = new GroupBox();
@@ -123,7 +124,8 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            labelDomainSort = new Label();
+            toolStripSeparator1 = new ToolStripSeparator();
+            otherProjectsToolStripMenuItem = new ToolStripMenuItem();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -201,7 +203,7 @@ namespace FireWallet
             // toolStripDropDownButtonHelp
             // 
             toolStripDropDownButtonHelp.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButtonHelp.DropDownItems.AddRange(new ToolStripItem[] { githubToolStripMenuItem, websiteToolStripMenuItem, supportDiscordServerToolStripMenuItem });
+            toolStripDropDownButtonHelp.DropDownItems.AddRange(new ToolStripItem[] { githubToolStripMenuItem, websiteToolStripMenuItem, supportDiscordServerToolStripMenuItem, toolStripSeparator1, otherProjectsToolStripMenuItem });
             toolStripDropDownButtonHelp.Image = (Image)resources.GetObject("toolStripDropDownButtonHelp.Image");
             toolStripDropDownButtonHelp.ImageTransparentColor = Color.Magenta;
             toolStripDropDownButtonHelp.Margin = new Padding(20, 2, 0, 0);
@@ -798,6 +800,16 @@ namespace FireWallet
             panelDomains.TabIndex = 18;
             panelDomains.Visible = false;
             // 
+            // labelDomainSort
+            // 
+            labelDomainSort.AutoSize = true;
+            labelDomainSort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelDomainSort.Location = new Point(638, 15);
+            labelDomainSort.Name = "labelDomainSort";
+            labelDomainSort.Size = new Size(42, 21);
+            labelDomainSort.TabIndex = 12;
+            labelDomainSort.Text = "Sort:";
+            // 
             // comboBoxDomainSort
             // 
             comboBoxDomainSort.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -1081,15 +1093,17 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // labelDomainSort
+            // toolStripSeparator1
             // 
-            labelDomainSort.AutoSize = true;
-            labelDomainSort.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDomainSort.Location = new Point(638, 15);
-            labelDomainSort.Name = "labelDomainSort";
-            labelDomainSort.Size = new Size(42, 21);
-            labelDomainSort.TabIndex = 12;
-            labelDomainSort.Text = "Sort:";
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(191, 6);
+            // 
+            // otherProjectsToolStripMenuItem
+            // 
+            otherProjectsToolStripMenuItem.Name = "otherProjectsToolStripMenuItem";
+            otherProjectsToolStripMenuItem.Size = new Size(194, 22);
+            otherProjectsToolStripMenuItem.Text = "Other Projects";
+            otherProjectsToolStripMenuItem.Click += otherProjectsToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -1234,5 +1248,7 @@ namespace FireWallet
         private Label labelSendingHIPAddress;
         private ComboBox comboBoxDomainSort;
         private Label labelDomainSort;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem otherProjectsToolStripMenuItem;
     }
 }
