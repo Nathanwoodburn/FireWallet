@@ -83,7 +83,6 @@
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "FireWallet";
-            TopMost = true;
             FormClosing += SplashScreen_FormClosing;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
