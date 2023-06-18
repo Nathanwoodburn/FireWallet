@@ -1370,7 +1370,6 @@ namespace FireWallet
 
                     // Perform the DNS lookup for the specified domain using DNSSec
                     var result = client.Query(domain, QueryType.A);
-
                     // Display the DNS lookup results
                     foreach (var record in result.Answers.OfType<ARecord>())
                     {
@@ -1381,6 +1380,7 @@ namespace FireWallet
                     {
                         labelSendingError.Show();
                         labelSendingError.Text = "HIP-02 lookup failed";
+                        AddLog("No IP found");
                         return;
                     }
 
@@ -1405,17 +1405,41 @@ namespace FireWallet
                         // Send a GET request to the specified URL
                         HttpResponseMessage response = httpclient.GetAsync(url).Result;
 
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            labelSendingError.Show();
+                            labelSendingError.Text = "HIP-02 lookup failed";
+                            AddLog("HTTPS get failed");
+                            AddLog(response.Content.ReadAsStringAsync().Result);
+                            return;
+                        }
+
                         // Response
                         string address = response.Content.ReadAsStringAsync().Result;
+                        address = address.Trim();
 
-                        labelSendingHIPAddress.Text = address;
-                        labelSendingHIPAddress.Show();
-                        labelHIPArrow.Show();
+
+                        if (await ValidAddress(address))
+                        {
+                            labelSendingHIPAddress.Text = address;
+                            labelSendingHIPAddress.Show();
+                            labelHIPArrow.Show();
+                        }
+                        else
+                        {
+                            labelSendingError.Show();
+                            labelSendingError.Text = "Invalid Address";
+                            AddLog("Invalid Address\n"+address);
+
+                        }
+
+                        
                     }
 
                 }
                 catch (Exception ex)
                 {
+                    AddLog("HIP-02 lookup error");
                     AddLog(ex.Message);
                     labelSendingError.Show();
                     labelSendingError.Text = "HIP-02 lookup failed";
