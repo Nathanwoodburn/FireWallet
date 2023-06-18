@@ -141,6 +141,12 @@ They are stored in `%appdata%\FireWallet\` (`C:\Users\{username}\AppData\Roaming
 
 ## settings.txt
 This file stores the user settings for the application.  
+If you want to change the default HIP-02 resolver you can add these settings
+```yaml
+hip-02-ip: 127.0.0.1
+hip-02-port: 5350
+```
+
 
 ## node.txt
 This file stores the node (HSD/Bob connection) settings.  
