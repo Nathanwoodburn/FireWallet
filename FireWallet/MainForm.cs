@@ -127,7 +127,7 @@ namespace FireWallet
                 }
                 else
                 {
-                    // Wait until the Node is connected
+                    // Wait until the Node is connected before closing the splash
                     while (true)
                     {
                         string status = await APIGet("",false);
@@ -141,11 +141,8 @@ namespace FireWallet
                         {
                             Thread.Sleep(100);
                         }
-
                     }
                 }
-
-
                 Application.DoEvents();
             }
             AddLog("Loaded");
@@ -155,11 +152,11 @@ namespace FireWallet
             this.WindowState = FormWindowState.Minimized;
             this.Show();
             this.WindowState = FormWindowState.Normal;
-
             textBoxaccountpassword.Focus();
         }
         private void MainForm_Closing(object sender, FormClosingEventArgs e)
         {
+            // Close HSD before closing FireWallet
             AddLog("Closing");
             if (HSDProcess != null)
             {
@@ -167,7 +164,6 @@ namespace FireWallet
                 HSDProcess.Kill();
                 AddLog("HSD Closed");
                 Thread.Sleep(1000);
-
                 try
                 {
                     HSDProcess.Dispose();
@@ -179,10 +175,6 @@ namespace FireWallet
             }
         }
         #endregion
-
-
-
-
         #region Settings
         private async Task<bool> LoadNode()
         {
@@ -1353,7 +1345,19 @@ namespace FireWallet
 
 
                     // Create an instance of LookupClient using the custom options
-                    NameServer nameServer = new NameServer(IPAddress.Parse("127.0.0.1"), 5350);
+                    string ip = "127.0.0.1";
+                    int port = 5350;
+
+                    if (UserSettings.ContainsKey("hip-02-ip"))
+                    {
+                        ip = UserSettings["hip-02-ip"];
+                    }
+                    if (UserSettings.ContainsKey("hip-02-port"))
+                    {
+                        port = int.Parse(UserSettings["hip-02-port"]);
+                    }
+
+                    NameServer nameServer = new NameServer(IPAddress.Parse(ip), port);
                     var options = new LookupClientOptions(nameServer);
                     options.EnableAuditTrail = true;
                     options.UseTcpOnly = true;
@@ -1362,18 +1366,10 @@ namespace FireWallet
                     options.RequestDnsSecRecords = true;
                     options.Timeout = TimeSpan.FromSeconds(5);
 
-
                     var client = new LookupClient(options);
 
-
                     // Perform the DNS lookup for the specified domain using DNSSec
-
                     var result = client.Query(domain, QueryType.A);
-
-
-
-
-
                     // Display the DNS lookup results
                     foreach (var record in result.Answers.OfType<ARecord>())
                     {
@@ -1384,6 +1380,7 @@ namespace FireWallet
                     {
                         labelSendingError.Show();
                         labelSendingError.Text = "HIP-02 lookup failed";
+                        AddLog("No IP found");
                         return;
                     }
 
@@ -1408,17 +1405,41 @@ namespace FireWallet
                         // Send a GET request to the specified URL
                         HttpResponseMessage response = httpclient.GetAsync(url).Result;
 
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            labelSendingError.Show();
+                            labelSendingError.Text = "HIP-02 lookup failed";
+                            AddLog("HTTPS get failed");
+                            AddLog(response.Content.ReadAsStringAsync().Result);
+                            return;
+                        }
+
                         // Response
                         string address = response.Content.ReadAsStringAsync().Result;
+                        address = address.Trim();
 
-                        labelSendingHIPAddress.Text = address;
-                        labelSendingHIPAddress.Show();
-                        labelHIPArrow.Show();
+
+                        if (await ValidAddress(address))
+                        {
+                            labelSendingHIPAddress.Text = address;
+                            labelSendingHIPAddress.Show();
+                            labelHIPArrow.Show();
+                        }
+                        else
+                        {
+                            labelSendingError.Show();
+                            labelSendingError.Text = "Invalid Address";
+                            AddLog("Invalid Address\n"+address);
+
+                        }
+
+                        
                     }
 
                 }
                 catch (Exception ex)
                 {
+                    AddLog("HIP-02 lookup error");
                     AddLog(ex.Message);
                     labelSendingError.Show();
                     labelSendingError.Text = "HIP-02 lookup failed";
