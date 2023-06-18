@@ -1355,6 +1355,13 @@ namespace FireWallet
                     if (UserSettings.ContainsKey("hip-02-port"))
                     {
                         port = int.Parse(UserSettings["hip-02-port"]);
+                    } else if (!HSD)
+                    {
+                        string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                        if (Directory.Exists(bobPath))
+                        {
+                            port = 9892;
+                        }
                     }
 
                     NameServer nameServer = new NameServer(IPAddress.Parse(ip), port);
