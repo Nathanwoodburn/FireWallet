@@ -7,8 +7,6 @@ using QRCoder;
 using System.Text.RegularExpressions;
 using System.Security.Cryptography;
 using System.Text;
-using System.Security.Policy;
-using System.Windows.Forms;
 using System.Net;
 using DnsClient;
 using DnsClient.Protocol;
@@ -1223,6 +1221,7 @@ namespace FireWallet
                 buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
                 buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
             }
+            groupBoxTransactions.Height = panelPortfolio.Height - groupBoxbalance.Height - 10;
         }
 
         private async void SendPanel_Click(object sender, EventArgs e)
@@ -2315,7 +2314,6 @@ namespace FireWallet
 
         }
         #endregion
-
         #region Help Menu
         private void githubToolStripMenuItem_Click(object sender, EventArgs e)
         {
