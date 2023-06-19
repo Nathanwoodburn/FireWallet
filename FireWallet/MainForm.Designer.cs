@@ -45,6 +45,8 @@ namespace FireWallet
             githubToolStripMenuItem = new ToolStripMenuItem();
             websiteToolStripMenuItem = new ToolStripMenuItem();
             supportDiscordServerToolStripMenuItem = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
+            otherProjectsToolStripMenuItem = new ToolStripMenuItem();
             timerNodeStatus = new System.Windows.Forms.Timer(components);
             panelaccount = new Panel();
             groupBoxaccount = new GroupBox();
@@ -124,8 +126,6 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            toolStripSeparator1 = new ToolStripSeparator();
-            otherProjectsToolStripMenuItem = new ToolStripMenuItem();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -232,6 +232,18 @@ namespace FireWallet
             supportDiscordServerToolStripMenuItem.Size = new Size(194, 22);
             supportDiscordServerToolStripMenuItem.Text = "Support Discord Server";
             supportDiscordServerToolStripMenuItem.Click += supportDiscordServerToolStripMenuItem_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(191, 6);
+            // 
+            // otherProjectsToolStripMenuItem
+            // 
+            otherProjectsToolStripMenuItem.Name = "otherProjectsToolStripMenuItem";
+            otherProjectsToolStripMenuItem.Size = new Size(194, 22);
+            otherProjectsToolStripMenuItem.Text = "Other Projects";
+            otherProjectsToolStripMenuItem.Click += otherProjectsToolStripMenuItem_Click;
             // 
             // timerNodeStatus
             // 
@@ -437,7 +449,7 @@ namespace FireWallet
             panelPortfolio.Controls.Add(groupBoxTransactions);
             panelPortfolio.Controls.Add(groupBoxinfo);
             panelPortfolio.Controls.Add(groupBoxbalance);
-            panelPortfolio.Location = new Point(1065, 80);
+            panelPortfolio.Location = new Point(140, 35);
             panelPortfolio.Name = "panelPortfolio";
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
@@ -576,7 +588,7 @@ namespace FireWallet
             panelSend.Controls.Add(labelSendingTo);
             panelSend.Controls.Add(labelSendPrompt);
             panelSend.Controls.Add(labelHIPArrow);
-            panelSend.Location = new Point(138, 33);
+            panelSend.Location = new Point(1041, 235);
             panelSend.Name = "panelSend";
             panelSend.Size = new Size(974, 521);
             panelSend.TabIndex = 2;
@@ -794,7 +806,7 @@ namespace FireWallet
             panelDomains.Controls.Add(groupBoxDomains);
             panelDomains.Controls.Add(labelDomainSearch);
             panelDomains.Controls.Add(textBoxDomainSearch);
-            panelDomains.Location = new Point(120, 48);
+            panelDomains.Location = new Point(1122, 35);
             panelDomains.Name = "panelDomains";
             panelDomains.Size = new Size(920, 536);
             panelDomains.TabIndex = 18;
@@ -1093,18 +1105,6 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // toolStripSeparator1
-            // 
-            toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(191, 6);
-            // 
-            // otherProjectsToolStripMenuItem
-            // 
-            otherProjectsToolStripMenuItem.Name = "otherProjectsToolStripMenuItem";
-            otherProjectsToolStripMenuItem.Size = new Size(194, 22);
-            otherProjectsToolStripMenuItem.Text = "Other Projects";
-            otherProjectsToolStripMenuItem.Click += otherProjectsToolStripMenuItem_Click;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1124,6 +1124,7 @@ namespace FireWallet
             Text = "FireWallet";
             FormClosing += MainForm_Closing;
             Load += MainForm_Load;
+            ResizeEnd += MainForm_ResizeEnd;
             Resize += Form1_Resize;
             statusStripmain.ResumeLayout(false);
             statusStripmain.PerformLayout();

@@ -71,7 +71,7 @@ namespace FireWallet
             else
             {
                 // Show splash screen
-                ss.Show();           
+                ss.Show();
                 splash = true;
             }
             // Record time
@@ -130,7 +130,7 @@ namespace FireWallet
                     // Wait until the Node is connected before closing the splash
                     while (true)
                     {
-                        string status = await APIGet("",false);
+                        string status = await APIGet("", false);
                         if (status != "Error")
                         {
                             ss.CloseSplash();
@@ -622,6 +622,10 @@ namespace FireWallet
             [DllImport("user32.dll")]
             internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
         }
+        private void MainForm_ResizeEnd(object sender, EventArgs e)
+        {
+            ResizeForm();
+        }
         private void Form1_Resize(object sender, EventArgs e)
         {
             ResizeForm();
@@ -633,9 +637,33 @@ namespace FireWallet
             groupBoxDomains.Width = panelDomains.Width - 20;
             groupBoxDomains.Left = 10;
             groupBoxDomains.Height = panelDomains.Height - groupBoxDomains.Top - 10;
-
             buttonNavSettings.Top = panelNav.Height - buttonNavSettings.Height - 10;
             buttonSettingsSave.Top = panelSettings.Height - buttonSettingsSave.Height - 10;
+            groupBoxTransactions.Height = panelPortfolio.Height - groupBoxbalance.Height - 10;
+
+            // SEND Page
+            labelSendPrompt.Left = (panelSend.Width - labelSendPrompt.Width) / 2;
+            buttonSendHNS.Left = (panelSend.Width - buttonSendHNS.Width) / 2;
+            labelSendingTo.Left = (panelSend.Width - labelSendingTo.Width - textBoxSendingTo.Width) / 2;
+            labelSendingAmount.Left = labelSendingTo.Left;
+            textBoxSendingTo.Left = labelSendingTo.Left + labelSendingTo.Width + 10;
+            textBoxSendingAmount.Left = textBoxSendingTo.Left;
+            labelSendingMax.Left = labelSendingTo.Left;
+            labelSendingError.Left = textBoxSendingTo.Left + textBoxSendingTo.Width + 10;
+            labelSendingFee.Left = labelSendingTo.Left;
+            buttonSendMax.Left = textBoxSendingAmount.Left + textBoxSendingAmount.Width - buttonSendMax.Width;
+            checkBoxSendSubFee.Left = labelSendingTo.Left;
+
+            // RECEIVE Page
+            labelReceive1.Left = (panelRecieve.Width - labelReceive1.Width) / 2;
+            labelReceive2.Left = (panelRecieve.Width - labelReceive2.Width) / 2;
+            textBoxReceiveAddress.Left = (panelRecieve.Width - textBoxReceiveAddress.Width) / 2;
+            Size size = TextRenderer.MeasureText(textBoxReceiveAddress.Text, textBoxReceiveAddress.Font);
+            textBoxReceiveAddress.Width = size.Width + 10;
+            textBoxReceiveAddress.Left = (panelRecieve.Width - textBoxReceiveAddress.Width) / 2;
+            pictureBoxReceiveQR.Width = panelRecieve.Width / 3;
+            pictureBoxReceiveQR.Left = (panelRecieve.Width - pictureBoxReceiveQR.Width) / 2;
+
         }
         #endregion
         #region Accounts
@@ -1260,9 +1288,6 @@ namespace FireWallet
             pictureBoxReceiveQR.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxReceiveQR.Width = panelRecieve.Width / 3;
             pictureBoxReceiveQR.Left = (panelRecieve.Width - pictureBoxReceiveQR.Width) / 2;
-
-
-
         }
         private void buttonNavDomains_Click(object sender, EventArgs e)
         {
@@ -1329,7 +1354,7 @@ namespace FireWallet
         public string TLSA { get; set; }
         private async void textBoxSendingTo_Leave(object sender, EventArgs e)
         {
-            
+
             labelSendingError.Hide();
             labelHIPArrow.Hide();
             labelSendingHIPAddress.Hide();
@@ -1355,7 +1380,8 @@ namespace FireWallet
                     if (UserSettings.ContainsKey("hip-02-port"))
                     {
                         port = int.Parse(UserSettings["hip-02-port"]);
-                    } else if (!HSD)
+                    }
+                    else if (!HSD)
                     {
                         string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
                         if (Directory.Exists(bobPath))
@@ -1436,11 +1462,11 @@ namespace FireWallet
                         {
                             labelSendingError.Show();
                             labelSendingError.Text = "Invalid Address";
-                            AddLog("Invalid Address\n"+address);
+                            AddLog("Invalid Address\n" + address);
 
                         }
 
-                        
+
                     }
 
                 }
