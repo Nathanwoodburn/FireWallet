@@ -6,4 +6,4 @@ woodburn4,BID,1,3
 woodburn5,BID,1,3
 woodburn6,BID,1,4
 woodburn8,TRANSFER,hs1qlmlgnx0g3ynk4ylxkkdh9c9nernclnfq4lw6s9
-exampledomainnathan118,UPDATE,[{"type": "DS","keyTag": 20167,"algorithm": 13,"digestType": 2,"digest":"4a2ab3224727a4754a6c3d77621a5b04241a3d9c7ae7e5fa17f73121b9ff0e06"}, {"type": "NS","ns": "ns1.woodburn."}, {"type": "NS","ns": "ns2.woodburn."}, {"type": "TXT","txt": ["TEST"]}]
+exampledomainnathan90,UPDATE,[{"type": "NS","ns": "ns1.woodburn."};{"type": "NS","ns": "ns2.woodburn."};{"type": "DS","keyTag": 30273,"algorithm": 13,"digestType": 2,"digest":"9a3a8fb3d625d2a2073d740f10da6056ebed0e97f550aa7f3891ed450c7e60c9"};{"type": "GLUE4","ns": "ns1.exampledomainnathan90.","address": "1.2.3.4"};{"type": "TXT","txt": ["Test TXT record"]}]

@@ -667,40 +667,37 @@ namespace FireWallet
                                     {
                                         string[] updateRecord = update.Split(',');
                                         string type = updateRecord[0];
-                                        type = type.Split(':')[1];
+                                        type = type.Split(':')[1].Replace("\"","").Trim();
                                         switch (type)
                                         {
                                             case "NS":
-                                                string ns = updateRecord[1].Split(':')[1].Replace("\"","");
+                                                string ns = updateRecord[1].Split(':')[1].Replace("\"","").Replace("}","").Trim();
                                                 UpdateRecords[r] = new DNS(type, ns);
                                                 break;
                                             case "DS":
                                                 int keyTag = int.Parse(updateRecord[1].Split(':')[1]);
                                                 int algorithm = int.Parse(updateRecord[2].Split(':')[1]);
                                                 int digestType = int.Parse(updateRecord[3].Split(':')[1]);
-                                                string digest = updateRecord[4].Split(':')[1].Replace("\"", "");
+                                                string digest = updateRecord[4].Split(':')[1].Replace("\"", "").Replace("}", "");
 
                                                 UpdateRecords[r] = new DNS(type, keyTag, algorithm, digestType, digest);
                                                 break;
                                             case "TXT":
-                                                string txt = updateRecord[1].Split(':')[1].Replace("\"", "");
-                                                txt.Replace("[", "");
-                                                txt.Replace("]", "");
-                                                UpdateRecords[r] = new DNS(type, new string[] { txt });
+                                                string txt = updateRecord[1].Split(':')[1].Replace("\"", "").Replace("}", "");
+                                                txt = txt.Replace("[", "");
+                                                txt = txt.Replace("]", "");
+                                                UpdateRecords[r] = new DNS(type, new string[] { txt.Trim() });
                                                 break;
                                             case "GLUE4":
                                             case "GLUE6":
-                                                string nsGlue = updateRecord[1].Split(':')[1].Replace("\"", "");
-                                                string address = updateRecord[2].Split(':')[1].Replace("\"", "");
+                                                string nsGlue = updateRecord[1].Split(':')[1].Replace("\"", "").Trim();
+                                                string address = updateRecord[2].Split(':')[1].Replace("\"", "").Replace("}", "").Trim();
                                                 UpdateRecords[r] = new DNS(type, nsGlue, address);
                                                 break;
-
-
                                         }
-                                        
                                         r++;
                                     }
-                                    
+                                    AddBatch(split[0], split[1], UpdateRecords);
                                     continue;
                                 }
                             }
