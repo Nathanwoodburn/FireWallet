@@ -173,4 +173,5 @@ You should check this file if you have any issues with the application.
 # Support
 If you have any issues with the application you can open an issue on GitHub or contact me on Discord (NathanWoodburn on most Handshake servers).
 
-If you would like to support this project you can find out how at https://nathan.woodburn.au/#donate or you can help by contributing to the project on GitHub.
+If you would like to support this project you can find out how at https://nathan.woodburn.au/#donate or you can help by contributing to the project on GitHub.  
+Also you can send HNS directly to `@firewallet`
