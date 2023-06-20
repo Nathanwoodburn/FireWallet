@@ -1,12 +1,10 @@
 ﻿using System.Data;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Text;
-using Microsoft.VisualBasic;
+using System.Windows.Forms.VisualStyles;
 using Newtonsoft.Json.Linq;
+using ContentAlignment = System.Drawing.ContentAlignment;
 using Point = System.Drawing.Point;
 
 namespace FireWallet
@@ -620,7 +618,7 @@ namespace FireWallet
                     }
                     else if (b.method == "UPDATE")
                     {
-                        sw.WriteLine(b.domain + "," + b.method + ",[" + string.Join(", ", b.update.Select(record => record.ToString())) + "]");
+                        sw.WriteLine(b.domain + "," + b.method + ",[" + string.Join(";", b.update.Select(record => record.ToString())) + "]");
                     }
                     else
                     {
@@ -652,14 +650,57 @@ namespace FireWallet
                             {
                                 if (split[1] == "UPDATE")
                                 {
-                                    // Select operation and import domains
-                                    string[] newDomains = new string[domains.Length + 1];
-                                    for (int i = 0; i < domains.Length; i++)
+                                    // Join the rest of the line
+                                    string[] updateArray = new string[split.Length - 2];
+                                    for (int i = 0; i < updateArray.Length; i++)
                                     {
-                                        newDomains[i] = domains[i];
+                                        updateArray[i] = split[i + 2];
                                     }
-                                    newDomains[domains.Length] = split[0];
-                                    domains = newDomains;
+                                    string updateString = string.Join(",", updateArray);
+                                    updateString.TrimStart('[');
+                                    updateString.TrimEnd(']');
+
+                                    string[] updateSplit = updateString.Split(';');
+                                    DNS[] UpdateRecords = new DNS[updateSplit.Length];
+                                    int r = 0;
+                                    foreach (string update in updateSplit)
+                                    {
+                                        string[] updateRecord = update.Split(',');
+                                        string type = updateRecord[0];
+                                        type = type.Split(':')[1];
+                                        switch (type)
+                                        {
+                                            case "NS":
+                                                string ns = updateRecord[1].Split(':')[1].Replace("\"","");
+                                                UpdateRecords[r] = new DNS(type, ns);
+                                                break;
+                                            case "DS":
+                                                int keyTag = int.Parse(updateRecord[1].Split(':')[1]);
+                                                int algorithm = int.Parse(updateRecord[2].Split(':')[1]);
+                                                int digestType = int.Parse(updateRecord[3].Split(':')[1]);
+                                                string digest = updateRecord[4].Split(':')[1].Replace("\"", "");
+
+                                                UpdateRecords[r] = new DNS(type, keyTag, algorithm, digestType, digest);
+                                                break;
+                                            case "TXT":
+                                                string txt = updateRecord[1].Split(':')[1].Replace("\"", "");
+                                                txt.Replace("[", "");
+                                                txt.Replace("]", "");
+                                                UpdateRecords[r] = new DNS(type, new string[] { txt });
+                                                break;
+                                            case "GLUE4":
+                                            case "GLUE6":
+                                                string nsGlue = updateRecord[1].Split(':')[1].Replace("\"", "");
+                                                string address = updateRecord[2].Split(':')[1].Replace("\"", "");
+                                                UpdateRecords[r] = new DNS(type, nsGlue, address);
+                                                break;
+
+
+                                        }
+                                        
+                                        r++;
+                                    }
+                                    
                                     continue;
                                 }
                             }
