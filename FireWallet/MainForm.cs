@@ -1595,8 +1595,6 @@ namespace FireWallet
 
                 if (!WatchOnly)
                 {
-
-                    AddLog("Sending " + amount.ToString() + " HNS to " + address);
                     string content = "{\"method\": \"sendtoaddress\",\"params\": [ \"" + address + "\", " +
                         amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
                     string output = await APIPost("", true, content);
