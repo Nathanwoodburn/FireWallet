@@ -152,8 +152,7 @@ namespace FireWallet
             AddLog("Loaded");
 
 
-            // Pull form to front
-            
+            // Pull form to front            
             this.WindowState = FormWindowState.Minimized;
             this.Show();
             this.Opacity = 1;
@@ -928,21 +927,25 @@ namespace FireWallet
             req.Content = new StringContent(content);
 
             // Send request
-            HttpResponseMessage resp = await httpClient.SendAsync(req);
+
 
             try
             {
-                resp.EnsureSuccessStatusCode();
+                HttpResponseMessage resp = await httpClient.SendAsync(req);
+                if (!resp.IsSuccessStatusCode)
+                {
+                    AddLog("Post Error: " + resp.StatusCode);
+                    AddLog(await resp.Content.ReadAsStringAsync());
+                    return "Error";
+                }
+                return await resp.Content.ReadAsStringAsync();
+
             }
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
-                AddLog(await resp.Content.ReadAsStringAsync());
-                AddLog("Content: " + content);
                 return "Error";
             }
-
-            return await resp.Content.ReadAsStringAsync();
         }
         /// <summary>
         /// Get from HSD API
@@ -972,7 +975,12 @@ namespace FireWallet
                 request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
                 // Send request and log response
                 HttpResponseMessage response = await httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    AddLog("Get Error: " + response.StatusCode);
+                    AddLog(await response.Content.ReadAsStringAsync());
+                    return "Error";
+                }
                 return await response.Content.ReadAsStringAsync();
 
             }
@@ -993,8 +1001,15 @@ namespace FireWallet
                 AddLog("GetAddress Error");
                 return "Error";
             }
-            JObject resp = JObject.Parse(APIresponse);
-            return resp["address"].ToString();
+            try
+            {
+                JObject resp = JObject.Parse(APIresponse);
+                return resp["address"].ToString();
+            }
+            catch
+            {
+                return "Error";
+            }
         }
 
         private async void GetTXHistory()
@@ -2361,5 +2376,83 @@ namespace FireWallet
             Process.Start(psi);
         }
         #endregion
+
+        private async void buttonRedeemAll_Click(object sender, EventArgs e)
+        {
+            buttonRedeemAll.Enabled = false;
+            string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REDEEM\"]]]}";
+            AddLog(content);
+            string response = await APIPost("", true, content);
+            if (response == "Error")
+            {
+                AddLog("Error sending batch");
+                NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonRedeemAll.Enabled = true;
+                return;
+            }
+
+            JObject resp = JObject.Parse(response);
+            if (resp["error"].ToString() != "")
+            {
+                AddLog("Error sending batch");
+                AddLog(resp["error"].ToString());
+                JObject error = JObject.Parse(resp["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error sending batch\n" + error["message"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonRedeemAll.Enabled = true;
+                return;
+            }
+            if (resp.ContainsKey("result"))
+            {
+                JObject result = JObject.Parse(resp["result"].ToString());
+                string hash = result["hash"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Batch sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+            }
+            buttonRedeemAll.Enabled = true;
+        }
+
+        private async void buttonSendAll_Click(object sender, EventArgs e)
+        {
+            buttonSendAll.Enabled = false;
+            string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REVEAL\"],[\"REDEEM\"],[\"RENEW\"]]]}";
+            AddLog(content);
+            string response = await APIPost("", true, content);
+            if (response == "Error")
+            {
+                AddLog("Error sending batch");
+                NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonSendAll.Enabled = true;
+                return;
+            }
+
+            JObject resp = JObject.Parse(response);
+            if (resp["error"].ToString() != "")
+            {
+                AddLog("Error sending batch");
+                AddLog(resp["error"].ToString());
+                JObject error = JObject.Parse(resp["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error sending batch\n" + error["message"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonSendAll.Enabled = true;
+                return;
+            }
+            if (resp.ContainsKey("result"))
+            {
+                JObject result = JObject.Parse(resp["result"].ToString());
+                string hash = result["hash"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Batch sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+            }
+            buttonSendAll.Enabled = true;
+        }
     }
 }
