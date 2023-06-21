@@ -142,13 +142,21 @@ namespace FireWallet
                     }
                 }
                 Application.DoEvents();
+
+                while (!ss.IsClosed)
+                {
+                    Thread.Sleep(100);
+                    Application.DoEvents();
+                }
             }
             AddLog("Loaded");
 
+
             // Pull form to front
-            Opacity = 1;
+            
             this.WindowState = FormWindowState.Minimized;
             this.Show();
+            this.Opacity = 1;
             this.WindowState = FormWindowState.Normal;
             textBoxaccountpassword.Focus();
         }
