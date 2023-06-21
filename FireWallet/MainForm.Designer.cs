@@ -65,6 +65,7 @@ namespace FireWallet
             buttonNavSend = new Button();
             buttonNavPortfolio = new Button();
             panelPortfolio = new Panel();
+            buttonRedeemAll = new Button();
             buttonRevealAll = new Button();
             groupBoxTransactions = new GroupBox();
             groupBoxinfo = new GroupBox();
@@ -126,6 +127,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
+            buttonSendAll = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -445,6 +447,8 @@ namespace FireWallet
             // 
             // panelPortfolio
             // 
+            panelPortfolio.Controls.Add(buttonSendAll);
+            panelPortfolio.Controls.Add(buttonRedeemAll);
             panelPortfolio.Controls.Add(buttonRevealAll);
             panelPortfolio.Controls.Add(groupBoxTransactions);
             panelPortfolio.Controls.Add(groupBoxinfo);
@@ -455,13 +459,25 @@ namespace FireWallet
             panelPortfolio.TabIndex = 7;
             panelPortfolio.Visible = false;
             // 
+            // buttonRedeemAll
+            // 
+            buttonRedeemAll.FlatStyle = FlatStyle.Flat;
+            buttonRedeemAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonRedeemAll.Location = new Point(649, 12);
+            buttonRedeemAll.Name = "buttonRedeemAll";
+            buttonRedeemAll.Size = new Size(106, 44);
+            buttonRedeemAll.TabIndex = 9;
+            buttonRedeemAll.Text = "Redeem All";
+            buttonRedeemAll.UseVisualStyleBackColor = true;
+            buttonRedeemAll.Click += buttonRedeemAll_Click;
+            // 
             // buttonRevealAll
             // 
             buttonRevealAll.FlatStyle = FlatStyle.Flat;
             buttonRevealAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             buttonRevealAll.Location = new Point(537, 12);
             buttonRevealAll.Name = "buttonRevealAll";
-            buttonRevealAll.Size = new Size(89, 44);
+            buttonRevealAll.Size = new Size(106, 44);
             buttonRevealAll.TabIndex = 9;
             buttonRevealAll.Text = "Reveal All";
             buttonRevealAll.UseVisualStyleBackColor = true;
@@ -1105,6 +1121,18 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
+            // buttonSendAll
+            // 
+            buttonSendAll.FlatStyle = FlatStyle.Flat;
+            buttonSendAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSendAll.Location = new Point(761, 12);
+            buttonSendAll.Name = "buttonSendAll";
+            buttonSendAll.Size = new Size(106, 44);
+            buttonSendAll.TabIndex = 9;
+            buttonSendAll.Text = "Send All TXs";
+            buttonSendAll.UseVisualStyleBackColor = true;
+            buttonSendAll.Click += buttonSendAll_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1251,5 +1279,7 @@ namespace FireWallet
         private Label labelDomainSort;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem otherProjectsToolStripMenuItem;
+        private Button buttonRedeemAll;
+        private Button buttonSendAll;
     }
 }

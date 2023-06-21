@@ -28,11 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashScreen));
             label1 = new Label();
             pictureBox1 = new PictureBox();
             label2 = new Label();
+            panelNew = new Panel();
+            pictureBoxNew = new PictureBox();
+            timerIn = new System.Windows.Forms.Timer(components);
+            timerOut = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            panelNew.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxNew).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -67,12 +74,45 @@
             label2.Text = "Nathan.Woodburn/";
             label2.Click += label2_Click;
             // 
+            // panelNew
+            // 
+            panelNew.Controls.Add(pictureBoxNew);
+            panelNew.Dock = DockStyle.Fill;
+            panelNew.Location = new Point(0, 0);
+            panelNew.Name = "panelNew";
+            panelNew.Size = new Size(450, 450);
+            panelNew.TabIndex = 3;
+            // 
+            // pictureBoxNew
+            // 
+            pictureBoxNew.BackColor = Color.Black;
+            pictureBoxNew.Dock = DockStyle.Fill;
+            pictureBoxNew.Image = Properties.Resources.FWSplash;
+            pictureBoxNew.InitialImage = null;
+            pictureBoxNew.Location = new Point(0, 0);
+            pictureBoxNew.Name = "pictureBoxNew";
+            pictureBoxNew.Size = new Size(450, 450);
+            pictureBoxNew.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBoxNew.TabIndex = 0;
+            pictureBoxNew.TabStop = false;
+            pictureBoxNew.Visible = false;
+            // 
+            // timerIn
+            // 
+            timerIn.Enabled = true;
+            timerIn.Tick += timerIn_Tick;
+            // 
+            // timerOut
+            // 
+            timerOut.Tick += timerOut_Tick;
+            // 
             // SplashScreen
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Black;
-            ClientSize = new Size(444, 435);
+            ClientSize = new Size(450, 450);
+            Controls.Add(panelNew);
             Controls.Add(label2);
             Controls.Add(pictureBox1);
             Controls.Add(label1);
@@ -83,8 +123,12 @@
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.CenterScreen;
             Text = "FireWallet";
+            TopMost = true;
             FormClosing += SplashScreen_FormClosing;
+            Load += SplashScreen_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            panelNew.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBoxNew).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -93,5 +137,9 @@
         private Label label1;
         private PictureBox pictureBox1;
         private Label label2;
+        private Panel panelNew;
+        private PictureBox pictureBoxNew;
+        private System.Windows.Forms.Timer timerIn;
+        private System.Windows.Forms.Timer timerOut;
     }
 }

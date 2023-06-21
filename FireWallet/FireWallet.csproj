@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>FW2.ico</ApplicationIcon>
+    <ApplicationIcon>FW.ico</ApplicationIcon>
     <Title>FireWallet</Title>
     <PackageProjectUrl>https://l.woodburn.au</PackageProjectUrl>
     <PackageIcon>HSDBatcher.png</PackageIcon>
@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="FW2.ico" />
+    <Content Include="FW.ico" />
   </ItemGroup>
 
   <ItemGroup>
