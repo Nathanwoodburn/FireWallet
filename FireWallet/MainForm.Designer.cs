@@ -58,6 +58,7 @@ namespace FireWallet
             labelaccountusername = new Label();
             buttonaccountnew = new Button();
             panelNav = new Panel();
+            buttonNavBids = new Button();
             buttonNavSettings = new Button();
             buttonBatch = new Button();
             buttonNavDomains = new Button();
@@ -126,6 +127,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
+            panelBids = new Panel();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -353,6 +355,7 @@ namespace FireWallet
             // 
             // panelNav
             // 
+            panelNav.Controls.Add(buttonNavBids);
             panelNav.Controls.Add(buttonNavSettings);
             panelNav.Controls.Add(buttonBatch);
             panelNav.Controls.Add(buttonNavDomains);
@@ -364,6 +367,19 @@ namespace FireWallet
             panelNav.Name = "panelNav";
             panelNav.Size = new Size(114, 553);
             panelNav.TabIndex = 6;
+            // 
+            // buttonNavBids
+            // 
+            buttonNavBids.FlatStyle = FlatStyle.Flat;
+            buttonNavBids.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonNavBids.Location = new Point(12, 245);
+            buttonNavBids.Name = "buttonNavBids";
+            buttonNavBids.Size = new Size(89, 30);
+            buttonNavBids.TabIndex = 5;
+            buttonNavBids.TabStop = false;
+            buttonNavBids.Text = "Bids";
+            buttonNavBids.UseVisualStyleBackColor = true;
+            buttonNavBids.Click += buttonNavBids_Click;
             // 
             // buttonNavSettings
             // 
@@ -382,7 +398,7 @@ namespace FireWallet
             // 
             buttonBatch.FlatStyle = FlatStyle.Flat;
             buttonBatch.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonBatch.Location = new Point(12, 245);
+            buttonBatch.Location = new Point(12, 300);
             buttonBatch.Name = "buttonBatch";
             buttonBatch.Size = new Size(89, 30);
             buttonBatch.TabIndex = 3;
@@ -395,7 +411,7 @@ namespace FireWallet
             // 
             buttonNavDomains.FlatStyle = FlatStyle.Flat;
             buttonNavDomains.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonNavDomains.Location = new Point(12, 189);
+            buttonNavDomains.Location = new Point(12, 190);
             buttonNavDomains.Name = "buttonNavDomains";
             buttonNavDomains.Size = new Size(89, 30);
             buttonNavDomains.TabIndex = 2;
@@ -408,7 +424,7 @@ namespace FireWallet
             // 
             buttonNavReceive.FlatStyle = FlatStyle.Flat;
             buttonNavReceive.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonNavReceive.Location = new Point(12, 134);
+            buttonNavReceive.Location = new Point(12, 135);
             buttonNavReceive.Name = "buttonNavReceive";
             buttonNavReceive.Size = new Size(89, 30);
             buttonNavReceive.TabIndex = 1;
@@ -449,7 +465,7 @@ namespace FireWallet
             panelPortfolio.Controls.Add(groupBoxTransactions);
             panelPortfolio.Controls.Add(groupBoxinfo);
             panelPortfolio.Controls.Add(groupBoxbalance);
-            panelPortfolio.Location = new Point(140, 35);
+            panelPortfolio.Location = new Point(1036, 129);
             panelPortfolio.Name = "panelPortfolio";
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
@@ -1105,11 +1121,20 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
+            // panelBids
+            // 
+            panelBids.Location = new Point(143, 44);
+            panelBids.Name = "panelBids";
+            panelBids.Size = new Size(868, 484);
+            panelBids.TabIndex = 20;
+            panelBids.Visible = false;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1152, 575);
+            Controls.Add(panelBids);
             Controls.Add(panelDomains);
             Controls.Add(panelSend);
             Controls.Add(panelSettings);
@@ -1251,5 +1276,7 @@ namespace FireWallet
         private Label labelDomainSort;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem otherProjectsToolStripMenuItem;
+        private Button buttonNavBids;
+        private Panel panelBids;
     }
 }

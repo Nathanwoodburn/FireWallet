@@ -1314,6 +1314,7 @@ namespace FireWallet
             panelRecieve.Hide();
             panelDomains.Hide();
             panelSettings.Hide();
+            panelBids.Hide();
             buttonNavPortfolio.BackColor = ColorTranslator.FromHtml(Theme["background"]);
             buttonNavPortfolio.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
             buttonNavSend.BackColor = ColorTranslator.FromHtml(Theme["background"]);
@@ -1324,6 +1325,8 @@ namespace FireWallet
             buttonNavDomains.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
             buttonNavSettings.BackColor = ColorTranslator.FromHtml(Theme["background"]);
             buttonNavSettings.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
+            buttonNavBids.BackColor = ColorTranslator.FromHtml(Theme["background"]);
+            buttonNavBids.ForeColor = ColorTranslator.FromHtml(Theme["foreground"]);
         }
         private void buttonNavSettings_Click(object sender, EventArgs e)
         {
@@ -1346,6 +1349,19 @@ namespace FireWallet
             numericUpDownTXCount.Value = int.Parse(UserSettings["portfolio-tx"]);
             labelSettingsSaved.Hide();
         }
+        private void buttonNavBids_Click(object sender, EventArgs e)
+        {
+            hidePages();
+            if (Theme.ContainsKey("selected-bg") && Theme.ContainsKey("selected-fg"))
+            {
+                buttonNavBids.BackColor = ColorTranslator.FromHtml(Theme["selected-bg"]);
+                buttonNavBids.ForeColor = ColorTranslator.FromHtml(Theme["selected-fg"]);
+            }
+
+            panelBids.Show();
+            panelBids.Dock = DockStyle.Fill;
+        }
+
         #endregion
         #region Send
 
