@@ -263,6 +263,21 @@ namespace FireWallet
                 }
                 this.Close();
             }
+            else if (comboBoxMode.Text == "REGISTER")
+            {
+                batches = new Batch[0];
+                foreach (string domain in listBoxDomains.Items)
+                {
+                    if (domain != "")
+                    {
+                        Batch[] newBatch = new Batch[batches.Length + 1];
+                        Array.Copy(batches, newBatch, batches.Length);
+                        newBatch[newBatch.Length - 1] = new Batch(domain,"UPDATE",new DNS[0]);
+                        batches = newBatch;
+                    }
+                }
+                this.Close();
+            }
             else if (comboBoxMode.Text == "TRANSFER")
             {
                 batches = new Batch[0];

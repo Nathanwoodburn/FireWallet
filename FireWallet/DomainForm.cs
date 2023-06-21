@@ -279,6 +279,14 @@ namespace FireWallet
             string contentDNS = "{\"method\": \"getnameresource\", \"params\": [\"" + domain + "\"]}";
             string responseDNS = await APIPost("", false, contentDNS);
             JObject jObjectDNS = JObject.Parse(responseDNS);
+             
+            if (jObjectDNS["result"].ToString() == "")
+            {
+                // Not registered
+                groupBoxDNS.Visible = false;
+                return;
+            }
+
             JObject result = (JObject)jObjectDNS["result"];
             JArray records = (JArray)result["records"];
             // For each record
@@ -814,7 +822,14 @@ namespace FireWallet
 
                     if (!DNSEdit.cancel)
                     {
-                        string records = string.Join(", ", DNSEdit.DNSrecords.Select(record => record.ToString()));
+                        string records = "";
+                        if (DNSEdit.DNSrecords != null)
+                        {
+                            if (DNSEdit.DNSrecords.Count() > 0)
+                            {
+                                records = string.Join(", ", DNSEdit.DNSrecords.Select(record => record.ToString()));
+                            }
+                        }
 
                         string content = "{\"method\": \"sendupdate\", \"params\": [\"" + domain + "\", {\"records\": [" + records + "]}]}";
                         string response = await APIPost("", true, content);

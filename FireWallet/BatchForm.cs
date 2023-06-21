@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms.VisualStyles;
@@ -58,7 +59,7 @@ namespace FireWallet
                 List<Batch> temp = new List<Batch>();
                 foreach (Batch batch in batches)
                 {
-                    if (batch.domain != domain && batch.method != operation)
+                    if (batch.domain != domain || batch.method != operation)
                     {
                         temp.Add(batch);
                     }
@@ -122,7 +123,7 @@ namespace FireWallet
                 List<Batch> temp = new List<Batch>();
                 foreach (Batch batch in batches)
                 {
-                    if (batch.domain != domain && batch.method != operation)
+                    if (batch.domain != domain || batch.method != operation)
                     {
                         temp.Add(batch);
                     }
@@ -182,7 +183,7 @@ namespace FireWallet
                 List<Batch> temp = new List<Batch>();
                 foreach (Batch batch in batches)
                 {
-                    if (batch.domain != domain && batch.method != operation)
+                    if (batch.domain != domain || batch.method != operation)
                     {
                         temp.Add(batch);
                     }
@@ -238,7 +239,7 @@ namespace FireWallet
                 List<Batch> temp = new List<Batch>();
                 foreach (Batch batch in batches)
                 {
-                    if (batch.domain != domain && batch.method != operation)
+                    if (batch.domain != domain || batch.method != operation)
                     {
                         temp.Add(batch);
                     }
@@ -750,6 +751,10 @@ namespace FireWallet
                                 {
                                     AddBatch(b.domain, b.method, b.toAddress);
                                 }
+                                else if (b.method == "UPDATE")
+                                {
+                                    AddBatch(b.domain, b.method, b.update);
+                                }
                                 else
                                 {
                                     AddBatch(b.domain, b.method);
@@ -792,21 +797,26 @@ namespace FireWallet
             req.Content = new StringContent(content);
 
             // Send request
-            HttpResponseMessage resp = await httpClient.SendAsync(req);
 
             try
             {
-                resp.EnsureSuccessStatusCode();
+                HttpResponseMessage resp = await httpClient.SendAsync(req);
+                if (resp.StatusCode != HttpStatusCode.OK)
+                {
+                    AddLog("Post Error: " + resp.StatusCode.ToString());
+                    AddLog(await resp.Content.ReadAsStringAsync());
+                    AddLog(content);
+                    return "Error";
+                }
+                return await resp.Content.ReadAsStringAsync();
             }
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
-                AddLog(await resp.Content.ReadAsStringAsync());
-                AddLog(content);
                 return "Error";
             }
 
-            return await resp.Content.ReadAsStringAsync();
+            
         }
     }
     public class Batch
@@ -867,6 +877,10 @@ namespace FireWallet
                 string records = "{\"records\":[" + string.Join(", ", update.Select(record => record.ToString())) + "]}";
                 return "[\"UPDATE\", \"" + domain + "\", " + records + "]";
 
+            }
+            else if (method == "UPDATE")
+            {
+                return "[\"UPDATE\", \"" + domain + "\", {\"records\":[]}]";
             }
             return "[\"" + method + "\", \"" + domain + "\"]";
         }

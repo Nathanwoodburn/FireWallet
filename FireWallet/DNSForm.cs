@@ -363,6 +363,12 @@ namespace FireWallet
             string contentDNS = "{\"method\": \"getnameresource\", \"params\": [\"" + domain + "\"]}";
             string responseDNS = await APIPost("", false, contentDNS);
             JObject jObjectDNS = JObject.Parse(responseDNS);
+
+            if (jObjectDNS["result"].ToString() == "")
+            {
+                return;
+            }
+
             JObject result = (JObject)jObjectDNS["result"];
             JArray records = (JArray)result["records"];
             // For each record
