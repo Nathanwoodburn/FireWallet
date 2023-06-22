@@ -43,7 +43,6 @@ namespace FireWallet
         {
             InitializeComponent();
             panelaccount.Visible = true;
-            httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
         private async void MainForm_Load(object sender, EventArgs e)
         {
@@ -92,7 +91,7 @@ namespace FireWallet
             toolStripDropDownButtonHelp.DropDown.BackColor = ColorTranslator.FromHtml(Theme["background"]);
 
             // Load node
-            if (await LoadNode() != true) this.Close();
+            if (await LoadNode(ss) != true) this.Close();
 
             // If node load caused app to close, exit load function
             if (this.Disposing || this.IsDisposed) return;
@@ -182,15 +181,17 @@ namespace FireWallet
         }
         #endregion
         #region Settings
-        private async Task<bool> LoadNode()
+        private async Task<bool> LoadNode(SplashScreen? ss)
         {
             HSD = false;
             if (!File.Exists(dir + "node.txt"))
             {
+                ss.Hide();
                 NodeForm cf = new NodeForm();
                 timerNodeStatus.Stop();
                 cf.ShowDialog();
                 timerNodeStatus.Start();
+                ss.Show();
             }
             if (!File.Exists(dir + "node.txt"))
             {
@@ -199,7 +200,7 @@ namespace FireWallet
                 await Task.Delay(1000);
                 AddLog("Close Failed");
             }
-
+            
             StreamReader sr = new StreamReader(dir + "node.txt");
             NodeSettings = new Dictionary<string, string>();
             while (!sr.EndOfStream)
@@ -231,6 +232,12 @@ namespace FireWallet
                     toolStripStatusLabelNetwork.Text = "Network: Testnet (Not Implemented)";
                     break;
             }
+
+            if (NodeSettings.ContainsKey("Timeout"))
+            {
+                int timeout = Convert.ToInt32(NodeSettings["Timeout"]);
+                httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+            } else httpClient.Timeout = TimeSpan.FromSeconds(10);
 
             if (NodeSettings.ContainsKey("HSD"))
             {
@@ -310,6 +317,8 @@ namespace FireWallet
                         if (hideScreen)
                         {
                             HSDProcess.StartInfo.RedirectStandardError = true;
+                            // Send errors to log
+                            HSDProcess.ErrorDataReceived += (sender, e) => AddLog("HSD Error: " + e.Data);
                         }
                         else
                         {
@@ -760,14 +769,16 @@ namespace FireWallet
                 toolStripStatusLabelLedger.Text = "Cold Wallet";
                 toolStripStatusLabelLedger.Visible = true;
                 buttonRevealAll.Visible = false;
-
+                buttonRedeemAll.Visible = false;
+                buttonSendAll.Visible = false;
             }
             else
             {
                 WatchOnly = false;
                 toolStripStatusLabelLedger.Visible = false;
                 buttonRevealAll.Visible = true;
-
+                buttonRedeemAll.Visible = true;
+                buttonSendAll.Visible = true;
             }
 
 
@@ -852,6 +863,43 @@ namespace FireWallet
             hidePages();
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             textBoxaccountpassword.Focus();
+        }
+        private async void buttonRevealAll_Click(object sender, EventArgs e)
+        {
+            buttonRevealAll.Enabled = false;
+            string content = "{\"method\": \"sendreveal\"}";
+            string response = await APIPost("", true, content);
+            AddLog(response);
+            if (response == "Error")
+            {
+                AddLog("Error sending reveal");
+                NotifyForm notifyForm = new NotifyForm("Error sending reveal");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonRevealAll.Enabled = true;
+                return;
+            }
+            JObject resp = JObject.Parse(response);
+            if (resp["error"].ToString() != "")
+            {
+                AddLog("Error sending reveal");
+                AddLog(resp["error"].ToString());
+                JObject error = JObject.Parse(resp["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error sending reveal\n" + error["message"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonRevealAll.Enabled = true;
+                return;
+            }
+            if (resp.ContainsKey("result"))
+            {
+                JObject result = JObject.Parse(resp["result"].ToString());
+                string hash = result["hash"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Reveal sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+            }
+            buttonRevealAll.Enabled = true;
         }
         private async void buttonRedeemAll_Click(object sender, EventArgs e)
         {
@@ -1086,6 +1134,7 @@ namespace FireWallet
                 return false;
             }
             this.Enabled = false;
+            this.Visible = false;
             // Show splash
             SplashScreen ss = new SplashScreen(false);
             bool splash = false;
@@ -1107,7 +1156,6 @@ namespace FireWallet
             // Kill node
             if (HSDProcess != null)
             {
-                this.Opacity = 0;
                 HSDProcess.Kill();
                 AddLog("Killed HSD");
                 Thread.Sleep(1000);
@@ -1134,10 +1182,12 @@ namespace FireWallet
             try
             {
                 HSDProcess.StartInfo.CreateNoWindow = hideScreen;
-
                 if (hideScreen)
                 {
                     HSDProcess.StartInfo.RedirectStandardError = true;
+                    // Log errors to AddLog
+                    HSDProcess.ErrorDataReceived += (sender, e) => AddLog("HSD Error: " + e.Data);
+
                 }
                 else
                 {
@@ -1179,10 +1229,6 @@ namespace FireWallet
                         HSDProcess.StartInfo.Arguments = HSDProcess.StartInfo.Arguments + " --prefix " + bobPath;
                     }
                 }
-
-
-
-
                 HSDProcess.Start();
                 // Wait for HSD to start
                 await Task.Delay(2000);
@@ -1218,6 +1264,7 @@ namespace FireWallet
                 ss.CloseSplash();
             }
             this.Enabled = true;
+            this.Visible = true;
             return true;
         }
         private async Task<string> GetAddress()
@@ -2335,39 +2382,6 @@ namespace FireWallet
             {
                 AddLog("Error getting domains");
                 AddLog(ex.Message);
-            }
-        }
-        private async void buttonRevealAll_Click(object sender, EventArgs e)
-        {
-            string content = "{\"method\": \"sendreveal\"}";
-            string response = await APIPost("", true, content);
-            AddLog(response);
-            if (response == "Error")
-            {
-                AddLog("Error sending reveal");
-                NotifyForm notifyForm = new NotifyForm("Error sending reveal");
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                return;
-            }
-            JObject resp = JObject.Parse(response);
-            if (resp["error"].ToString() != "")
-            {
-                AddLog("Error sending reveal");
-                AddLog(resp["error"].ToString());
-                JObject error = JObject.Parse(resp["error"].ToString());
-                NotifyForm notifyForm = new NotifyForm("Error sending reveal\n" + error["message"].ToString());
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                return;
-            }
-            if (resp.ContainsKey("result"))
-            {
-                JObject result = JObject.Parse(resp["result"].ToString());
-                string hash = result["hash"].ToString();
-                NotifyForm notifyForm = new NotifyForm("Reveal sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
             }
         }
         private void textBoxDomainSearch_KeyDown(object sender, KeyEventArgs e)
