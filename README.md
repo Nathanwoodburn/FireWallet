@@ -159,6 +159,12 @@ The `{default-dir}` will be replaced with the HSD directory `%appdata%\FireWalle
 The `{key}` will be replaced with the API key from the node.txt file.  
 The `{Bob}` will be replaced with the Bob wallet HSD data directory `%appdata%\Bob\hsd_data\` this is used to sync FireWallet with Bob's accounts and also stops you needing to sync the chain twice.
 
+Other settings are here. These are the default and if they are not in the file they revert to these values.
+```yaml
+HideScreen: True # Hide the HSD terminal screen (Set to False for higher reliability)
+Timeout: 10 # The time in seconds to wait for any API request
+```
+
 ## theme.txt
 This file stores the theme settings.  
 The theme is the color scheme of the application.  
