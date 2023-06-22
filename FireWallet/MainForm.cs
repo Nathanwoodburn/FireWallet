@@ -43,6 +43,7 @@ namespace FireWallet
         {
             InitializeComponent();
             panelaccount.Visible = true;
+            httpClient.Timeout = TimeSpan.FromSeconds(10);
         }
         private async void MainForm_Load(object sender, EventArgs e)
         {
@@ -852,6 +853,83 @@ namespace FireWallet
             toolStripStatusLabelaccount.Text = "Account: Not Logged In";
             textBoxaccountpassword.Focus();
         }
+        private async void buttonRedeemAll_Click(object sender, EventArgs e)
+        {
+            buttonRedeemAll.Enabled = false;
+            string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REDEEM\"]]]}";
+            AddLog(content);
+            string response = await APIPost("", true, content);
+            if (response == "Error")
+            {
+                AddLog("Error sending batch");
+                NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonRedeemAll.Enabled = true;
+                return;
+            }
+
+            JObject resp = JObject.Parse(response);
+            if (resp["error"].ToString() != "")
+            {
+                AddLog("Error sending batch");
+                AddLog(resp["error"].ToString());
+                JObject error = JObject.Parse(resp["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error sending batch\n" + error["message"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonRedeemAll.Enabled = true;
+                return;
+            }
+            if (resp.ContainsKey("result"))
+            {
+                JObject result = JObject.Parse(resp["result"].ToString());
+                string hash = result["hash"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Batch sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+            }
+            buttonRedeemAll.Enabled = true;
+        }
+
+        private async void buttonSendAll_Click(object sender, EventArgs e)
+        {
+            buttonSendAll.Enabled = false;
+            string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REVEAL\"],[\"REDEEM\"],[\"RENEW\"]]]}";
+            AddLog(content);
+            string response = await APIPost("", true, content);
+            if (response == "Error")
+            {
+                AddLog("Error sending batch");
+                NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonSendAll.Enabled = true;
+                return;
+            }
+
+            JObject resp = JObject.Parse(response);
+            if (resp["error"].ToString() != "")
+            {
+                AddLog("Error sending batch");
+                AddLog(resp["error"].ToString());
+                JObject error = JObject.Parse(resp["error"].ToString());
+                NotifyForm notifyForm = new NotifyForm("Error sending batch\n" + error["message"].ToString());
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                buttonSendAll.Enabled = true;
+                return;
+            }
+            if (resp.ContainsKey("result"))
+            {
+                JObject result = JObject.Parse(resp["result"].ToString());
+                string hash = result["hash"].ToString();
+                NotifyForm notifyForm = new NotifyForm("Batch sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+            }
+            buttonSendAll.Enabled = true;
+        }
         #endregion
         #region API
         HttpClient httpClient = new HttpClient();
@@ -925,7 +1003,6 @@ namespace FireWallet
             HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, "http://" + ip + ":" + port + "/" + path);
             req.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
             req.Content = new StringContent(content);
-
             // Send request
 
 
@@ -944,6 +1021,10 @@ namespace FireWallet
             catch (Exception ex)
             {
                 AddLog("Post Error: " + ex.Message);
+                if (ex.Message.Contains("The request was canceled due to the configured HttpClient.Timeout"))
+                {
+                    await RestartNode();
+                }
                 return "Error";
             }
         }
@@ -988,8 +1069,156 @@ namespace FireWallet
             catch (Exception ex)
             {
                 AddLog("Get Error: " + ex.Message);
+                if (ex.Message.Contains("The request was canceled due to the configured HttpClient.Timeout"))
+                {
+                    await RestartNode();
+                }
                 return "Error";
             }
+        }
+        private async Task<bool> RestartNode()
+        {
+            if (!HSD)
+            {
+                NotifyForm nf = new NotifyForm("NODE Not responding");
+                nf.ShowDialog();
+                nf.Dispose();
+                return false;
+            }
+            this.Enabled = false;
+            // Show splash
+            SplashScreen ss = new SplashScreen(false);
+            bool splash = false;
+            if (UserSettings.ContainsKey("hide-splash"))
+            {
+                if (UserSettings["hide-splash"] == "false")
+                {
+                    // Show splash screen
+                    ss.Show();
+                    splash = true;
+                }
+            }
+            else
+            {
+                // Show splash screen
+                ss.Show();
+                splash = true;
+            }
+            // Kill node
+            if (HSDProcess != null)
+            {
+                this.Opacity = 0;
+                HSDProcess.Kill();
+                AddLog("Killed HSD");
+                Thread.Sleep(1000);
+                try
+                {
+                    HSDProcess.Dispose();
+                }
+                catch
+                {
+                    AddLog("Dispose failed");
+                }
+            }
+            else AddLog("HSD was not running");
+
+            HSDProcess = new Process();
+            bool hideScreen = true;
+            if (NodeSettings.ContainsKey("HideScreen"))
+            {
+                if (NodeSettings["HideScreen"].ToLower() == "false")
+                {
+                    hideScreen = false;
+                }
+            }
+            try
+            {
+                HSDProcess.StartInfo.CreateNoWindow = hideScreen;
+
+                if (hideScreen)
+                {
+                    HSDProcess.StartInfo.RedirectStandardError = true;
+                }
+                else
+                {
+                    HSDProcess.StartInfo.RedirectStandardError = false;
+                }
+
+                HSDProcess.StartInfo.RedirectStandardInput = true;
+                HSDProcess.StartInfo.RedirectStandardOutput = false;
+                HSDProcess.StartInfo.UseShellExecute = false;
+                HSDProcess.StartInfo.FileName = "node.exe";
+
+                if (NodeSettings.ContainsKey("HSD-command"))
+                {
+                    AddLog("Using custom HSD command");
+                    string command = NodeSettings["HSD-command"];
+                    command = command.Replace("{default-dir}", dir + "hsd\\bin\\hsd");
+
+                    string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                    if (Directory.Exists(bobPath))
+                    {
+                        command = command.Replace("{Bob}", bobPath);
+                    }
+                    else if (command.Contains("{Bob}"))
+                    {
+                        AddLog("Bob not found, using default HSD command");
+                        command = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + NodeSettings["Key"];
+                    }
+
+                    command = command.Replace("{key}", NodeSettings["Key"]);
+                    HSDProcess.StartInfo.Arguments = command;
+                }
+                else
+                {
+                    AddLog("Using default HSD command");
+                    HSDProcess.StartInfo.Arguments = dir + "hsd\\bin\\hsd --agent=FireWallet --index-tx --index-address --api-key " + NodeSettings["Key"];
+                    string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                    if (Directory.Exists(bobPath))
+                    {
+                        HSDProcess.StartInfo.Arguments = HSDProcess.StartInfo.Arguments + " --prefix " + bobPath;
+                    }
+                }
+
+
+
+
+                HSDProcess.Start();
+                // Wait for HSD to start
+                await Task.Delay(2000);
+
+                // Check if HSD is running
+                if (HSDProcess.HasExited)
+                {
+                    AddLog("HSD Failed to start");
+                    AddLog(HSDProcess.StandardError.ReadToEnd());
+                    NotifyForm Notifyinstall = new NotifyForm("HSD Failed to start\nPlease check the logs");
+                    Notifyinstall.ShowDialog();
+                    Notifyinstall.Dispose();
+
+                    // Wait for the notification to show
+                    await Task.Delay(1000);
+                    this.Close();
+
+                    await Task.Delay(1000);
+                    return false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                AddLog("HSD Failed to start");
+                AddLog(ex.Message);
+                this.Close();
+                await Task.Delay(1000);
+            }
+
+            if (splash)
+            {
+                ss.CloseSplash();
+            }
+            this.Enabled = true;
+            return true;
         }
         private async Task<string> GetAddress()
         {
@@ -1197,6 +1426,7 @@ namespace FireWallet
         }
         private async Task<string> GetFee()
         {
+            // This doesn't work
             try
             {
                 string response = await APIPost("", false, "{\"method\": \"estimatefee\",\"params\": [ 3 ]}");
@@ -1998,107 +2228,113 @@ namespace FireWallet
         private async void UpdateDomains()
         {
             string response = await APIGet("wallet/" + Account + "/name?own=true", true);
-            JArray names = JArray.Parse(response);
-            Domains = new string[names.Count];
-            DomainsRenewable = new string[names.Count];
-            int i = 0;
-            int renewable = 0;
-            panelDomainList.Controls.Clear();
 
-            // Sort the domains
-            switch (comboBoxDomainSort.Text)
+            try
             {
-                case "Default":
-                    break;
-                case "Alphabetical":
-                    names = new JArray(names.OrderBy(obj => (string)obj["name"]));
-                    break;
-                case "Expiring":
-                    names = new JArray(names.OrderBy(obj =>
+                JArray names = JArray.Parse(response);
+                Domains = new string[names.Count];
+                DomainsRenewable = new string[names.Count];
+                int i = 0;
+                int renewable = 0;
+                panelDomainList.Controls.Clear();
+
+                // Sort the domains
+                switch (comboBoxDomainSort.Text)
+                {
+                    case "Default":
+                        break;
+                    case "Alphabetical":
+                        names = new JArray(names.OrderBy(obj => (string)obj["name"]));
+                        break;
+                    case "Expiring":
+                        names = new JArray(names.OrderBy(obj =>
+                        {
+                            JToken daysUntilExpireToken = obj["stats"]?["daysUntilExpire"];
+                            return (int)(daysUntilExpireToken ?? int.MaxValue);
+                        }));
+                        break;
+                    case "Value":
+                        // Sort by most valuable first
+                        names = new JArray(names.OrderByDescending(obj =>
+                        {
+                            JToken valueToken = obj?["value"];
+                            return (int)(valueToken ?? 0);
+                        }));
+                        break;
+                }
+                foreach (JObject name in names)
+                {
+                    Domains[i] = name["name"].ToString();
+                    Panel domainTMP = new Panel();
+                    domainTMP.Width = panelDomainList.Width - 20 - SystemInformation.VerticalScrollBarWidth;
+                    domainTMP.Height = 30;
+                    domainTMP.Top = 30 * (i);
+                    domainTMP.Left = 10;
+                    domainTMP.BorderStyle = BorderStyle.FixedSingle;
+
+                    Label domainName = new Label();
+                    domainName.Text = Domains[i];
+                    domainName.Top = 5;
+                    domainName.Left = 5;
+                    domainName.AutoSize = true;
+
+
+                    domainTMP.Controls.Add(domainName);
+
+                    if (!name.ContainsKey("stats"))
                     {
-                        JToken daysUntilExpireToken = obj["stats"]?["daysUntilExpire"];
-                        return (int)(daysUntilExpireToken ?? int.MaxValue);
-                    }));
-                    break;
-                case "Value":
-                    // Sort by most valuable first
-                    names = new JArray(names.OrderByDescending(obj =>
+                        AddLog("Domain " + Domains[i] + " does not have stats");
+                        continue;
+                    }
+                    Label expiry = new Label();
+                    JObject stats = JObject.Parse(name["stats"].ToString());
+                    if (stats.ContainsKey("daysUntilExpire"))
                     {
-                        JToken valueToken = obj?["value"];
-                        return (int)(valueToken ?? 0);
-                    }));
-                    break;
-            }
+                        expiry.Text = "Expires: " + stats["daysUntilExpire"].ToString() + " days";
+                        expiry.Top = 5;
+                        expiry.AutoSize = true;
+                        expiry.Left = domainTMP.Width - expiry.Width - 100;
+                        domainTMP.Controls.Add(expiry);
+
+                        // Add to domains renewable
+                        DomainsRenewable[renewable] = Domains[i];
+                        renewable++;
+                    }
+                    else
+                    {
+                        expiry.Text = "Expires: Not Registered yet";
+                        expiry.Top = 5;
+                        expiry.AutoSize = true;
+                        expiry.Left = domainTMP.Width - expiry.Width - 100;
+                        domainTMP.Controls.Add(expiry);
+                    }
 
 
-            foreach (JObject name in names)
-            {
-                Domains[i] = name["name"].ToString();
-                Panel domainTMP = new Panel();
-                domainTMP.Width = panelDomainList.Width - 20 - SystemInformation.VerticalScrollBarWidth;
-                domainTMP.Height = 30;
-                domainTMP.Top = 30 * (i);
-                domainTMP.Left = 10;
-                domainTMP.BorderStyle = BorderStyle.FixedSingle;
-
-                Label domainName = new Label();
-                domainName.Text = Domains[i];
-                domainName.Top = 5;
-                domainName.Left = 5;
-                domainName.AutoSize = true;
-
-
-                domainTMP.Controls.Add(domainName);
-
-                if (!name.ContainsKey("stats"))
-                {
-                    AddLog("Domain " + Domains[i] + " does not have stats");
-                    continue;
-                }
-                Label expiry = new Label();
-                JObject stats = JObject.Parse(name["stats"].ToString());
-                if (stats.ContainsKey("daysUntilExpire"))
-                {
-                    expiry.Text = "Expires: " + stats["daysUntilExpire"].ToString() + " days";
-                    expiry.Top = 5;
-                    expiry.AutoSize = true;
-                    expiry.Left = domainTMP.Width - expiry.Width - 100;
-                    domainTMP.Controls.Add(expiry);
-
-                    // Add to domains renewable
-                    DomainsRenewable[renewable] = Domains[i];
-                    renewable++;
-
-                }
-                else
-                {
-                    expiry.Text = "Expires: Not Registered yet";
-                    expiry.Top = 5;
-                    expiry.AutoSize = true;
-                    expiry.Left = domainTMP.Width - expiry.Width - 100;
-                    domainTMP.Controls.Add(expiry);
-                }
-
-
-                // On Click open domain
-                domainTMP.Click += new EventHandler((sender, e) =>
-                {
-                    DomainForm domainForm = new DomainForm(this, name["name"].ToString(), UserSettings["explorer-tx"], UserSettings["explorer-domain"]);
-                    domainForm.Show();
-                });
-
-
-                foreach (Control c in domainTMP.Controls)
-                {
-                    c.Click += new EventHandler((sender, e) =>
+                    // On Click open domain
+                    domainTMP.Click += new EventHandler((sender, e) =>
                     {
                         DomainForm domainForm = new DomainForm(this, name["name"].ToString(), UserSettings["explorer-tx"], UserSettings["explorer-domain"]);
                         domainForm.Show();
                     });
-                }
 
-                panelDomainList.Controls.Add(domainTMP);
-                i++;
+
+                    foreach (Control c in domainTMP.Controls)
+                    {
+                        c.Click += new EventHandler((sender, e) =>
+                        {
+                            DomainForm domainForm = new DomainForm(this, name["name"].ToString(), UserSettings["explorer-tx"], UserSettings["explorer-domain"]);
+                            domainForm.Show();
+                        });
+                    }
+
+                    panelDomainList.Controls.Add(domainTMP);
+                    i++;
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("Error getting domains");
+                AddLog(ex.Message);
             }
         }
         private async void buttonRevealAll_Click(object sender, EventArgs e)
@@ -2377,82 +2613,6 @@ namespace FireWallet
         }
         #endregion
 
-        private async void buttonRedeemAll_Click(object sender, EventArgs e)
-        {
-            buttonRedeemAll.Enabled = false;
-            string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REDEEM\"]]]}";
-            AddLog(content);
-            string response = await APIPost("", true, content);
-            if (response == "Error")
-            {
-                AddLog("Error sending batch");
-                NotifyForm notifyForm = new NotifyForm("Error sending batch");
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                buttonRedeemAll.Enabled = true;
-                return;
-            }
-
-            JObject resp = JObject.Parse(response);
-            if (resp["error"].ToString() != "")
-            {
-                AddLog("Error sending batch");
-                AddLog(resp["error"].ToString());
-                JObject error = JObject.Parse(resp["error"].ToString());
-                NotifyForm notifyForm = new NotifyForm("Error sending batch\n" + error["message"].ToString());
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                buttonRedeemAll.Enabled = true;
-                return;
-            }
-            if (resp.ContainsKey("result"))
-            {
-                JObject result = JObject.Parse(resp["result"].ToString());
-                string hash = result["hash"].ToString();
-                NotifyForm notifyForm = new NotifyForm("Batch sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-            }
-            buttonRedeemAll.Enabled = true;
-        }
-
-        private async void buttonSendAll_Click(object sender, EventArgs e)
-        {
-            buttonSendAll.Enabled = false;
-            string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REVEAL\"],[\"REDEEM\"],[\"RENEW\"]]]}";
-            AddLog(content);
-            string response = await APIPost("", true, content);
-            if (response == "Error")
-            {
-                AddLog("Error sending batch");
-                NotifyForm notifyForm = new NotifyForm("Error sending batch");
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                buttonSendAll.Enabled = true;
-                return;
-            }
-
-            JObject resp = JObject.Parse(response);
-            if (resp["error"].ToString() != "")
-            {
-                AddLog("Error sending batch");
-                AddLog(resp["error"].ToString());
-                JObject error = JObject.Parse(resp["error"].ToString());
-                NotifyForm notifyForm = new NotifyForm("Error sending batch\n" + error["message"].ToString());
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-                buttonSendAll.Enabled = true;
-                return;
-            }
-            if (resp.ContainsKey("result"))
-            {
-                JObject result = JObject.Parse(resp["result"].ToString());
-                string hash = result["hash"].ToString();
-                NotifyForm notifyForm = new NotifyForm("Batch sent\n" + hash, "Explorer", UserSettings["explorer-tx"] + hash);
-                notifyForm.ShowDialog();
-                notifyForm.Dispose();
-            }
-            buttonSendAll.Enabled = true;
-        }
+        
     }
 }
