@@ -200,7 +200,7 @@ namespace FireWallet
                 await Task.Delay(1000);
                 AddLog("Close Failed");
             }
-            
+
             StreamReader sr = new StreamReader(dir + "node.txt");
             NodeSettings = new Dictionary<string, string>();
             while (!sr.EndOfStream)
@@ -237,7 +237,8 @@ namespace FireWallet
             {
                 int timeout = Convert.ToInt32(NodeSettings["Timeout"]);
                 httpClient.Timeout = TimeSpan.FromSeconds(timeout);
-            } else httpClient.Timeout = TimeSpan.FromSeconds(10);
+            }
+            else httpClient.Timeout = TimeSpan.FromSeconds(10);
 
             if (NodeSettings.ContainsKey("HSD"))
             {
@@ -780,8 +781,6 @@ namespace FireWallet
                 buttonRedeemAll.Visible = true;
                 buttonSendAll.Visible = true;
             }
-
-
             if (WatchOnly)
             {
                 buttonAddressVerify.Visible = true;
@@ -1185,14 +1184,9 @@ namespace FireWallet
                 if (hideScreen)
                 {
                     HSDProcess.StartInfo.RedirectStandardError = true;
-                    // Log errors to AddLog
                     HSDProcess.ErrorDataReceived += (sender, e) => AddLog("HSD Error: " + e.Data);
-
                 }
-                else
-                {
-                    HSDProcess.StartInfo.RedirectStandardError = false;
-                }
+                else HSDProcess.StartInfo.RedirectStandardError = false;
 
                 HSDProcess.StartInfo.RedirectStandardInput = true;
                 HSDProcess.StartInfo.RedirectStandardOutput = false;
@@ -1259,10 +1253,7 @@ namespace FireWallet
                 await Task.Delay(1000);
             }
 
-            if (splash)
-            {
-                ss.CloseSplash();
-            }
+            if (splash) ss.CloseSplash();
             this.Enabled = true;
             this.Visible = true;
             return true;
@@ -1282,10 +1273,7 @@ namespace FireWallet
                 JObject resp = JObject.Parse(APIresponse);
                 return resp["address"].ToString();
             }
-            catch
-            {
-                return "Error";
-            }
+            catch { return "Error"; }
         }
 
         private async void GetTXHistory()
@@ -2627,6 +2615,6 @@ namespace FireWallet
         }
         #endregion
 
-        
+
     }
 }
