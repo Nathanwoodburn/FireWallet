@@ -1639,6 +1639,115 @@ namespace FireWallet
 
         // Store TLSA hash
         public string TLSA { get; set; }
+        public async Task<string> HIP02Lookup(string domain)
+        {
+            try
+            {
+                IPAddress iPAddress = null;
+                TLSA = "";
+
+
+                // Create an instance of LookupClient using the custom options
+                string ip = "127.0.0.1";
+                int port = 5350;
+                if (UserSettings.ContainsKey("hip-02-ip"))
+                {
+                    ip = UserSettings["hip-02-ip"];
+                }
+                if (UserSettings.ContainsKey("hip-02-port"))
+                {
+                    port = int.Parse(UserSettings["hip-02-port"]);
+                }
+                else if (!HSD)
+                {
+                    string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
+                    if (Directory.Exists(bobPath))
+                    {
+                        port = 9892;
+                    }
+                }
+
+                NameServer nameServer = new NameServer(IPAddress.Parse(ip), port);
+                var options = new LookupClientOptions(nameServer);
+                options.EnableAuditTrail = true;
+                options.UseTcpOnly = true;
+                options.Recursion = true;
+                options.UseCache = false;
+                options.RequestDnsSecRecords = true;
+                options.Timeout = httpClient.Timeout;
+                var client = new LookupClient(options);
+
+                // Perform the DNS lookup for the specified domain using DNSSec
+                var result = client.Query(domain, QueryType.A);
+                // Display the DNS lookup results
+                foreach (var record in result.Answers.OfType<ARecord>())
+                {
+                    iPAddress = record.Address;
+                }
+
+                if (iPAddress == null)
+                {
+                    labelSendingError.Show();
+                    labelSendingError.Text = "HIP-02 lookup failed";
+                    AddLog("No IP found");
+                    return "ERROR";
+                }
+
+                // Get TLSA record
+                var resultTLSA = client.Query("_443._tcp." + domain, QueryType.TLSA);
+                foreach (var record in resultTLSA.Answers.OfType<TlsaRecord>())
+                {
+                    TLSA = record.CertificateAssociationDataAsString;
+                }
+
+
+
+                string url = "https://" + iPAddress.ToString() + "/.well-known/wallets/HNS";
+                var handler = new HttpClientHandler();
+
+                handler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
+
+                // Create an instance of HttpClient with the custom handler
+                using (var httpclient = new HttpClient(handler))
+                {
+                    httpclient.DefaultRequestHeaders.Add("Host", domain);
+                    // Send a GET request to the specified URL
+                    HttpResponseMessage response = httpclient.GetAsync(url).Result;
+
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        labelSendingError.Show();
+                        labelSendingError.Text = "HIP-02 lookup failed";
+                        AddLog("HTTPS get failed");
+                        AddLog(response.Content.ReadAsStringAsync().Result);
+                        return "ERROR";
+                    }
+
+                    // Response
+                    string address = response.Content.ReadAsStringAsync().Result;
+                    address = address.Trim();
+
+
+                    if (await ValidAddress(address))
+                    {
+                        return address;
+                    }
+                    else
+                    {
+                        AddLog("Invalid Address\n" + address);
+                        return "ERROR";
+                    }
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("HIP-02 lookup error");
+                AddLog(ex.Message);
+                return "ERROR";
+            }
+        }
         private async void textBoxSendingTo_Leave(object sender, EventArgs e)
         {
 
@@ -1649,121 +1758,18 @@ namespace FireWallet
             if (textBoxSendingTo.Text.Substring(0, 1) == "@")
             {
                 string domain = textBoxSendingTo.Text.Substring(1);
-
-                try
+                string address = await HIP02Lookup(domain);
+                if (address == "ERROR")
                 {
-                    IPAddress iPAddress = null;
-                    TLSA = "";
-
-
-                    // Create an instance of LookupClient using the custom options
-                    string ip = "127.0.0.1";
-                    int port = 5350;
-
-                    if (UserSettings.ContainsKey("hip-02-ip"))
-                    {
-                        ip = UserSettings["hip-02-ip"];
-                    }
-                    if (UserSettings.ContainsKey("hip-02-port"))
-                    {
-                        port = int.Parse(UserSettings["hip-02-port"]);
-                    }
-                    else if (!HSD)
-                    {
-                        string bobPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\Bob\\hsd_data";
-                        if (Directory.Exists(bobPath))
-                        {
-                            port = 9892;
-                        }
-                    }
-
-                    NameServer nameServer = new NameServer(IPAddress.Parse(ip), port);
-                    var options = new LookupClientOptions(nameServer);
-                    options.EnableAuditTrail = true;
-                    options.UseTcpOnly = true;
-                    options.Recursion = true;
-                    options.UseCache = false;
-                    options.RequestDnsSecRecords = true;
-                    options.Timeout = TimeSpan.FromSeconds(5);
-
-                    var client = new LookupClient(options);
-
-                    // Perform the DNS lookup for the specified domain using DNSSec
-                    var result = client.Query(domain, QueryType.A);
-                    // Display the DNS lookup results
-                    foreach (var record in result.Answers.OfType<ARecord>())
-                    {
-                        iPAddress = record.Address;
-                    }
-
-                    if (iPAddress == null)
-                    {
-                        labelSendingError.Show();
-                        labelSendingError.Text = "HIP-02 lookup failed";
-                        AddLog("No IP found");
-                        return;
-                    }
-
-                    // Get TLSA record
-                    var resultTLSA = client.Query("_443._tcp." + domain, QueryType.TLSA);
-                    foreach (var record in resultTLSA.Answers.OfType<TlsaRecord>())
-                    {
-                        TLSA = record.CertificateAssociationDataAsString;
-                    }
-
-
-
-                    string url = "https://" + iPAddress.ToString() + "/.well-known/wallets/HNS";
-                    var handler = new HttpClientHandler();
-
-                    handler.ServerCertificateCustomValidationCallback = ValidateServerCertificate;
-
-                    // Create an instance of HttpClient with the custom handler
-                    using (var httpclient = new HttpClient(handler))
-                    {
-                        httpclient.DefaultRequestHeaders.Add("Host", domain);
-                        // Send a GET request to the specified URL
-                        HttpResponseMessage response = httpclient.GetAsync(url).Result;
-
-                        if (response.StatusCode != HttpStatusCode.OK)
-                        {
-                            labelSendingError.Show();
-                            labelSendingError.Text = "HIP-02 lookup failed";
-                            AddLog("HTTPS get failed");
-                            AddLog(response.Content.ReadAsStringAsync().Result);
-                            return;
-                        }
-
-                        // Response
-                        string address = response.Content.ReadAsStringAsync().Result;
-                        address = address.Trim();
-
-
-                        if (await ValidAddress(address))
-                        {
-                            labelSendingHIPAddress.Text = address;
-                            labelSendingHIPAddress.Show();
-                            labelHIPArrow.Show();
-                        }
-                        else
-                        {
-                            labelSendingError.Show();
-                            labelSendingError.Text = "Invalid Address";
-                            AddLog("Invalid Address\n" + address);
-
-                        }
-
-
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    AddLog("HIP-02 lookup error");
-                    AddLog(ex.Message);
                     labelSendingError.Show();
                     labelSendingError.Text = "HIP-02 lookup failed";
+                } else
+                {
+                    labelSendingHIPAddress.Text = address;
+                    labelSendingHIPAddress.Show();
+                    labelHIPArrow.Show();
                 }
+
             }
             else
             {
