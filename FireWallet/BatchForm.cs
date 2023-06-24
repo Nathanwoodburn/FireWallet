@@ -737,7 +737,7 @@ namespace FireWallet
                     }
                     if (domains.Length > 0)
                     {
-                        BatchImportForm batchImportForm = new BatchImportForm(domains);
+                        BatchImportForm batchImportForm = new BatchImportForm(domains,mainForm);
                         batchImportForm.ShowDialog();
                         if (batchImportForm.batches != null)
                         {

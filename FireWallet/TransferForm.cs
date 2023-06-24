@@ -51,7 +51,7 @@ namespace FireWallet
         string address = "";
         private async void buttonTransfer_Click(object sender, EventArgs e)
         {
-            updateAddress();
+            await updateAddress();
 
             if (!await MainForm.ValidAddress(address))
             {
@@ -83,7 +83,7 @@ namespace FireWallet
 
         private async void buttonBatch_Click(object sender, EventArgs e)
         {
-            updateAddress();
+            await updateAddress();
 
             if (!await MainForm.ValidAddress(address))
             {
@@ -95,7 +95,7 @@ namespace FireWallet
             this.Close();
         }
 
-        private async void updateAddress()
+        private async Task updateAddress()
         {
             labelError.Hide();
 

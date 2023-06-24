@@ -8,12 +8,14 @@ namespace FireWallet
         Dictionary<string, string> theme;
         string[] domains;
         public Batch[] batches { get; set; }
+        MainForm mainForm;
 
-        public BatchImportForm(string[] domains)
+        public BatchImportForm(string[] domains, MainForm mainForm)
         {
             InitializeComponent();
             this.domains = domains;
             comboBoxMode.SelectedIndex = 1;
+            this.mainForm = mainForm;
         }
 
         private void BatchImportForm_Load(object sender, EventArgs e)
@@ -218,7 +220,7 @@ namespace FireWallet
             this.Close();
         }
 
-        private void buttonImport_Click(object sender, EventArgs e)
+        private async void buttonImport_Click(object sender, EventArgs e)
         {
             if (comboBoxMode.Text == "BID")
             {
@@ -280,6 +282,32 @@ namespace FireWallet
             }
             else if (comboBoxMode.Text == "TRANSFER")
             {
+                if (textBoxToAddress.Text == "")
+                {
+                    MessageBox.Show("Please enter a to address");
+                    return;
+                }
+                string address = textBoxToAddress.Text;
+                if (address.Substring(0,1) == "@")
+                {
+                    address = await mainForm.HIP02Lookup(address.Substring(1));
+                    if (address == "ERROR")
+                    {
+                        NotifyForm notify = new NotifyForm("Invalid HIP-02 address");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        return;
+                    }
+                }
+
+                if (!(await mainForm.ValidAddress(address)))
+                {
+                    NotifyForm notify = new NotifyForm("Invalid address");
+                    notify.ShowDialog();
+                    notify.Dispose();
+                    return;
+                }
+
                 batches = new Batch[0];
                 foreach (string domain in listBoxDomains.Items)
                 {
@@ -287,7 +315,7 @@ namespace FireWallet
                     {
                         Batch[] newBatch = new Batch[batches.Length + 1];
                         Array.Copy(batches, newBatch, batches.Length);
-                        newBatch[newBatch.Length - 1] = new Batch(domain, comboBoxMode.Text, textBoxToAddress.Text);
+                        newBatch[newBatch.Length - 1] = new Batch(domain, comboBoxMode.Text, address);
                         batches = newBatch;
                     }
                 }
