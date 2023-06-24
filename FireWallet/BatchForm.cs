@@ -24,6 +24,13 @@ namespace FireWallet
             this.mainForm = mainForm;
             batches = new Batch[0];
         }
+        public void bringToFront()
+        {
+            // Minimize this form and bring it back up
+            this.WindowState = FormWindowState.Minimized;
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+        }
         public void AddBatch(string domain, string operation)
         {
             if (operation == "BID") return;
@@ -314,7 +321,7 @@ namespace FireWallet
             }
             applyTransparency(theme);
 
-
+            bringToFront();
         }
         private void ThemeControl(Control c)
         {
