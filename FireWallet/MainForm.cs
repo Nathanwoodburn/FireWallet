@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms.VisualStyles;
 using DnsClient;
 using DnsClient.Protocol;
 using Newtonsoft.Json.Linq;
@@ -1982,6 +1983,26 @@ namespace FireWallet
                             }
                             ExportTransaction(output);
                         }
+                        else
+                        {
+                            string content = "{\"method\": \"createsendtoaddress\",\"params\": [ \"" + address + "\", " +
+                                    amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
+                            string output = await APIPost("", true, content);
+                            JObject APIresp = JObject.Parse(output);
+                            if (APIresp["error"].ToString() != "")
+                            {
+                                AddLog("Failed:");
+                                AddLog(APIresp.ToString());
+                                JObject error = JObject.Parse(APIresp["error"].ToString());
+                                string ErrorMessage = error["message"].ToString();
+
+                                NotifyForm notify = new NotifyForm("Error Transaction Failed\n" + ErrorMessage);
+                                notify.ShowDialog();
+                                return;
+                            }
+                            string signed = signRaw(output,new string[0]);
+                            ExportTransaction(signed);
+                        }
 
 
                     }
@@ -2521,6 +2542,7 @@ namespace FireWallet
                 BatchMode = true;
             }
             BatchForm.AddBatch(domain, operation);
+            BatchForm.UpdateTheme();
 
         }
         public void AddBatch(string domain, string operation, decimal bid, decimal lockup)
@@ -2533,6 +2555,7 @@ namespace FireWallet
                 BatchMode = true;
             }
             BatchForm.AddBatch(domain, operation, bid, lockup);
+            BatchForm.UpdateTheme();
 
         }
         public void AddBatch(string domain, string operation, DNS[] updateRecords)
@@ -2544,6 +2567,7 @@ namespace FireWallet
                 BatchMode = true;
             }
             BatchForm.AddBatch(domain, operation, updateRecords);
+            BatchForm.UpdateTheme();
         }
         public void AddBatch(string domain, string operation, string address)
         {
@@ -2554,6 +2578,7 @@ namespace FireWallet
                 BatchMode = true;
             }
             BatchForm.AddBatch(domain, operation, address);
+            BatchForm.UpdateTheme();
         }
         public void FinishBatch()
         {
@@ -2699,7 +2724,11 @@ namespace FireWallet
 
 
         #region Multi
-        public void ExportTransaction(string rawTX)
+        public async Task<string> ExportTransaction(string rawTX)
+        {
+            return await ExportTransaction(rawTX, new string[0]);
+        }
+        public async Task<string> ExportTransaction(string rawTX, string[] domains)
         { 
             JObject tx = JObject.Parse(rawTX);
             JObject toExport = new JObject();
@@ -2709,6 +2738,14 @@ namespace FireWallet
             JArray outputsParsed = new JArray();
             JArray inputs = JArray.Parse(tx["inputs"].ToString());
             JArray outputs = JArray.Parse(tx["outputs"].ToString());
+            
+            Dictionary<string,string> hashes = new Dictionary<string, string>();
+            foreach (string domain in domains)
+            {
+                // sha3 hash of domain
+                hashes.Add(CalculateSHA3Hash(domain),domain);
+            }
+
             foreach (JObject input in inputs)
             {
                 JObject coin = JObject.Parse(input["coin"].ToString());
@@ -2722,6 +2759,7 @@ namespace FireWallet
                 else
                 {
                     AddLog("Not supported yet");
+                    return "Error";
                 }
             }
             foreach (JObject output in outputs)
@@ -2735,7 +2773,20 @@ namespace FireWallet
                 }
                 else
                 {
-                    AddLog("Not supported yet");
+                    AddLog(covenant.ToString());
+                    string hash = covenant["items"][0].ToString();
+                    if (hashes.ContainsKey(hash))
+                    {
+                        data["name"] = hashes[hash];
+                    }
+                    else
+                    {
+                        AddLog("Cannot find name for hash " + hash);
+                        return "Error";
+                    }
+                    
+                    //data["name"];
+                    outputsParsed.Add(data);
                 }
             }
             JObject metadata = new JObject();
@@ -2753,7 +2804,80 @@ namespace FireWallet
                 StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
                 sw.Write(toExport.ToString());
                 sw.Dispose();
+                return toExport.ToString();
+            }else
+            {
+                return "Error";
             }
+        }
+        public string signRaw(string tx, string[] domains)
+        {
+            string domainslist = string.Join(",", domains.Select(domain => "\\\"" + domain + "\\\""));
+            NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device", false);
+            notify.Show();
+
+            var proc = new Process();
+            proc.StartInfo.CreateNoWindow = true;
+            proc.StartInfo.RedirectStandardInput = true;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.FileName = "node.exe";
+            proc.StartInfo.WorkingDirectory = dir + "hsd-ledger/bin/";
+            string args = "hsd-ledger/bin/hsd-ledger signraw \"\"" + tx.Replace("\"", "\\\"").Trim() + "\"\" [" + domainslist + "] --api-key " + NodeSettings["Key"] + " -w " + Account;
+            AddLog(args);
+
+            proc.StartInfo.Arguments = dir + args;
+            var outputBuilder = new StringBuilder();
+
+            // Event handler for capturing output data
+            proc.OutputDataReceived += (sender, args) =>
+            {
+                if (!string.IsNullOrEmpty(args.Data))
+                {
+                    outputBuilder.AppendLine(args.Data);
+                }
+            };
+
+            proc.Start();
+            proc.BeginOutputReadLine();
+            proc.WaitForExit();
+
+            notify.CloseNotification();
+            notify.Dispose();
+
+            string output = outputBuilder.ToString();
+            AddLog(output);
+            if (output.Length > 2)
+            {
+                // Signed
+                return output;
+            }
+            else
+            {
+                AddLog(args);
+                AddLog(proc.StandardError.ReadToEnd());
+                NotifyForm notifyError = new NotifyForm("Error sign Failed\nCheck logs for more details");
+                notifyError.ShowDialog();
+                notifyError.Dispose();
+                return "Error";
+            }
+        }
+        static string CalculateSHA3Hash(string input)
+        {
+            var hashAlgorithm = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256);
+            
+            // Choose correct encoding based on your usecase
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+
+            hashAlgorithm.BlockUpdate(inputBytes, 0, inputBytes.Length);
+
+            byte[] result = new byte[256/8];
+            hashAlgorithm.DoFinal(result, 0);
+
+            string hashString = BitConverter.ToString(result);
+            hashString = hashString.Replace("-", "").ToLowerInvariant();
+            return hashString;
         }
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Windows.Forms.VisualStyles;
+using Newtonsoft.Json.Linq;
 
 namespace FireWallet
 {
@@ -10,15 +11,25 @@ namespace FireWallet
         int reqSigs;
         int sigs;
         string signedTX;
+        string[] domains;
         public ImportTXForm(MainForm mainForm)
         {
             InitializeComponent();
             this.mainForm = mainForm;
+            tx = null;
+        }
+        public ImportTXForm(MainForm mainForm, string tx)
+        {
+            InitializeComponent();
+            this.mainForm = mainForm;
+            JObject txObj = JObject.Parse(tx);
+            this.tx = txObj;
         }
 
         private void ImportTXForm_Load(object sender, EventArgs e)
         {
             // Default variables
+            domains = new string[0];
             signedTX = "";
             totalSigs = 3;
             reqSigs = 2;
@@ -31,25 +42,28 @@ namespace FireWallet
             {
                 mainForm.ThemeControl(c);
             }
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Transaction files (*.json)|*.json";
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (tx == null)
             {
-                string tx = System.IO.File.ReadAllText(openFileDialog.FileName);
-                try
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Filter = "Transaction files (*.json)|*.json";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    JObject txObj = JObject.Parse(tx);
-                    this.tx = txObj;
-                    ParseTX();
-                }
-                catch
-                {
-                    NotifyForm notifyForm = new NotifyForm("Invalid transaction file.");
-                    notifyForm.ShowDialog();
-                    notifyForm.Dispose();
-                    this.Close();
+                    string tx = System.IO.File.ReadAllText(openFileDialog.FileName);
+                    try
+                    {
+                        JObject txObj = JObject.Parse(tx);
+                        this.tx = txObj;
+                    }
+                    catch
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Invalid transaction file.");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                        this.Close();
+                    }
                 }
             }
+            ParseTX();
         }
 
         private void Cancelbutton2_Click(object sender, EventArgs e)
@@ -230,9 +244,6 @@ namespace FireWallet
                     {
                         if (metaOutput.ContainsKey("name"))
                         {
-
-
-
                             Label covenantLabel = new Label();
                             string name = metaOutput["name"].ToString();
 
@@ -240,6 +251,14 @@ namespace FireWallet
                             covenantLabel.Location = new Point(5, 25);
                             covenantLabel.AutoSize = true;
                             PanelOutput.Controls.Add(covenantLabel);
+
+                            string[] domainsNew = new string[domains.Length + 1];
+                            for (int j = 0; j < domains.Length; j++)
+                            {
+                                domainsNew[j] = domains[j];
+                            }
+                            domainsNew[domainsNew.Length - 1] = name;
+                            domains = domainsNew;
                         }
                     }
                 }
@@ -288,12 +307,14 @@ namespace FireWallet
                 labelSigsSigned.Width = (labelSigsTotal.Width / totalSigs) * sigs;
                 labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of " + totalSigs;
                 signedTX = response;
+            } else {
+
             }
         }
 
         private void buttonExport_Click(object sender, EventArgs e)
         {
-            mainForm.ExportTransaction(signedTX);
+            mainForm.ExportTransaction(signedTX,domains);
         }
 
         private async void buttonSend_Click(object sender, EventArgs e)
