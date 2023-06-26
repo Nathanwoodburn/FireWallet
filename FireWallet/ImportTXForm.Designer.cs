@@ -35,6 +35,11 @@
             panelOut = new Panel();
             buttonSign = new Button();
             Cancelbutton2 = new Button();
+            label1 = new Label();
+            labelSigsTotal = new Label();
+            labelSigsReq = new Label();
+            labelSigsSigned = new Label();
+            labelSigInfo = new Label();
             groupBoxIn.SuspendLayout();
             groupBoxOut.SuspendLayout();
             SuspendLayout();
@@ -44,7 +49,7 @@
             groupBoxIn.Controls.Add(panelIn);
             groupBoxIn.Location = new Point(12, 83);
             groupBoxIn.Name = "groupBoxIn";
-            groupBoxIn.Size = new Size(341, 355);
+            groupBoxIn.Size = new Size(376, 355);
             groupBoxIn.TabIndex = 3;
             groupBoxIn.TabStop = false;
             groupBoxIn.Text = "Inputs";
@@ -55,15 +60,15 @@
             panelIn.Dock = DockStyle.Fill;
             panelIn.Location = new Point(3, 19);
             panelIn.Name = "panelIn";
-            panelIn.Size = new Size(335, 333);
+            panelIn.Size = new Size(370, 333);
             panelIn.TabIndex = 0;
             // 
             // groupBoxOut
             // 
             groupBoxOut.Controls.Add(panelOut);
-            groupBoxOut.Location = new Point(359, 83);
+            groupBoxOut.Location = new Point(391, 80);
             groupBoxOut.Name = "groupBoxOut";
-            groupBoxOut.Size = new Size(429, 355);
+            groupBoxOut.Size = new Size(484, 355);
             groupBoxOut.TabIndex = 0;
             groupBoxOut.TabStop = false;
             groupBoxOut.Text = "Outputs";
@@ -74,25 +79,26 @@
             panelOut.Dock = DockStyle.Fill;
             panelOut.Location = new Point(3, 19);
             panelOut.Name = "panelOut";
-            panelOut.Size = new Size(423, 333);
+            panelOut.Size = new Size(478, 333);
             panelOut.TabIndex = 0;
             // 
             // buttonSign
             // 
             buttonSign.FlatStyle = FlatStyle.Flat;
             buttonSign.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonSign.Location = new Point(705, 444);
+            buttonSign.Location = new Point(789, 444);
             buttonSign.Name = "buttonSign";
             buttonSign.Size = new Size(83, 36);
             buttonSign.TabIndex = 2;
             buttonSign.Text = "Sign";
             buttonSign.UseVisualStyleBackColor = true;
+            buttonSign.Click += buttonSign_Click;
             // 
             // Cancelbutton2
             // 
             Cancelbutton2.FlatStyle = FlatStyle.Flat;
             Cancelbutton2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            Cancelbutton2.Location = new Point(616, 444);
+            Cancelbutton2.Location = new Point(700, 444);
             Cancelbutton2.Name = "Cancelbutton2";
             Cancelbutton2.Size = new Size(83, 36);
             Cancelbutton2.TabIndex = 2;
@@ -100,11 +106,60 @@
             Cancelbutton2.UseVisualStyleBackColor = true;
             Cancelbutton2.Click += Cancelbutton2_Click;
             // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            label1.Location = new Point(12, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(87, 21);
+            label1.TabIndex = 4;
+            label1.Text = "Signatures:";
+            // 
+            // labelSigsTotal
+            // 
+            labelSigsTotal.BackColor = Color.Blue;
+            labelSigsTotal.Location = new Point(105, 7);
+            labelSigsTotal.Name = "labelSigsTotal";
+            labelSigsTotal.Size = new Size(250, 32);
+            labelSigsTotal.TabIndex = 5;
+            // 
+            // labelSigsReq
+            // 
+            labelSigsReq.BackColor = Color.FromArgb(255, 128, 0);
+            labelSigsReq.Location = new Point(105, 7);
+            labelSigsReq.Name = "labelSigsReq";
+            labelSigsReq.Size = new Size(191, 32);
+            labelSigsReq.TabIndex = 6;
+            // 
+            // labelSigsSigned
+            // 
+            labelSigsSigned.BackColor = Color.Lime;
+            labelSigsSigned.Location = new Point(105, 7);
+            labelSigsSigned.Name = "labelSigsSigned";
+            labelSigsSigned.Size = new Size(100, 32);
+            labelSigsSigned.TabIndex = 7;
+            // 
+            // labelSigInfo
+            // 
+            labelSigInfo.AutoSize = true;
+            labelSigInfo.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelSigInfo.Location = new Point(361, 7);
+            labelSigInfo.Name = "labelSigInfo";
+            labelSigInfo.Size = new Size(19, 21);
+            labelSigInfo.TabIndex = 8;
+            labelSigInfo.Text = "#";
+            // 
             // ImportTXForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 485);
+            ClientSize = new Size(887, 485);
+            Controls.Add(labelSigInfo);
+            Controls.Add(labelSigsSigned);
+            Controls.Add(labelSigsReq);
+            Controls.Add(labelSigsTotal);
+            Controls.Add(label1);
             Controls.Add(groupBoxOut);
             Controls.Add(groupBoxIn);
             Controls.Add(Cancelbutton2);
@@ -113,11 +168,12 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "ImportTXForm";
-            Text = "ImportTXForm";
+            Text = "Import TX";
             Load += ImportTXForm_Load;
             groupBoxIn.ResumeLayout(false);
             groupBoxOut.ResumeLayout(false);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -127,5 +183,10 @@
         private Button Cancelbutton2;
         private Panel panelIn;
         private Panel panelOut;
+        private Label label1;
+        private Label labelSigsTotal;
+        private Label labelSigsReq;
+        private Label labelSigsSigned;
+        private Label labelSigInfo;
     }
 }

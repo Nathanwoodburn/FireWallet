@@ -6,6 +6,9 @@ namespace FireWallet
     {
         MainForm mainForm;
         JObject tx;
+        int totalSigs;
+        int reqSigs;
+        int sigs;
         public ImportTXForm(MainForm mainForm)
         {
             InitializeComponent();
@@ -14,6 +17,11 @@ namespace FireWallet
 
         private void ImportTXForm_Load(object sender, EventArgs e)
         {
+            // Default variables
+            totalSigs = 3;
+            reqSigs = 2;
+            sigs = 0;
+
             // Theme
             this.BackColor = ColorTranslator.FromHtml(mainForm.Theme["background"]);
             this.ForeColor = ColorTranslator.FromHtml(mainForm.Theme["foreground"]);
@@ -74,6 +82,58 @@ namespace FireWallet
 
             JArray inputs = (JArray)json["result"]["vin"];
             JArray outputs = (JArray)json["result"]["vout"];
+
+            // Get multisig info
+            JObject firstIn = (JObject)inputs[0];
+            JArray witnesses = (JArray)firstIn["txinwitness"];
+
+            string scriptSig = witnesses[witnesses.Count - 1].ToString();
+            // decode script
+            string sigGetContent = "{\"method\":\"decodescript\",\"params\":[\"" + scriptSig + "\"]}";
+            string sigGetResponse = await mainForm.APIPost("", false, sigGetContent);
+            if (sigGetResponse == null)
+            {
+                NotifyForm notifyForm = new NotifyForm("Error decoding transaction");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            JObject sigGetJson = JObject.Parse(sigGetResponse);
+            if (sigGetJson["error"].ToString() != "")
+            {
+                NotifyForm notifyForm = new NotifyForm("Error decoding transaction");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
+                return;
+            }
+            JObject sigGetResult = (JObject)sigGetJson["result"];
+            string[] asm = sigGetResult["asm"].ToString().Split(" ");
+            string totalSigsStr = asm[asm.Length - 2];
+            totalSigs = int.Parse(totalSigsStr.Replace("OP_",""));
+            reqSigs = int.Parse(sigGetResult["reqSigs"].ToString());
+            sigs = -1;
+            for (int i = 0; i < witnesses.Count; i++)
+            {
+                string witness = witnesses[i].ToString();
+                if (witness != "")
+                {
+                    sigs++;
+                }
+            }
+
+            
+
+
+
+            // Set sig label sizes
+            labelSigsReq.Width = (labelSigsTotal.Width / totalSigs) * reqSigs;
+            labelSigsSigned.Width = (labelSigsTotal.Width / totalSigs) * sigs;
+            labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of "+ totalSigs;
+
+
+
+
+
             for (int i = 0; i < inputs.Count; i++)
             {
                 JObject input = (JObject)inputs[i];
@@ -84,11 +144,6 @@ namespace FireWallet
                 PanelInput.Location = new Point(5, panelIn.Controls.Count * 50);
                 PanelInput.BorderStyle = BorderStyle.FixedSingle;
 
-                Label txid = new Label();
-                txid.Text = "TXID: " + input["txid"].ToString();
-                txid.Location = new Point(5, 5);
-                txid.AutoSize = true;
-                PanelInput.Controls.Add(txid);
 
                 if (metaInput.ContainsKey("sighashType"))
                 {
@@ -99,19 +154,40 @@ namespace FireWallet
                     PanelInput.Controls.Add(sighashType);
                 }
 
-                //Label address = new Label();
-                //string addressString = input["address"].ToString().Substring(0, 5) + "..." + input["address"].ToString().Substring(input["address"].ToString().Length - 5, 5);
-                //address.Text = "Address: " + addressString;
-                //address.Location = new Point(5, 5);
-                //address.AutoSize = true;
-                //PanelInput.Controls.Add(address);
+                string txid = input["txid"].ToString();
+                int vout = int.Parse(input["vout"].ToString());
+                string txInfo = await mainForm.APIGet("tx/" + txid, false);
+                if (txInfo == "Error" || txInfo == "")
+                {
+                    NotifyForm notifyForm = new NotifyForm("Error getting transaction info");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+                else
+                {
+                    JObject txInfoJson = JObject.Parse(txInfo);
+                    JArray txoutputs = (JArray)txInfoJson["outputs"];
+                    JObject txoutput = (JObject)txoutputs[vout];
+                    string txoutputAddress = txoutput["address"].ToString();
 
-                //Label amount = new Label();
-                //Decimal value = Decimal.Parse(input["value"].ToString()) / 1000000;
-                //amount.Text = "Amount: " + value.ToString();
-                //amount.Location = new Point(5, 25);
-                //amount.AutoSize = true;
-                //PanelInput.Controls.Add(amount);
+                    Label address = new Label();
+                    string addressString = txoutputAddress.Substring(0, 5) + "..." + txoutputAddress.Substring(txoutputAddress.Length - 5, 5);
+                    address.Text = "Address: " + addressString;
+                    address.Location = new Point(5, 5);
+                    address.AutoSize = true;
+                    PanelInput.Controls.Add(address);
+
+                    Label amount = new Label();
+                    Decimal value = Decimal.Parse(txoutput["value"].ToString()) / 1000000;
+                    amount.Text = "Amount: " + value.ToString();
+                    amount.Location = new Point(5, 25);
+                    amount.AutoSize = true;
+                    PanelInput.Controls.Add(amount);
+
+                }
+
+
 
                 //if (input["path"].ToString() != "")
                 //{
@@ -129,7 +205,7 @@ namespace FireWallet
             {
                 JObject output = (JObject)outputs[i];
                 JObject metaOutput = (JObject)metaOutputs[i];
-                
+
                 Panel PanelOutput = new Panel();
                 PanelOutput.Size = new Size(panelOut.Width - SystemInformation.VerticalScrollBarWidth - 10, 50);
                 PanelOutput.Location = new Point(5, panelOut.Controls.Count * 50);
@@ -167,14 +243,14 @@ namespace FireWallet
                 }
 
                 bool own = false;
-                string addressResp = await mainForm.APIGet("wallet/" + mainForm.Account + "/key/" + addressRaw["string"].ToString(),true);
+                string addressResp = await mainForm.APIGet("wallet/" + mainForm.Account + "/key/" + addressRaw["string"].ToString(), true);
                 if (addressResp != "Error") own = true;
 
                 if (own)
                 {
                     Label ownAddress = new Label();
                     ownAddress.Text = "Own Address";
-                    ownAddress.Location = new Point(PanelOutput.Width - 100, 5);
+                    ownAddress.Location = new Point(PanelOutput.Width - 150, 5);
                     ownAddress.AutoSize = true;
                     PanelOutput.Controls.Add(ownAddress);
                 }
@@ -182,11 +258,18 @@ namespace FireWallet
                 Label amount = new Label();
                 Decimal value = Decimal.Parse(output["value"].ToString());
                 amount.Text = "Amount: " + value.ToString();
-                amount.Location = new Point(PanelOutput.Width - 100, 25);
+                amount.Location = new Point(PanelOutput.Width - 150, 25);
                 amount.AutoSize = true;
                 PanelOutput.Controls.Add(amount);
                 panelOut.Controls.Add(PanelOutput);
             }
+        }
+
+        private async void buttonSign_Click(object sender, EventArgs e)
+        {
+            string content = "{\"tx\":\"" + tx["tx"].ToString() + "\", \"passphrase\":\"" + mainForm.Password + "\"}";
+            string response = await mainForm.APIPost("wallet/" + mainForm.Account + "/sign", true, content);
+            mainForm.AddLog(response);
         }
     }
 }
