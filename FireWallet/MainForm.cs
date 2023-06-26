@@ -770,18 +770,12 @@ namespace FireWallet
             {
                 WatchOnly = true;
                 toolStripStatusLabelLedger.Visible = true;
-                buttonRevealAll.Visible = false;
-                buttonRedeemAll.Visible = false;
-                buttonSendAll.Visible = false;
                 buttonAddressVerify.Visible = true;
             }
             else
             {
                 WatchOnly = false;
                 toolStripStatusLabelLedger.Visible = false;
-                buttonRevealAll.Visible = true;
-                buttonRedeemAll.Visible = true;
-                buttonSendAll.Visible = true;
                 buttonAddressVerify.Visible = false;
             }
 
@@ -812,6 +806,18 @@ namespace FireWallet
             else
             {
                 toolStripStatusLabelMultisig.Visible = false;
+            }
+            if (WatchOnly || multiSig)
+            {
+                buttonRevealAll.Visible = false;
+                buttonRedeemAll.Visible = false;
+                buttonSendAll.Visible = false;
+            }
+            else
+            {
+                buttonRevealAll.Visible = true;
+                buttonRedeemAll.Visible = true;
+                buttonSendAll.Visible = true;
             }
 
             return true;
