@@ -515,7 +515,7 @@ namespace FireWallet
                 notifyForm2.Dispose();
                 this.Close();
             }
-            else if (!mainForm.WatchOnly)
+            else if (mainForm.multiSig)
             {
                 string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
                 string content = "{\"method\": \"createbatch\",\"params\":[ " + batchTX + "]}";

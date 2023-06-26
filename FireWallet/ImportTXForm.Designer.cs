@@ -106,7 +106,7 @@
             Cancelbutton2.TabIndex = 2;
             Cancelbutton2.Text = "Cancel";
             Cancelbutton2.UseVisualStyleBackColor = true;
-            Cancelbutton2.Click += Cancelbutton2_Click;
+            Cancelbutton2.Click += Cancel;
             // 
             // label1
             // 

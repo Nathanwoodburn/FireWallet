@@ -66,7 +66,7 @@ namespace FireWallet
             ParseTX();
         }
 
-        private void Cancelbutton2_Click(object sender, EventArgs e)
+        private void Cancel(object sender, EventArgs e)
         {
             this.Close();
         }
@@ -137,18 +137,16 @@ namespace FireWallet
                 }
             }
 
-
-
-
-
             // Set sig label sizes
             labelSigsReq.Width = (labelSigsTotal.Width / totalSigs) * reqSigs;
             labelSigsSigned.Width = (labelSigsTotal.Width / totalSigs) * sigs;
             labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of " + totalSigs;
 
-
-
-
+            if (sigs >= totalSigs)
+            {
+                buttonSign.Enabled = false;
+                buttonSign.Text = "Signed";
+            }
 
             for (int i = 0; i < inputs.Count; i++)
             {
@@ -202,18 +200,6 @@ namespace FireWallet
                     PanelInput.Controls.Add(amount);
 
                 }
-
-
-
-                //if (input["path"].ToString() != "")
-                //{
-                //    Label ownAddress = new Label();
-                //    ownAddress.Text = "Own Address";
-                //    ownAddress.Location = new Point(PanelInput.Width - 100, 5);
-                //    ownAddress.AutoSize = true;
-                //    PanelInput.Controls.Add(ownAddress);
-                //}
-
                 panelIn.Controls.Add(PanelInput);
             }
 
@@ -308,7 +294,9 @@ namespace FireWallet
                 labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of " + totalSigs;
                 signedTX = response;
             } else {
-
+                NotifyForm notifyForm = new NotifyForm("Ledger signing not supported yet 😢");
+                notifyForm.ShowDialog();
+                notifyForm.Dispose();
             }
         }
 

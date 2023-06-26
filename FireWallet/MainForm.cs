@@ -2779,7 +2779,6 @@ namespace FireWallet
                 }
                 else
                 {
-                    AddLog(covenant.ToString());
                     string hash = covenant["items"][0].ToString();
                     if (hashes.ContainsKey(hash))
                     {
