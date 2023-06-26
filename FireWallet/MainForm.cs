@@ -1,17 +1,17 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Newtonsoft.Json.Linq;
-using Point = System.Drawing.Point;
-using Size = System.Drawing.Size;
-using QRCoder;
-using System.Text.RegularExpressions;
-using System.Security.Cryptography;
-using System.Text;
 using System.Net;
+using System.Net.Security;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.RegularExpressions;
 using DnsClient;
 using DnsClient.Protocol;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
+using Newtonsoft.Json.Linq;
+using QRCoder;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
 
 namespace FireWallet
 {
@@ -1519,6 +1519,12 @@ namespace FireWallet
         }
         #endregion
         #region Nav
+        private void buttonMultiSign_Click(object sender, EventArgs e)
+        {
+            ImportTXForm importTXForm = new ImportTXForm(this);
+            importTXForm.ShowDialog();
+            importTXForm.Dispose();
+        }
         private async void PortfolioPanel_Click(object sender, EventArgs e)
         {
             hidePages();
@@ -1912,7 +1918,7 @@ namespace FireWallet
                     return;
                 }
 
-                if (!WatchOnly)
+                if (!WatchOnly && !multiSig)
                 {
                     string content = "{\"method\": \"sendtoaddress\",\"params\": [ \"" + address + "\", " +
                         amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
@@ -1940,96 +1946,136 @@ namespace FireWallet
                     labelSendingError.Text = "";
                     buttonNavPortfolio.PerformClick();
                 }
-                else // Cold wallet signing
+                else // Cold or multisig wallet signing
                 {
-                    AddLog("Sending CW " + amount.ToString() + " HNS to " + address);
-
-                    if (!Directory.Exists(dir + "hsd-ledger"))
+                    if (multiSig)
                     {
-                        if (CheckNodeInstalled() == false)
+                        if (!WatchOnly)
                         {
-                            AddLog("Node not installed");
-                            NotifyForm notify1 = new NotifyForm("Node not installed\nPlease install it to use Ledger");
-                            notify1.ShowDialog();
-                            notify1.Dispose();
-                            return;
+                            string content = "{\"method\": \"createsendtoaddress\",\"params\": [ \"" + address + "\", " +
+                                amount.ToString() + ", \"\", \"\", " + subtractFee + " ]}";
+                            string output = await APIPost("", true, content);
+                            JObject APIresp = JObject.Parse(output);
+                            if (APIresp["error"].ToString() != "")
+                            {
+                                AddLog("Failed:");
+                                AddLog(APIresp.ToString());
+                                JObject error = JObject.Parse(APIresp["error"].ToString());
+                                string ErrorMessage = error["message"].ToString();
+
+                                NotifyForm notify = new NotifyForm("Error Transaction Failed\n" + ErrorMessage);
+                                notify.ShowDialog();
+                                return;
+                            }
+                            JObject result = JObject.Parse(APIresp["result"].ToString());
+                            string hex = result["hex"].ToString();
+
+                            content = "{\"tx\": \"" + hex + "\",\"passphrase\":\"" + Password + "\"}";
+                            output = await APIPost("wallet/" + Account + "/sign", true, content);
+                            if (!output.Contains("hex"))
+                            {
+                                AddLog("Failed:");
+                                AddLog(APIresp.ToString());
+                                NotifyForm notify = new NotifyForm("Error Transaction Failed\nCheck the logs");
+                                notify.ShowDialog();
+                                return;
+                            }
+                            ExportTransaction(output);
                         }
-                        AddLog("Installing hsd-ledger");
 
-                        // Try to install hsd-ledger
-                        try
+
+                    }
+                    else // Cold wallet non multisig
+                    {
+                        AddLog("Sending CW " + amount.ToString() + " HNS to " + address);
+
+                        if (!Directory.Exists(dir + "hsd-ledger"))
                         {
-                            NotifyForm Notifyinstall = new NotifyForm("Installing hsd-ledger\nThis may take a few minutes\nDo not close FireWallet", false);
-                            Notifyinstall.Show();
-                            // Wait for the notification to show
-                            await Task.Delay(1000);
+                            if (CheckNodeInstalled() == false)
+                            {
+                                AddLog("Node not installed");
+                                NotifyForm notify1 = new NotifyForm("Node not installed\nPlease install it to use Ledger");
+                                notify1.ShowDialog();
+                                notify1.Dispose();
+                                return;
+                            }
+                            AddLog("Installing hsd-ledger");
 
-                            string repositoryUrl = "https://github.com/handshake-org/hsd-ledger.git";
-                            string destinationPath = dir + "hsd-ledger";
-                            CloneRepository(repositoryUrl, destinationPath);
+                            // Try to install hsd-ledger
+                            try
+                            {
+                                NotifyForm Notifyinstall = new NotifyForm("Installing hsd-ledger\nThis may take a few minutes\nDo not close FireWallet", false);
+                                Notifyinstall.Show();
+                                // Wait for the notification to show
+                                await Task.Delay(1000);
 
-                            Notifyinstall.CloseNotification();
-                            Notifyinstall.Dispose();
+                                string repositoryUrl = "https://github.com/handshake-org/hsd-ledger.git";
+                                string destinationPath = dir + "hsd-ledger";
+                                CloneRepository(repositoryUrl, destinationPath);
+
+                                Notifyinstall.CloseNotification();
+                                Notifyinstall.Dispose();
+                            }
+                            catch (Exception ex)
+                            {
+                                NotifyForm notifyError = new NotifyForm("Error installing hsd-ledger\n" + ex.Message);
+                                AddLog(ex.Message);
+                                notifyError.ShowDialog();
+                                notifyError.Dispose();
+                                return;
+                            }
+
                         }
-                        catch (Exception ex)
+
+                        NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device", false);
+                        notify.Show();
+
+                        var proc = new Process();
+                        proc.StartInfo.CreateNoWindow = true;
+                        proc.StartInfo.RedirectStandardInput = true;
+                        proc.StartInfo.RedirectStandardOutput = true;
+                        proc.StartInfo.UseShellExecute = false;
+                        proc.StartInfo.RedirectStandardError = true;
+                        proc.StartInfo.FileName = "node.exe";
+                        proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger sendtoaddress " + textBoxSendingTo.Text
+                            + " " + textBoxSendingAmount.Text + " --api-key " + NodeSettings["Key"] + " -w " + Account;
+                        var outputBuilder = new StringBuilder();
+
+                        // Event handler for capturing output data
+                        proc.OutputDataReceived += (sender, args) =>
                         {
-                            NotifyForm notifyError = new NotifyForm("Error installing hsd-ledger\n" + ex.Message);
-                            AddLog(ex.Message);
+                            if (!string.IsNullOrEmpty(args.Data))
+                            {
+                                outputBuilder.AppendLine(args.Data);
+                            }
+                        };
+
+                        proc.Start();
+                        proc.BeginOutputReadLine();
+                        proc.WaitForExit();
+
+                        notify.CloseNotification();
+                        notify.Dispose();
+
+                        string output = outputBuilder.ToString();
+                        AddLog(output);
+                        if (output.Contains("Submitted TXID"))
+                        {
+                            string hash = output.Substring(output.IndexOf("Submitted TXID") + 16, 64);
+                            string link = UserSettings["explorer-tx"] + hash;
+                            NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
+                                                           "Explorer", link);
+                            notifySuccess.ShowDialog();
+                            textBoxSendingTo.Text = "";
+                            textBoxSendingAmount.Text = "";
+                            buttonNavPortfolio.PerformClick();
+                        }
+                        else
+                        {
+                            NotifyForm notifyError = new NotifyForm("Error Transaction Failed\nCheck logs for more details");
                             notifyError.ShowDialog();
                             notifyError.Dispose();
-                            return;
                         }
-
-                    }
-
-                    NotifyForm notify = new NotifyForm("Please confirm the transaction on your Ledger device", false);
-                    notify.Show();
-
-                    var proc = new Process();
-                    proc.StartInfo.CreateNoWindow = true;
-                    proc.StartInfo.RedirectStandardInput = true;
-                    proc.StartInfo.RedirectStandardOutput = true;
-                    proc.StartInfo.UseShellExecute = false;
-                    proc.StartInfo.RedirectStandardError = true;
-                    proc.StartInfo.FileName = "node.exe";
-                    proc.StartInfo.Arguments = dir + "hsd-ledger/bin/hsd-ledger sendtoaddress " + textBoxSendingTo.Text
-                        + " " + textBoxSendingAmount.Text + " --api-key " + NodeSettings["Key"] + " -w " + Account;
-                    var outputBuilder = new StringBuilder();
-
-                    // Event handler for capturing output data
-                    proc.OutputDataReceived += (sender, args) =>
-                    {
-                        if (!string.IsNullOrEmpty(args.Data))
-                        {
-                            outputBuilder.AppendLine(args.Data);
-                        }
-                    };
-
-                    proc.Start();
-                    proc.BeginOutputReadLine();
-                    proc.WaitForExit();
-
-                    notify.CloseNotification();
-                    notify.Dispose();
-
-                    string output = outputBuilder.ToString();
-                    AddLog(output);
-                    if (output.Contains("Submitted TXID"))
-                    {
-                        string hash = output.Substring(output.IndexOf("Submitted TXID") + 16, 64);
-                        string link = UserSettings["explorer-tx"] + hash;
-                        NotifyForm notifySuccess = new NotifyForm("Transaction Sent\nThis transaction could take up to 20 minutes to mine",
-                                                       "Explorer", link);
-                        notifySuccess.ShowDialog();
-                        textBoxSendingTo.Text = "";
-                        textBoxSendingAmount.Text = "";
-                        buttonNavPortfolio.PerformClick();
-                    }
-                    else
-                    {
-                        NotifyForm notifyError = new NotifyForm("Error Transaction Failed\nCheck logs for more details");
-                        notifyError.ShowDialog();
-                        notifyError.Dispose();
                     }
 
                 }
@@ -2042,6 +2088,7 @@ namespace FireWallet
                 labelSendingError.Text = ex.Message;
             }
         }
+
         public void CloneRepository(string repositoryUrl, string destinationPath)
         {
             try
@@ -2650,5 +2697,64 @@ namespace FireWallet
         #endregion
 
 
+
+        #region Multi
+        private void ExportTransaction(string rawTX)
+        { 
+            JObject tx = JObject.Parse(rawTX);
+            JObject toExport = new JObject();
+            toExport["version"] = 1;
+            toExport["tx"] = tx["hex"];
+            JArray inputsParsed = new JArray();
+            JArray outputsParsed = new JArray();
+            JArray inputs = JArray.Parse(tx["inputs"].ToString());
+            JArray outputs = JArray.Parse(tx["outputs"].ToString());
+            foreach (JObject input in inputs)
+            {
+                JObject coin = JObject.Parse(input["coin"].ToString());
+                JObject covenant = JObject.Parse(coin["covenant"].ToString());
+                string type = covenant["type"].ToString();
+                JObject data = new JObject();
+                if (type == "0")
+                {
+                    inputsParsed.Add(data);
+                }
+                else
+                {
+                    AddLog("Not supported yet");
+                }
+            }
+            foreach (JObject output in outputs)
+            {
+                JObject covenant = JObject.Parse(output["covenant"].ToString());
+                string type = covenant["type"].ToString();
+                JObject data = new JObject();
+                if (type == "0")
+                {
+                    outputsParsed.Add(data);
+                }
+                else
+                {
+                    AddLog("Not supported yet");
+                }
+            }
+            JObject metadata = new JObject();
+            metadata["inputs"] = inputsParsed;
+            metadata["outputs"] = outputsParsed;
+            toExport["metadata"] = metadata;
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "JSON file (*.json)|*.json",
+                Title = "Save transaction as JSON"
+            };
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                StreamWriter sw = new StreamWriter(saveFileDialog.FileName);
+                sw.Write(toExport.ToString());
+                sw.Dispose();
+            }
+        }
+        #endregion
     }
 }

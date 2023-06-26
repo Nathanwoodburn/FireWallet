@@ -129,6 +129,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
+            buttonMultiSign = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -365,6 +366,7 @@ namespace FireWallet
             // panelNav
             // 
             panelNav.Controls.Add(buttonNavSettings);
+            panelNav.Controls.Add(buttonMultiSign);
             panelNav.Controls.Add(buttonBatch);
             panelNav.Controls.Add(buttonNavDomains);
             panelNav.Controls.Add(buttonNavReceive);
@@ -1142,6 +1144,19 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
+            // buttonMultiSign
+            // 
+            buttonMultiSign.FlatStyle = FlatStyle.Flat;
+            buttonMultiSign.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonMultiSign.Location = new Point(12, 301);
+            buttonMultiSign.Name = "buttonMultiSign";
+            buttonMultiSign.Size = new Size(89, 30);
+            buttonMultiSign.TabIndex = 3;
+            buttonMultiSign.TabStop = false;
+            buttonMultiSign.Text = "Import TX";
+            buttonMultiSign.UseVisualStyleBackColor = true;
+            buttonMultiSign.Click += buttonMultiSign_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1291,5 +1306,6 @@ namespace FireWallet
         private Button buttonRedeemAll;
         private Button buttonSendAll;
         private ToolStripStatusLabel toolStripStatusLabelMultisig;
+        private Button buttonMultiSign;
     }
 }
