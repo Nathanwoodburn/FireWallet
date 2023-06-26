@@ -148,53 +148,111 @@ namespace FireWallet
 
             if (page == 1)
             {
-                // Create new wallet
-                buttonNext.Enabled = false;
-                string path = "wallet/" + textBoxNewName.Text;
-                string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\"}";
-                string response = await APIPut(path, true, content);
-                if (response == "Error")
-                {
-                    NotifyForm notify = new NotifyForm("Error creating wallet");
-                    notify.ShowDialog();
-                    notify.Dispose();
-                    buttonNext.Enabled = true;
-                    return;
-                }
-                mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
-                NotifyForm notify2 = new NotifyForm("Created wallet: " + textBoxNewName.Text);
-                notify2.ShowDialog();
-                notify2.Dispose();
-                this.Close();
+                groupBoxMulti.Show();
+                page = 6;
             }
             else if (page == 2)
             {
                 groupBoxSeed.Show();
-                buttonNext.Text = "Import";
                 page = 3;
 
             }
             else if (page == 3)
             {
-                // Create new wallet
-                buttonNext.Enabled = false;
-                string path = "wallet/" + textBoxNewName.Text;
-                string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\",\"mnemonic\":\"" + textBoxSeedPhrase.Text + "\"}";
-                string response = await APIPut(path, true, content);
-                if (response == "Error")
-                {
-                    NotifyForm notify = new NotifyForm("Error creating wallet");
-                    notify.ShowDialog();
-                    notify.Dispose();
-                    buttonNext.Enabled = true;
-                    return;
-                }
-                mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
-                NotifyForm notify2 = new NotifyForm("Imported wallet: " + textBoxNewName.Text);
-                notify2.ShowDialog();
-                notify2.Dispose();
-                this.Close();
+                page = 5;
+                groupBoxMulti.Show();
+                buttonNext.Text = "Import";
             }
+            else if (page == 5)
+            {
+                if (!checkBoxMulti.Checked)
+                {
+                    // Import wallet from seed
+                    buttonNext.Enabled = false;
+                    string path = "wallet/" + textBoxNewName.Text;
+                    string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\",\"mnemonic\":\"" + textBoxSeedPhrase.Text + "\"}";
+                    string response = await APIPut(path, true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error creating wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
+                    NotifyForm notify2 = new NotifyForm("Imported wallet: " + textBoxNewName.Text);
+                    notify2.ShowDialog();
+                    notify2.Dispose();
+                    this.Close();
+                }
+                else
+                {
+                    // Import wallet from seed and create multisig
+                    buttonNext.Enabled = false;
+                    string path = "wallet/" + textBoxNewName.Text;
+                    string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\",\"mnemonic\":\"" + textBoxSeedPhrase.Text + "\", \"type\":\"multisig\",\"m\":"+numericUpDownM.Value.ToString()+ ",\"n\":" +numericUpDownN.Value.ToString() + "}";
+                    string response = await APIPut(path, true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error creating wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
+                    NotifyForm notify2 = new NotifyForm("Imported wallet: " + textBoxNewName.Text);
+                    notify2.ShowDialog();
+                    notify2.Dispose();
+                    this.Close();
+                }
+            }
+            else if (page == 6)
+            {
+                if (!checkBoxMulti.Checked)
+                {
+                    // Create new wallet
+                    buttonNext.Enabled = false;
+                    string path = "wallet/" + textBoxNewName.Text;
+                    string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\"}";
+                    string response = await APIPut(path, true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error creating wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
+                    NotifyForm notify2 = new NotifyForm("Created wallet: " + textBoxNewName.Text);
+                    notify2.ShowDialog();
+                    notify2.Dispose();
+                    this.Close();
+                } else
+                {
+                    // Create new wallet
+                    buttonNext.Enabled = false;
+                    string path = "wallet/" + textBoxNewName.Text;
+                    string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\", \"type\":\"multisig\",\"m\":"+numericUpDownM.Value.ToString()+ ",\"n\":" +numericUpDownN.Value.ToString() + "}";
+                    string response = await APIPut(path, true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error creating wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
+                    NotifyForm notify2 = new NotifyForm("Created wallet: " + textBoxNewName.Text);
+                    notify2.ShowDialog();
+                    notify2.Dispose();
+                    this.Close();
+                }
+            }
+
             else if (page == 4)
             {
                 try
@@ -228,7 +286,7 @@ namespace FireWallet
                 }
                 catch (Exception ex)
                 {
-                      mainForm.AddLog(ex.Message);
+                    mainForm.AddLog(ex.Message);
                     NotifyForm notify = new NotifyForm("Error importing wallet\n" + ex.Message);
                     notify.ShowDialog();
                     notify.Dispose();
@@ -256,16 +314,17 @@ namespace FireWallet
             HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Put, "http://" + ip + ":" + port + "/" + path);
             req.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.ASCIIEncoding.ASCII.GetBytes("x:" + key)));
             req.Content = new StringContent(content);
-            
+
             try
             {
                 // Send request
                 HttpResponseMessage resp = await httpClient.SendAsync(req);
-                
+
                 if (resp.IsSuccessStatusCode)
                 {
                     return await resp.Content.ReadAsStringAsync();
-                } else
+                }
+                else
                 {
                     mainForm.AddLog("Put Error: " + await resp.Content.ReadAsStringAsync());
                     return "Error";
@@ -277,7 +336,7 @@ namespace FireWallet
                 return "Error";
             }
 
-            
+
         }
     }
 }

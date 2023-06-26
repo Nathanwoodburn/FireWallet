@@ -37,6 +37,7 @@ namespace FireWallet
         // Batching variables
         public bool BatchMode { get; set; }
         public BatchForm BatchForm { get; set; }
+        public bool multiSig { get; set; }
         #endregion
         #region Application
         public MainForm()
@@ -767,11 +768,11 @@ namespace FireWallet
             if (jObject["watchOnly"].ToString() == "True")
             {
                 WatchOnly = true;
-                toolStripStatusLabelLedger.Text = "Cold Wallet";
                 toolStripStatusLabelLedger.Visible = true;
                 buttonRevealAll.Visible = false;
                 buttonRedeemAll.Visible = false;
                 buttonSendAll.Visible = false;
+                buttonAddressVerify.Visible = true;
             }
             else
             {
@@ -780,15 +781,38 @@ namespace FireWallet
                 buttonRevealAll.Visible = true;
                 buttonRedeemAll.Visible = true;
                 buttonSendAll.Visible = true;
+                buttonAddressVerify.Visible = false;
             }
-            if (WatchOnly)
+
+            path = "wallet/" + Account + "/account/default";
+            APIresponse = await APIGet(path, true);
+            if (APIresponse.Contains("Error"))
             {
-                buttonAddressVerify.Visible = true;
+                AddLog("Error getting default account");
+                multiSig = false;
             }
             else
             {
-                buttonAddressVerify.Visible = false;
+                jObject = JObject.Parse(APIresponse);
+                if (jObject["n"].ToString() == "1")
+                {
+                    multiSig = false;
+                }
+                else
+                {
+                    multiSig = true;
+                }
             }
+
+            if (multiSig)
+            {
+                toolStripStatusLabelMultisig.Visible = true;
+            }
+            else
+            {
+                toolStripStatusLabelMultisig.Visible = false;
+            }
+
             return true;
         }
 
@@ -1763,7 +1787,8 @@ namespace FireWallet
                 {
                     labelSendingError.Show();
                     labelSendingError.Text = "HIP-02 lookup failed";
-                } else
+                }
+                else
                 {
                     labelSendingHIPAddress.Text = address;
                     labelSendingHIPAddress.Show();
@@ -1897,7 +1922,10 @@ namespace FireWallet
                     {
                         AddLog("Failed:");
                         AddLog(APIresp.ToString());
-                        NotifyForm notify = new NotifyForm("Error Transaction Failed");
+                        JObject error = JObject.Parse(APIresp["error"].ToString());
+                        string ErrorMessage = error["message"].ToString();
+
+                        NotifyForm notify = new NotifyForm("Error Transaction Failed\n" + ErrorMessage);
                         notify.ShowDialog();
                         return;
                     }
