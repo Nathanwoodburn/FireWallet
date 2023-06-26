@@ -9,6 +9,7 @@ namespace FireWallet
         int totalSigs;
         int reqSigs;
         int sigs;
+        string signedTX;
         public ImportTXForm(MainForm mainForm)
         {
             InitializeComponent();
@@ -18,6 +19,7 @@ namespace FireWallet
         private void ImportTXForm_Load(object sender, EventArgs e)
         {
             // Default variables
+            signedTX = "";
             totalSigs = 3;
             reqSigs = 2;
             sigs = 0;
@@ -109,7 +111,7 @@ namespace FireWallet
             JObject sigGetResult = (JObject)sigGetJson["result"];
             string[] asm = sigGetResult["asm"].ToString().Split(" ");
             string totalSigsStr = asm[asm.Length - 2];
-            totalSigs = int.Parse(totalSigsStr.Replace("OP_",""));
+            totalSigs = int.Parse(totalSigsStr.Replace("OP_", ""));
             reqSigs = int.Parse(sigGetResult["reqSigs"].ToString());
             sigs = -1;
             for (int i = 0; i < witnesses.Count; i++)
@@ -121,14 +123,14 @@ namespace FireWallet
                 }
             }
 
-            
+
 
 
 
             // Set sig label sizes
             labelSigsReq.Width = (labelSigsTotal.Width / totalSigs) * reqSigs;
             labelSigsSigned.Width = (labelSigsTotal.Width / totalSigs) * sigs;
-            labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of "+ totalSigs;
+            labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of " + totalSigs;
 
 
 
@@ -267,9 +269,70 @@ namespace FireWallet
 
         private async void buttonSign_Click(object sender, EventArgs e)
         {
-            string content = "{\"tx\":\"" + tx["tx"].ToString() + "\", \"passphrase\":\"" + mainForm.Password + "\"}";
-            string response = await mainForm.APIPost("wallet/" + mainForm.Account + "/sign", true, content);
-            mainForm.AddLog(response);
+            if (!mainForm.WatchOnly)
+            {
+                string content = "{\"tx\":\"" + tx["tx"].ToString() + "\", \"passphrase\":\"" + mainForm.Password + "\"}";
+                string response = await mainForm.APIPost("wallet/" + mainForm.Account + "/sign", true, content);
+                if (response == "Error" || response == "")
+                {
+                    NotifyForm notifyForm = new NotifyForm("Error signing transaction");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+                buttonSign.Enabled = false;
+                buttonExport.Enabled = true;
+                sigs++;
+                // Set sig label sizes
+                labelSigsReq.Width = (labelSigsTotal.Width / totalSigs) * reqSigs;
+                labelSigsSigned.Width = (labelSigsTotal.Width / totalSigs) * sigs;
+                labelSigInfo.Text = "Signed: " + sigs + "\nReq: " + reqSigs + " of " + totalSigs;
+                signedTX = response;
+            }
+        }
+
+        private void buttonExport_Click(object sender, EventArgs e)
+        {
+            mainForm.ExportTransaction(signedTX);
+        }
+
+        private async void buttonSend_Click(object sender, EventArgs e)
+        {
+            string content = "";
+            if (signedTX != "")
+            {
+                JObject signed = JObject.Parse(signedTX);
+                content = "{\"method\":\"sendrawtransaction\", \"params\":[\"" + signed["hex"].ToString() + "\"]}";
+            }
+            else
+            {
+                content = "{\"method\":\"sendrawtransaction\", \"params\":[\"" + tx["tx"].ToString() + "\"]}";
+            }
+            string response = await mainForm.APIPost("", false, content);
+            if (response == "Error" || response == "")
+            {
+                mainForm.AddLog(response);
+                NotifyForm notifyError = new NotifyForm("Error sending transaction");
+                notifyError.ShowDialog();
+                notifyError.Dispose();
+                return;
+            }
+            JObject responseJson = JObject.Parse(response);
+            if (responseJson["error"].ToString() != "")
+            {
+                mainForm.AddLog(response);
+                JObject error = (JObject)responseJson["error"];
+                NotifyForm notifyError = new NotifyForm("Error sending transaction\n" + error["message"].ToString());
+                notifyError.ShowDialog();
+                notifyError.Dispose();
+                return;
+            }
+            string txHash = responseJson["result"].ToString();
+            NotifyForm notifyForm = new NotifyForm("Transaction sent\nIf the transaction hasn't been signed it might not be mined", "Explorer", mainForm.UserSettings["explorer-tx"] + txHash);
+            notifyForm.ShowDialog();
+            notifyForm.Dispose();
+            this.Close();
+            
         }
     }
 }

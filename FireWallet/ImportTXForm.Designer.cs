@@ -40,6 +40,8 @@
             labelSigsReq = new Label();
             labelSigsSigned = new Label();
             labelSigInfo = new Label();
+            buttonExport = new Button();
+            buttonSend = new Button();
             groupBoxIn.SuspendLayout();
             groupBoxOut.SuspendLayout();
             SuspendLayout();
@@ -86,7 +88,7 @@
             // 
             buttonSign.FlatStyle = FlatStyle.Flat;
             buttonSign.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonSign.Location = new Point(789, 444);
+            buttonSign.Location = new Point(700, 444);
             buttonSign.Name = "buttonSign";
             buttonSign.Size = new Size(83, 36);
             buttonSign.TabIndex = 2;
@@ -98,7 +100,7 @@
             // 
             Cancelbutton2.FlatStyle = FlatStyle.Flat;
             Cancelbutton2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            Cancelbutton2.Location = new Point(700, 444);
+            Cancelbutton2.Location = new Point(12, 441);
             Cancelbutton2.Name = "Cancelbutton2";
             Cancelbutton2.Size = new Size(83, 36);
             Cancelbutton2.TabIndex = 2;
@@ -150,6 +152,31 @@
             labelSigInfo.TabIndex = 8;
             labelSigInfo.Text = "#";
             // 
+            // buttonExport
+            // 
+            buttonExport.Enabled = false;
+            buttonExport.FlatStyle = FlatStyle.Flat;
+            buttonExport.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonExport.Location = new Point(611, 444);
+            buttonExport.Name = "buttonExport";
+            buttonExport.Size = new Size(83, 36);
+            buttonExport.TabIndex = 2;
+            buttonExport.Text = "Export";
+            buttonExport.UseVisualStyleBackColor = true;
+            buttonExport.Click += buttonExport_Click;
+            // 
+            // buttonSend
+            // 
+            buttonSend.FlatStyle = FlatStyle.Flat;
+            buttonSend.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSend.Location = new Point(789, 444);
+            buttonSend.Name = "buttonSend";
+            buttonSend.Size = new Size(83, 36);
+            buttonSend.TabIndex = 2;
+            buttonSend.Text = "Send";
+            buttonSend.UseVisualStyleBackColor = true;
+            buttonSend.Click += buttonSend_Click;
+            // 
             // ImportTXForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -162,6 +189,8 @@
             Controls.Add(label1);
             Controls.Add(groupBoxOut);
             Controls.Add(groupBoxIn);
+            Controls.Add(buttonSend);
+            Controls.Add(buttonExport);
             Controls.Add(Cancelbutton2);
             Controls.Add(buttonSign);
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -188,5 +217,7 @@
         private Label labelSigsReq;
         private Label labelSigsSigned;
         private Label labelSigInfo;
+        private Button buttonExport;
+        private Button buttonSend;
     }
 }

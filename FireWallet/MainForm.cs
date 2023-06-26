@@ -2699,7 +2699,7 @@ namespace FireWallet
 
 
         #region Multi
-        private void ExportTransaction(string rawTX)
+        public void ExportTransaction(string rawTX)
         { 
             JObject tx = JObject.Parse(rawTX);
             JObject toExport = new JObject();
