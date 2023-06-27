@@ -72,7 +72,11 @@ namespace FireWallet
         }
         private async void ParseTX()
         {
-            if (tx == null) this.Close();
+            if (tx == null)
+            {
+                this.Close();
+                return;
+            }
 
             string hex = tx["tx"].ToString();
             string content = "{\"method\":\"decoderawtransaction\",\"params\":[\"" + hex + "\"]}";

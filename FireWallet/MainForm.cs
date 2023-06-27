@@ -2891,5 +2891,10 @@ namespace FireWallet
         #endregion
 
 
+        private void buttonExportTXs_Click(object sender, EventArgs e)
+        {
+            ExportTXForm exportTXForm = new ExportTXForm(this);
+            exportTXForm.Show();
+        }
     }
 }

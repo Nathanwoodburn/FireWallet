@@ -60,6 +60,7 @@ namespace FireWallet
             buttonaccountnew = new Button();
             panelNav = new Panel();
             buttonNavSettings = new Button();
+            buttonMultiSettings = new Button();
             buttonMultiSign = new Button();
             buttonBatch = new Button();
             buttonNavDomains = new Button();
@@ -130,7 +131,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            buttonMultiSettings = new Button();
+            buttonExportTXs = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -393,6 +394,19 @@ namespace FireWallet
             buttonNavSettings.UseVisualStyleBackColor = true;
             buttonNavSettings.Click += buttonNavSettings_Click;
             // 
+            // buttonMultiSettings
+            // 
+            buttonMultiSettings.FlatStyle = FlatStyle.Flat;
+            buttonMultiSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonMultiSettings.Location = new Point(12, 466);
+            buttonMultiSettings.Name = "buttonMultiSettings";
+            buttonMultiSettings.Size = new Size(89, 30);
+            buttonMultiSettings.TabIndex = 3;
+            buttonMultiSettings.TabStop = false;
+            buttonMultiSettings.Text = "Multisig";
+            buttonMultiSettings.UseVisualStyleBackColor = true;
+            buttonMultiSettings.Click += buttonMultiSettings_Click;
+            // 
             // buttonMultiSign
             // 
             buttonMultiSign.FlatStyle = FlatStyle.Flat;
@@ -473,6 +487,7 @@ namespace FireWallet
             // 
             // panelPortfolio
             // 
+            panelPortfolio.Controls.Add(buttonExportTXs);
             panelPortfolio.Controls.Add(buttonSendAll);
             panelPortfolio.Controls.Add(buttonRedeemAll);
             panelPortfolio.Controls.Add(buttonRevealAll);
@@ -1159,18 +1174,16 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // buttonMultiSettings
+            // buttonExportTXs
             // 
-            buttonMultiSettings.FlatStyle = FlatStyle.Flat;
-            buttonMultiSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonMultiSettings.Location = new Point(12, 466);
-            buttonMultiSettings.Name = "buttonMultiSettings";
-            buttonMultiSettings.Size = new Size(89, 30);
-            buttonMultiSettings.TabIndex = 3;
-            buttonMultiSettings.TabStop = false;
-            buttonMultiSettings.Text = "Multisig";
-            buttonMultiSettings.UseVisualStyleBackColor = true;
-            buttonMultiSettings.Click += buttonMultiSettings_Click;
+            buttonExportTXs.FlatStyle = FlatStyle.Flat;
+            buttonExportTXs.Location = new Point(537, 84);
+            buttonExportTXs.Name = "buttonExportTXs";
+            buttonExportTXs.Size = new Size(75, 25);
+            buttonExportTXs.TabIndex = 10;
+            buttonExportTXs.Text = "Export TXs";
+            buttonExportTXs.UseVisualStyleBackColor = true;
+            buttonExportTXs.Click += buttonExportTXs_Click;
             // 
             // MainForm
             // 
@@ -1323,5 +1336,6 @@ namespace FireWallet
         private ToolStripStatusLabel toolStripStatusLabelMultisig;
         private Button buttonMultiSign;
         private Button buttonMultiSettings;
+        private Button buttonExportTXs;
     }
 }
