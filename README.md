@@ -1,5 +1,6 @@
 # FireWallet
 Experimental wallet for Handshake chain
+Info about the project can be found at https://firewallet or https://firewallet.au
 
 ## Installation
 ### Dependencies
@@ -174,6 +175,10 @@ There are 4 modes: `off` is disabled, `mica` is windows app style, `key` is to m
 ## log.txt
 This file stores the logs for the application.  
 You should check this file if you have any issues with the application.
+
+# Thanks
+Thanks to @ponderingken (https://github.com/ponderingken) for designing the logo and splash screen.
+
 
 
 # Support
