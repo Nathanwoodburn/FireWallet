@@ -1,5 +1,5 @@
 # FireWallet
-Experimental wallet for Handshake chain
+Experimental wallet for Handshake chain  
 Info about the project can be found at https://firewallet or https://firewallet.au
 
 ## Installation
