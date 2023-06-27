@@ -900,7 +900,6 @@ namespace FireWallet
             buttonRevealAll.Enabled = false;
             string content = "{\"method\": \"sendreveal\"}";
             string response = await APIPost("", true, content);
-            AddLog(response);
             if (response == "Error")
             {
                 AddLog("Error sending reveal");
@@ -936,7 +935,6 @@ namespace FireWallet
         {
             buttonRedeemAll.Enabled = false;
             string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REDEEM\"]]]}";
-            AddLog(content);
             string response = await APIPost("", true, content);
             if (response == "Error")
             {
@@ -975,7 +973,6 @@ namespace FireWallet
         {
             buttonSendAll.Enabled = false;
             string content = "{\"method\": \"sendbatch\", \"params\":[[[\"REVEAL\"],[\"REDEEM\"],[\"RENEW\"]]]}";
-            AddLog(content);
             string response = await APIPost("", true, content);
             if (response == "Error")
             {
