@@ -46,9 +46,18 @@
             label2 = new Label();
             groupBoxSeed = new GroupBox();
             textBoxSeedPhrase = new TextBox();
+            groupBoxMulti = new GroupBox();
+            numericUpDownM = new NumericUpDown();
+            numericUpDownN = new NumericUpDown();
+            label7 = new Label();
+            label6 = new Label();
+            checkBoxMulti = new CheckBox();
             groupBoxMode.SuspendLayout();
             groupBoxNew.SuspendLayout();
             groupBoxSeed.SuspendLayout();
+            groupBoxMulti.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownM).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownN).BeginInit();
             SuspendLayout();
             // 
             // buttonNext
@@ -241,11 +250,74 @@
             textBoxSeedPhrase.Size = new Size(438, 288);
             textBoxSeedPhrase.TabIndex = 0;
             // 
+            // groupBoxMulti
+            // 
+            groupBoxMulti.Controls.Add(numericUpDownM);
+            groupBoxMulti.Controls.Add(numericUpDownN);
+            groupBoxMulti.Controls.Add(label7);
+            groupBoxMulti.Controls.Add(label6);
+            groupBoxMulti.Controls.Add(checkBoxMulti);
+            groupBoxMulti.Location = new Point(125, 22);
+            groupBoxMulti.Name = "groupBoxMulti";
+            groupBoxMulti.Size = new Size(450, 319);
+            groupBoxMulti.TabIndex = 6;
+            groupBoxMulti.TabStop = false;
+            groupBoxMulti.Text = "Multisig";
+            // 
+            // numericUpDownM
+            // 
+            numericUpDownM.Location = new Point(223, 91);
+            numericUpDownM.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numericUpDownM.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numericUpDownM.Name = "numericUpDownM";
+            numericUpDownM.Size = new Size(120, 23);
+            numericUpDownM.TabIndex = 2;
+            numericUpDownM.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            // 
+            // numericUpDownN
+            // 
+            numericUpDownN.Location = new Point(223, 55);
+            numericUpDownN.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numericUpDownN.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numericUpDownN.Name = "numericUpDownN";
+            numericUpDownN.Size = new Size(120, 23);
+            numericUpDownN.TabIndex = 2;
+            numericUpDownN.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(6, 93);
+            label7.Name = "label7";
+            label7.Size = new Size(211, 15);
+            label7.TabIndex = 1;
+            label7.Text = "Required Signers to send a transaction:";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(141, 61);
+            label6.Name = "label6";
+            label6.Size = new Size(76, 15);
+            label6.TabIndex = 1;
+            label6.Text = "Total Signers:";
+            // 
+            // checkBoxMulti
+            // 
+            checkBoxMulti.AutoSize = true;
+            checkBoxMulti.Location = new Point(6, 23);
+            checkBoxMulti.Name = "checkBoxMulti";
+            checkBoxMulti.Size = new Size(115, 19);
+            checkBoxMulti.TabIndex = 0;
+            checkBoxMulti.Text = "Create a multisig";
+            checkBoxMulti.UseVisualStyleBackColor = true;
+            // 
             // NewAccountForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(680, 430);
+            Controls.Add(groupBoxMulti);
             Controls.Add(groupBoxSeed);
             Controls.Add(buttonCancel);
             Controls.Add(buttonNext);
@@ -263,6 +335,10 @@
             groupBoxNew.PerformLayout();
             groupBoxSeed.ResumeLayout(false);
             groupBoxSeed.PerformLayout();
+            groupBoxMulti.ResumeLayout(false);
+            groupBoxMulti.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownM).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numericUpDownN).EndInit();
             ResumeLayout(false);
         }
 
@@ -285,5 +361,11 @@
         private Label label5;
         private GroupBox groupBoxSeed;
         private TextBox textBoxSeedPhrase;
+        private GroupBox groupBoxMulti;
+        private CheckBox checkBoxMulti;
+        private NumericUpDown numericUpDownM;
+        private NumericUpDown numericUpDownN;
+        private Label label7;
+        private Label label6;
     }
 }

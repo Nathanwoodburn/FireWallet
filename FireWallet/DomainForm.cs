@@ -157,9 +157,9 @@ namespace FireWallet
             network = Convert.ToInt32(nodeSettings["Network"]);
             GetName();
 
-            if (mainForm.WatchOnly)
+            if (mainForm.WatchOnly || mainForm.multiSig)
             {
-                buttonActionMain.Enabled = false; // Only allow sending in batches for ledger
+                buttonActionMain.Enabled = false; // Only allow sending in batches for ledger and multisig to prevent confusion
             }
         }
         #region API

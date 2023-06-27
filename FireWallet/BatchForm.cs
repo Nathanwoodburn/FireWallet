@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms.VisualStyles;
 using Newtonsoft.Json.Linq;
 using ContentAlignment = System.Drawing.ContentAlignment;
 using Point = System.Drawing.Point;
@@ -78,7 +77,6 @@ namespace FireWallet
             tx.Controls.Add(deleteTX);
 
             panelTXs.Controls.Add(tx);
-            UpdateTheme();
         }
         public void AddBatch(string domain, string operation, decimal bid, decimal lockup)
         {
@@ -142,7 +140,6 @@ namespace FireWallet
             tx.Controls.Add(deleteTX);
 
             panelTXs.Controls.Add(tx);
-            UpdateTheme();
         }
         public void AddBatch(string domain, string operation, string toAddress)
         {
@@ -202,7 +199,6 @@ namespace FireWallet
             tx.Controls.Add(deleteTX);
 
             panelTXs.Controls.Add(tx);
-            UpdateTheme();
         }
 
         public void AddBatch(string domain, string operation, DNS[] updateRecords)
@@ -258,7 +254,6 @@ namespace FireWallet
             tx.Controls.Add(deleteTX);
 
             panelTXs.Controls.Add(tx);
-            UpdateTheme();
         }
 
         private void FixSpacing()
@@ -278,7 +273,7 @@ namespace FireWallet
         }
         #endregion
         #region Theming
-        private void UpdateTheme()
+        public void UpdateTheme()
         {
             // Check if file exists
             if (!Directory.Exists(dir))
@@ -471,7 +466,7 @@ namespace FireWallet
         HttpClient httpClient = new HttpClient();
         private async void buttonSend_Click(object sender, EventArgs e)
         {
-            if (!mainForm.WatchOnly)
+            if (!mainForm.WatchOnly && !mainForm.multiSig)
             {
                 string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
                 string content = "{\"method\": \"sendbatch\",\"params\":[ " + batchTX + "]}";
@@ -518,6 +513,58 @@ namespace FireWallet
                 notifyForm2.ShowDialog();
                 notifyForm2.Dispose();
                 this.Close();
+            }
+            else if (mainForm.multiSig)
+            {
+                string batchTX = "[" + string.Join(", ", batches.Select(batch => batch.ToString())) + "]";
+                string content = "{\"method\": \"createbatch\",\"params\":[ " + batchTX + "]}";
+                string responce = await APIPost("", true, content);
+
+                if (responce == "Error")
+                {
+                    AddLog("Error sending batch");
+                    NotifyForm notifyForm = new NotifyForm("Error sending batch");
+                    notifyForm.ShowDialog();
+                    notifyForm.Dispose();
+                    return;
+                }
+
+                JObject jObject = JObject.Parse(responce);
+                if (jObject["error"].ToString() != "")
+                {
+                    AddLog("Error: ");
+                    AddLog(jObject["error"].ToString());
+                    if (jObject["error"].ToString().Contains("Batch output addresses would exceed lookahead"))
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error: \nBatch output addresses would exceed lookahead\nYour batch might have too many TXs.");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+                    else if (jObject["error"].ToString().Contains("Name is not registered"))
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error: \nName is not registered\nRemember you can't renew domains in transfer");
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+                    else
+                    {
+                        NotifyForm notifyForm = new NotifyForm("Error: \n" + jObject["error"].ToString());
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+                    return;
+                }
+
+                string[] domains = batches.Select(batch => batch.domain).ToArray();
+                string tx = await mainForm.ExportTransaction(jObject["result"].ToString(),domains);
+                if (tx != "Error")
+                {
+                    ImportTXForm importTXForm = new ImportTXForm(mainForm, tx);
+                    this.Hide();
+                    importTXForm.ShowDialog();
+                    importTXForm.Dispose();
+                    this.Close();
+                }
             }
             else // watch only
             {

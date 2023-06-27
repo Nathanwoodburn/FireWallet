@@ -39,6 +39,7 @@ namespace FireWallet
             toolStripStatusLabelNetwork = new ToolStripStatusLabel();
             toolStripStatusLabelstatus = new ToolStripStatusLabel();
             toolStripStatusLabelaccount = new ToolStripStatusLabel();
+            toolStripStatusLabelMultisig = new ToolStripStatusLabel();
             toolStripStatusLabelLedger = new ToolStripStatusLabel();
             toolStripSplitButtonlogout = new ToolStripSplitButton();
             toolStripDropDownButtonHelp = new ToolStripDropDownButton();
@@ -59,12 +60,14 @@ namespace FireWallet
             buttonaccountnew = new Button();
             panelNav = new Panel();
             buttonNavSettings = new Button();
+            buttonMultiSign = new Button();
             buttonBatch = new Button();
             buttonNavDomains = new Button();
             buttonNavReceive = new Button();
             buttonNavSend = new Button();
             buttonNavPortfolio = new Button();
             panelPortfolio = new Panel();
+            buttonSendAll = new Button();
             buttonRedeemAll = new Button();
             buttonRevealAll = new Button();
             groupBoxTransactions = new GroupBox();
@@ -127,7 +130,7 @@ namespace FireWallet
             textBoxExAddr = new TextBox();
             labelSettings4 = new Label();
             textBoxExTX = new TextBox();
-            buttonSendAll = new Button();
+            buttonMultiSettings = new Button();
             statusStripmain.SuspendLayout();
             panelaccount.SuspendLayout();
             groupBoxaccount.SuspendLayout();
@@ -151,7 +154,7 @@ namespace FireWallet
             // statusStripmain
             // 
             statusStripmain.Dock = DockStyle.Top;
-            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripStatusLabelLedger, toolStripSplitButtonlogout, toolStripDropDownButtonHelp });
+            statusStripmain.Items.AddRange(new ToolStripItem[] { toolStripStatusLabelNetwork, toolStripStatusLabelstatus, toolStripStatusLabelaccount, toolStripStatusLabelMultisig, toolStripStatusLabelLedger, toolStripSplitButtonlogout, toolStripDropDownButtonHelp });
             statusStripmain.Location = new Point(0, 0);
             statusStripmain.Name = "statusStripmain";
             statusStripmain.Size = new Size(1152, 22);
@@ -183,12 +186,20 @@ namespace FireWallet
             toolStripStatusLabelaccount.Size = new Size(55, 17);
             toolStripStatusLabelaccount.Text = "Account:";
             // 
+            // toolStripStatusLabelMultisig
+            // 
+            toolStripStatusLabelMultisig.Margin = new Padding(50, 3, 50, 2);
+            toolStripStatusLabelMultisig.Name = "toolStripStatusLabelMultisig";
+            toolStripStatusLabelMultisig.Size = new Size(50, 17);
+            toolStripStatusLabelMultisig.Text = "Multisig";
+            toolStripStatusLabelMultisig.Visible = false;
+            // 
             // toolStripStatusLabelLedger
             // 
             toolStripStatusLabelLedger.Margin = new Padding(50, 3, 50, 2);
             toolStripStatusLabelLedger.Name = "toolStripStatusLabelLedger";
-            toolStripStatusLabelLedger.Size = new Size(71, 17);
-            toolStripStatusLabelLedger.Text = "Cold Wallet:";
+            toolStripStatusLabelLedger.Size = new Size(68, 17);
+            toolStripStatusLabelLedger.Text = "Cold Wallet";
             toolStripStatusLabelLedger.Visible = false;
             // 
             // toolStripSplitButtonlogout
@@ -356,6 +367,8 @@ namespace FireWallet
             // panelNav
             // 
             panelNav.Controls.Add(buttonNavSettings);
+            panelNav.Controls.Add(buttonMultiSettings);
+            panelNav.Controls.Add(buttonMultiSign);
             panelNav.Controls.Add(buttonBatch);
             panelNav.Controls.Add(buttonNavDomains);
             panelNav.Controls.Add(buttonNavReceive);
@@ -379,6 +392,19 @@ namespace FireWallet
             buttonNavSettings.Text = "Settings";
             buttonNavSettings.UseVisualStyleBackColor = true;
             buttonNavSettings.Click += buttonNavSettings_Click;
+            // 
+            // buttonMultiSign
+            // 
+            buttonMultiSign.FlatStyle = FlatStyle.Flat;
+            buttonMultiSign.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonMultiSign.Location = new Point(12, 301);
+            buttonMultiSign.Name = "buttonMultiSign";
+            buttonMultiSign.Size = new Size(89, 30);
+            buttonMultiSign.TabIndex = 3;
+            buttonMultiSign.TabStop = false;
+            buttonMultiSign.Text = "Import TX";
+            buttonMultiSign.UseVisualStyleBackColor = true;
+            buttonMultiSign.Click += buttonMultiSign_Click;
             // 
             // buttonBatch
             // 
@@ -458,6 +484,18 @@ namespace FireWallet
             panelPortfolio.Size = new Size(956, 538);
             panelPortfolio.TabIndex = 7;
             panelPortfolio.Visible = false;
+            // 
+            // buttonSendAll
+            // 
+            buttonSendAll.FlatStyle = FlatStyle.Flat;
+            buttonSendAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonSendAll.Location = new Point(761, 12);
+            buttonSendAll.Name = "buttonSendAll";
+            buttonSendAll.Size = new Size(106, 44);
+            buttonSendAll.TabIndex = 9;
+            buttonSendAll.Text = "Send All TXs";
+            buttonSendAll.UseVisualStyleBackColor = true;
+            buttonSendAll.Click += buttonSendAll_Click;
             // 
             // buttonRedeemAll
             // 
@@ -1121,17 +1159,18 @@ namespace FireWallet
             textBoxExTX.Size = new Size(307, 29);
             textBoxExTX.TabIndex = 1;
             // 
-            // buttonSendAll
+            // buttonMultiSettings
             // 
-            buttonSendAll.FlatStyle = FlatStyle.Flat;
-            buttonSendAll.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonSendAll.Location = new Point(761, 12);
-            buttonSendAll.Name = "buttonSendAll";
-            buttonSendAll.Size = new Size(106, 44);
-            buttonSendAll.TabIndex = 9;
-            buttonSendAll.Text = "Send All TXs";
-            buttonSendAll.UseVisualStyleBackColor = true;
-            buttonSendAll.Click += buttonSendAll_Click;
+            buttonMultiSettings.FlatStyle = FlatStyle.Flat;
+            buttonMultiSettings.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            buttonMultiSettings.Location = new Point(12, 466);
+            buttonMultiSettings.Name = "buttonMultiSettings";
+            buttonMultiSettings.Size = new Size(89, 30);
+            buttonMultiSettings.TabIndex = 3;
+            buttonMultiSettings.TabStop = false;
+            buttonMultiSettings.Text = "Multisig";
+            buttonMultiSettings.UseVisualStyleBackColor = true;
+            buttonMultiSettings.Click += buttonMultiSettings_Click;
             // 
             // MainForm
             // 
@@ -1281,5 +1320,8 @@ namespace FireWallet
         private ToolStripMenuItem otherProjectsToolStripMenuItem;
         private Button buttonRedeemAll;
         private Button buttonSendAll;
+        private ToolStripStatusLabel toolStripStatusLabelMultisig;
+        private Button buttonMultiSign;
+        private Button buttonMultiSettings;
     }
 }
