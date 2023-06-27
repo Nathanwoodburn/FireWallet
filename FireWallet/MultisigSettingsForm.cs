@@ -29,8 +29,6 @@ namespace FireWallet
         {
             // Get multisig info
             string infoResp = await mainForm.APIGet("wallet/" + mainForm.Account + "/account/default", true);
-            mainForm.AddLog(infoResp);
-
             if (infoResp == "Error")
             {
                 NotifyForm notifyForm = new NotifyForm("Error getting multisig info");
@@ -127,7 +125,6 @@ namespace FireWallet
             string path = "wallet/" + mainForm.Account + "/shared-key";
             string content = "{\"accountKey\": \"" + sig + "\",\"account\":\"default\"}";
             string resp = await APIPut(path, true, content);
-            mainForm.AddLog(resp);
             UpdateInfo();
 
         }
@@ -136,7 +133,6 @@ namespace FireWallet
             string path = "wallet/" + mainForm.Account + "/shared-key";
             string content = "{\"accountKey\": \"" + sig + "\",\"account\":\"default\"}";
             string resp = await APIPut(path, true, content);
-            mainForm.AddLog(resp);
             UpdateInfo();
         }
 
