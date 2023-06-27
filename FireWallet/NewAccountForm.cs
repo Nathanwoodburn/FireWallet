@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.VisualBasic.Devices;
+using Newtonsoft.Json.Linq;
 
 namespace FireWallet
 {
@@ -34,7 +35,7 @@ namespace FireWallet
             {
                 mainForm.ThemeControl(c);
             }
-
+            groupBoxMulti.Hide();
 
         }
 
@@ -215,7 +216,8 @@ namespace FireWallet
                     // Create new wallet
                     buttonNext.Enabled = false;
                     string path = "wallet/" + textBoxNewName.Text;
-                    string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\"}";
+                    string content = "{}";
+                    //content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\"}";
                     string response = await APIPut(path, true, content);
                     if (response == "Error")
                     {
@@ -226,16 +228,51 @@ namespace FireWallet
                         return;
                     }
                     mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
-                    NotifyForm notify2 = new NotifyForm("Created wallet: " + textBoxNewName.Text);
-                    notify2.ShowDialog();
-                    notify2.Dispose();
+
+                    // Show SEED PHRASE
+                    path = "wallet/" + textBoxNewName.Text + "/master";
+                    response = await mainForm.APIGet(path, true);
+                    JObject resp = JObject.Parse(response);
+                    if (resp["encrypted"].ToString() == "False")
+                    {
+                        JObject mnemonic = JObject.Parse(resp["mnemonic"].ToString());
+                        string phrase = mnemonic["phrase"].ToString();
+                        NotifyForm notifyForm = new NotifyForm("SEED PHRASE\nSTORE THIS SOMEWHERE SECURE\n" + phrase, "Copy", phrase, true);
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+                    }
+
+                    // Select wallet
+                    content = "{\"method\":\"selectwallet\",\"params\":[\"" + textBoxNewName.Text + "\"]}";
+                    response = await mainForm.APIPost("", true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error selecting wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+
+                    // Encrypt wallet
+                    content = "{\"method\":\"encryptwallet\",\"params\":[\"" + textBoxNewPass1.Text + "\"]}";
+                    response = await mainForm.APIPost("", true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error encrypting wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    mainForm.AddLog("Encrypted wallet: " + textBoxNewName.Text);
                     this.Close();
                 } else
                 {
                     // Create new wallet
                     buttonNext.Enabled = false;
                     string path = "wallet/" + textBoxNewName.Text;
-                    string content = "{\"passphrase\":\"" + textBoxNewPass1.Text + "\", \"type\":\"multisig\",\"m\":"+numericUpDownM.Value.ToString()+ ",\"n\":" +numericUpDownN.Value.ToString() + "}";
+                    string content = "{\"type\":\"multisig\",\"m\":"+numericUpDownM.Value.ToString()+ ",\"n\":" +numericUpDownN.Value.ToString() + "}";
                     string response = await APIPut(path, true, content);
                     if (response == "Error")
                     {
@@ -245,11 +282,43 @@ namespace FireWallet
                         buttonNext.Enabled = true;
                         return;
                     }
-                    mainForm.AddLog("Created wallet: " + textBoxNewName.Text);
-                    NotifyForm notify2 = new NotifyForm("Created wallet: " + textBoxNewName.Text);
-                    notify2.ShowDialog();
-                    notify2.Dispose();
+                    path = "wallet/" + textBoxNewName.Text + "/master";
+                    response = await mainForm.APIGet(path, true);
+                    JObject resp = JObject.Parse(response);
+                    if (resp["encrypted"].ToString() == "False")
+                    {
+                        JObject mnemonic = JObject.Parse(resp["mnemonic"].ToString());
+                        string phrase = mnemonic["phrase"].ToString();
+                        NotifyForm notifyForm = new NotifyForm("SEED PHRASE\nSTORE THIS SOMEWHERE SECURE\n" + phrase, "Copy", phrase, true);
+                        notifyForm.ShowDialog();
+                        notifyForm.Dispose();
+
+                    }
+                    // Select wallet
+                    content = "{\"method\":\"selectwallet\",\"params\":[\"" + textBoxNewName.Text + "\"]}";
+                    response = await mainForm.APIPost("", true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error selecting wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    // Encrypt wallet
+                    content = "{\"method\":\"encryptwallet\",\"params\":[\"" + textBoxNewPass1.Text + "\"]}";
+                    response = await mainForm.APIPost("", true, content);
+                    if (response == "Error")
+                    {
+                        NotifyForm notify = new NotifyForm("Error encrypting wallet");
+                        notify.ShowDialog();
+                        notify.Dispose();
+                        buttonNext.Enabled = true;
+                        return;
+                    }
+                    mainForm.AddLog("Encrypted wallet: " + textBoxNewName.Text);
                     this.Close();
+                    
                 }
             }
 

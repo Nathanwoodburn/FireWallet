@@ -802,10 +802,12 @@ namespace FireWallet
             if (multiSig)
             {
                 toolStripStatusLabelMultisig.Visible = true;
+                buttonMultiSettings.Visible = true;
             }
             else
             {
                 toolStripStatusLabelMultisig.Visible = false;
+                buttonMultiSettings.Visible = false;
             }
             if (WatchOnly || multiSig)
             {
@@ -2006,7 +2008,7 @@ namespace FireWallet
                                 notify.ShowDialog();
                                 return;
                             }
-                            string signed = signRaw(output,new string[0]);
+                            string signed = signRaw(output, new string[0]);
                             ExportTransaction(signed);
                         }
 
@@ -2735,7 +2737,7 @@ namespace FireWallet
             return await ExportTransaction(rawTX, new string[0]);
         }
         public async Task<string> ExportTransaction(string rawTX, string[] domains)
-        { 
+        {
             JObject tx = JObject.Parse(rawTX);
             JObject toExport = new JObject();
             toExport["version"] = 1;
@@ -2744,12 +2746,12 @@ namespace FireWallet
             JArray outputsParsed = new JArray();
             JArray inputs = JArray.Parse(tx["inputs"].ToString());
             JArray outputs = JArray.Parse(tx["outputs"].ToString());
-            
-            Dictionary<string,string> hashes = new Dictionary<string, string>();
+
+            Dictionary<string, string> hashes = new Dictionary<string, string>();
             foreach (string domain in domains)
             {
                 // sha3 hash of domain
-                hashes.Add(CalculateSHA3Hash(domain),domain);
+                hashes.Add(CalculateSHA3Hash(domain), domain);
             }
 
             foreach (JObject input in inputs)
@@ -2789,7 +2791,7 @@ namespace FireWallet
                         AddLog("Cannot find name for hash " + hash);
                         return "Error";
                     }
-                    
+
                     //data["name"];
                     outputsParsed.Add(data);
                 }
@@ -2810,7 +2812,8 @@ namespace FireWallet
                 sw.Write(toExport.ToString());
                 sw.Dispose();
                 return toExport.ToString();
-            }else
+            }
+            else
             {
                 return "Error";
             }
@@ -2871,19 +2874,26 @@ namespace FireWallet
         static string CalculateSHA3Hash(string input)
         {
             var hashAlgorithm = new Org.BouncyCastle.Crypto.Digests.Sha3Digest(256);
-            
+
             // Choose correct encoding based on your usecase
             byte[] inputBytes = Encoding.UTF8.GetBytes(input);
 
             hashAlgorithm.BlockUpdate(inputBytes, 0, inputBytes.Length);
 
-            byte[] result = new byte[256/8];
+            byte[] result = new byte[256 / 8];
             hashAlgorithm.DoFinal(result, 0);
 
             string hashString = BitConverter.ToString(result);
             hashString = hashString.Replace("-", "").ToLowerInvariant();
             return hashString;
         }
+        private void buttonMultiSettings_Click(object sender, EventArgs e)
+        {
+            MultisigSettingsForm multisigSettingsForm = new MultisigSettingsForm(this);
+            multisigSettingsForm.Show();
+        }
         #endregion
+
+
     }
 }
