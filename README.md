@@ -1,3 +1,17 @@
+<br>
+
+<div style="text-align: center;font-weight: bold;"> 
+
+> # ⚠ Warning ⚠
+> HSD currently has a bug that doesn't allow you to import nonces for blinds.  
+> This means that you can't import a blind bid from an external wallet
+> (eg. Bob or a different FireWallet).  
+> This only affects bids sent in batches.  
+> **Please do not send batch bids until this is fixed.**
+
+</div>
+<br><br>
+
 # FireWallet
 Experimental wallet for Handshake chain  
 Info about the project can be found at https://firewallet or https://firewallet.au
