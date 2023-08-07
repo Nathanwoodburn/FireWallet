@@ -1,15 +1,19 @@
 <br>
 
-<div style="text-align: center;font-weight: bold;"> 
+### Due to a recent issue with bids being sent with the wrong address included with the lockup please update HSD.
+This can be done if you are using the internal node.
+1. Close the wallet if it is open
+2. Open a terminal and run
+```bat
+cd %appdata%\FireWallet\hsd
+git pull
+```
+3. Verify the fix is pulled by running
+```bat
+if exist "test\wallet-importnonce-test.js" (echo Fix pulled) else (echo Fix isn't pulled)
+```
 
-> # ⚠ Warning ⚠
-> HSD currently has a bug that doesn't allow you to import nonces for blinds.  
-> This means that you can't import a blind bid from an external wallet
-> (eg. Bob or a different FireWallet).  
-> This only affects bids sent in batches.  
-> **Please do not send batch bids until this is fixed.**
 
-</div>
 <br><br>
 
 # FireWallet
