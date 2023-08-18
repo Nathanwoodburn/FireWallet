@@ -839,6 +839,11 @@ namespace FireWallet
 
                 Account = comboBoxaccount.Text;
                 Password = textBoxaccountpassword.Text;
+                // Escape the password to allow use in JSON
+                Password = Password.Replace("\\", "\\\\");
+                Password = Password.Replace("\"", "\\\"");
+
+
                 bool loggedin = await Login();
                 if (loggedin)
                 {
