@@ -61,7 +61,7 @@ namespace FireWallet
                         notifyForm.Dispose();
                         this.Close();
                     }
-                }
+                } else this.Close();
             }
             ParseTX();
         }
