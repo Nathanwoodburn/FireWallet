@@ -1,23 +1,6 @@
-<br>
-
-### Due to a recent issue with bids being sent with the wrong address included with the lockup please update HSD.
-This can be done if you are using the internal node.
-1. Close the wallet if it is open
-2. Open a terminal and run
-```bat
-cd %appdata%\FireWallet\hsd
-git pull
-```
-3. Verify the fix is pulled by running
-```bat
-if exist "test\wallet-importnonce-test.js" (echo Fix pulled) else (echo Fix isn't pulled)
-```
-
-
-<br><br>
-
 # FireWallet
 Experimental wallet for Handshake chain  
+The newer python version is available [here](https://github.com/nathanwoodburn/firewalletbrowser)
 Info about the project can be found at https://firewallet or https://firewallet.au
 
 ## Installation
