@@ -1314,8 +1314,24 @@ namespace FireWallet
         {
             // Get height and progress
             String APIresponse = await APIGet("", false);
-            JObject resp = JObject.Parse(APIresponse);
-            JObject chain = JObject.Parse(resp["chain"].ToString());
+            if (APIresponse == "Error")
+            {
+                AddLog("Error getting node info");
+                return;
+            }
+            JObject resp;
+            JObject chain;
+            try
+            {
+                resp = JObject.Parse(APIresponse);
+                chain = JObject.Parse(resp["chain"].ToString());
+            }
+            catch (Exception ex)
+            {
+                AddLog("Error getting node info");
+                AddLog(ex.Message);
+                return;
+            }
             labelHeight.Text = "Height: " + chain["height"].ToString();
             decimal progress = Convert.ToDecimal(chain["progress"].ToString());
             labelSyncPercent.Text = "Sync: " + decimal.Round(progress * 100, 2) + "%";
